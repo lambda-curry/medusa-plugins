@@ -218,7 +218,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
       })
     );
 
-    // If the number of completed subscribers is different from the number of subcribers to process in current attempt, some of them failed
+    // If the number of completed subscribers is different from the number of subscribers to process in current attempt, some of them failed
     const didSubscribersFail =
       completedSubscribersInCurrentAttempt.length !==
       subscribersInCurrentAttempt.length;
@@ -243,11 +243,21 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
 
       this.logger_.warn(errorMessage);
 
+      if (subscriberErrors.length === 1)
+        return Promise.reject(subscriberErrors[0]);
+
       return Promise.reject(Error(errorMessage));
     }
     if (isFinalAttempt && didSubscribersFail) {
+      this.logger_.warn(
+        `One or more subscribers of ${eventName} failed. All retries have been exhausted.`
+      );
+
+      if (subscriberErrors.length === 1)
+        return Promise.reject(subscriberErrors[0]);
+
       return Promise.reject(
-        AggregateError(subscriberErrors, 'One or more subscribers failed')
+        AggregateError(subscriberErrors, '2 or more subscribers failed')
       );
     }
 

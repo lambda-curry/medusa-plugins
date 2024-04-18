@@ -1,0 +1,22 @@
+{
+  "name": "@markethaus/medusa-plugin-bull-board",
+  "description": "Medusa Markethaus Bull Board UI",
+  "version": "0.1.0",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "cross-env rm -rf ./dist && tsc --build && npm run build:server",
+    "watch": "tsc --build --watch",
+    "build:server": "cross-env tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "@bull-board/express": "^5.15.5",
+    "@bull-board/ui": "^5.15.5",
+    "@medusajs/medusa": "^1.17.2"
+  }
+}

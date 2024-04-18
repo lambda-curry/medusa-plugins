@@ -1,6 +1,5 @@
 {
-  "name": "markethaus-medusa-plugins",
-  "private": true,
+  "name": "medusa-packages",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -8,17 +7,15 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
     "prettier": "^3.2.5",
     "turbo": "latest"
   },
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@9.6.7",
   "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+    "packages/*",
+    "modules/*"
+  ],
+  "packageManager": "yarn@4.1.1"
 }

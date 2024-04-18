@@ -1,14 +1,15 @@
 {
   "name": "@lambdacurry/medusa-plugin-event-bus-dashboard",
-  "description": "Medusa Markethaus Bull Board UI",
-  "version": "0.1.0",
+  "description": "A Medusa plugin that sets up Bull Board UI based on event-bus-redis settings",
+  "version": "0.1.1",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "cross-env rm -rf ./dist && tsc --build && npm run build:server",
     "watch": "tsc --build --watch",
-    "build:server": "cross-env tsc -p tsconfig.json"
+    "build:server": "cross-env tsc -p tsconfig.json",
+    "publish-to-npm": "npm run build && npm publish --access public"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

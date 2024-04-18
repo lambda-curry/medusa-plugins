@@ -9,7 +9,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/medusajs/medusa",
-    "directory": "packages/event-bus-redis"
+    "directory": "modules/event-bus-redis"
   },
   "publishConfig": {
     "access": "public"

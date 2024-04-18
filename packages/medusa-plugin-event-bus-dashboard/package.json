@@ -1,5 +1,5 @@
 {
-  "name": "@markethaus/medusa-plugin-bull-board",
+  "name": "@lambdacurry/medusa-plugin-event-bus-dashboard",
   "description": "Medusa Markethaus Bull Board UI",
   "version": "0.1.0",
   "files": [

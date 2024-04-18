@@ -188,7 +188,6 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     }
 
     const completedSubscribersInCurrentAttempt: string[] = [];
-    const failedSubscribersInCurrentAttempt: string[] = [];
     const subscriberErrors: Error[] = [];
 
     const subscribersResult = await Promise.all(
@@ -199,17 +198,21 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
           completedSubscribersInCurrentAttempt.push(id);
           return result;
         } catch (err) {
-          failedSubscribersInCurrentAttempt.push(id);
+          subscriberErrors.push(err);
           this.logger_.warn(
             `An error occurred while processing ${eventName}: ${err}`
           );
-          this.onSubscriberError_({
-            event: eventName,
-            subscriberId: id,
-            error: err,
-          });
 
-          subscriberErrors.push(err);
+          try {
+            this.onSubscriberError_({
+              event: eventName,
+              subscriberId: id,
+              error: err,
+            });
+          } catch (ex) {
+            this.logger_.warn(`Failed onSubscriberError: ${ex}`);
+          }
+
           return err;
         }
       })
@@ -244,7 +247,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     }
     if (isFinalAttempt && didSubscribersFail) {
       return Promise.reject(
-        new AggregateError(subscriberErrors, 'One or more subscribers failed')
+        AggregateError(subscriberErrors, 'One or more subscribers failed')
       );
     }
 

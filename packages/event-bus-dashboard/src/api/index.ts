@@ -53,6 +53,16 @@ export default function (rootDirectory: string, options: IOptions) {
   createBullBoard({
     queues: [new BullMQAdapter(queue)],
     serverAdapter,
+    options: {
+      uiConfig: {
+        boardTitle: 'EventBus Dash',
+        boardLogo: {
+          path: 'https://user-images.githubusercontent.com/7554214/153162406-bf8fd16f-aa98-4604-b87b-e13ab4baf604.png',
+          width: 'auto',
+          height: 'auto',
+        },
+      },
+    },
   });
 
   router.use(basePath, authenticate());

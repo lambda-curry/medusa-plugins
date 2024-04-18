@@ -2,7 +2,7 @@
 
 ## Overview
 
-A dashboard to view event-bus-redis events, based on bull-board[https://github.com/felixmosh/bull-board]
+A dashboard to view event-bus-redis events, based on bull-board <https://github.com/felixmosh/bull-board>
 
 ## Getting started
 

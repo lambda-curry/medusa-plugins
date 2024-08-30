@@ -1,5 +1,5 @@
 {
-  "name": "@markethaus/medusa-plugin-webhooks",
+  "name": "@lambdacurry/medusa-plugin-webhooks",
   "description": "Medusa Markethaus Webhooks",
   "version": "0.0.2",
   "files": [

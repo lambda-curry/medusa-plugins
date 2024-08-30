@@ -15,7 +15,7 @@ To install the Medusa Webhooks Plugin in your Medusa project, follow these steps
 1. Add the plugin package to your Medusa project:
 
    ```bash
-   yarn add @markethaus/medusa-plugin-webhooks
+   yarn add @lambdacurry/medusa-plugin-webhooks
    ```
 
 2. Open your `medusa-config.js` file and add the plugin to the `plugins` array with the desired configuration:
@@ -24,7 +24,7 @@ To install the Medusa Webhooks Plugin in your Medusa project, follow these steps
    const plugins = [
      // other plugins
      {
-       resolve: "@markethaus/medusa-plugin-webhooks",
+       resolve: "@lambdacurry/medusa-plugin-webhooks",
        options: {
          enableUI: true, // Enables the UI components for managing webhooks in the admin panel
          customSubscriptions: [
@@ -59,7 +59,7 @@ To handle custom events in your Medusa server, you can create a custom subscribe
 ```javascript
     import { type SubscriberArgs, type SubscriberConfig } from '@medusajs/medusa';
     import WishlistService from '../services/wishlist';
-    import WebhookService from '@markethaus/medusa-plugin-webhooks/src/services/webhook';
+    import WebhookService from '@lambdacurry/medusa-plugin-webhooks/src/services/webhook';
     import { Logger } from '@tanstack/react-query';
 
     export const config: SubscriberConfig = {

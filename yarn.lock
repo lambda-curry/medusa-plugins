@@ -3060,6 +3060,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@lambdacurry/medusa-plugin-webhooks@workspace:packages/medusa-plugin-webhooks":
+  version: 0.0.0-use.local
+  resolution: "@lambdacurry/medusa-plugin-webhooks@workspace:packages/medusa-plugin-webhooks"
+  dependencies:
+    "@medusajs/admin": "npm:7.1.16"
+    "@medusajs/medusa": "npm:1.20.9"
+    cross-env: "npm:^7.0.3"
+    medusa-core-utils: "npm:^1.2.1"
+    node-fetch: "npm:2.6.6"
+    tsc-watch: "npm:^6.2.0"
+    typescript: "npm:5.5.4"
+  languageName: unknown
+  linkType: soft
+
 "@leichtgewicht/ip-codec@npm:^2.0.1":
   version: 2.0.5
   resolution: "@leichtgewicht/ip-codec@npm:2.0.5"
@@ -3082,20 +3096,6 @@ __metadata:
   checksum: 10c0/f9cc0385021f352f444d96dd101afd2a0efd3b2e85a61ac67deb8220409f75a6a426ed6525d297d97746f7931e3079ac6218777551a7c82686de7d292220cb1f
   languageName: node
   linkType: hard
-
-"@markethaus/medusa-plugin-webhooks@workspace:packages/medusa-plugin-webhooks":
-  version: 0.0.0-use.local
-  resolution: "@markethaus/medusa-plugin-webhooks@workspace:packages/medusa-plugin-webhooks"
-  dependencies:
-    "@medusajs/admin": "npm:7.1.16"
-    "@medusajs/medusa": "npm:1.20.9"
-    cross-env: "npm:^7.0.3"
-    medusa-core-utils: "npm:^1.2.1"
-    node-fetch: "npm:2.6.6"
-    tsc-watch: "npm:^6.2.0"
-    typescript: "npm:5.5.4"
-  languageName: unknown
-  linkType: soft
 
 "@medusajs/admin-ui@npm:^2.1.16":
   version: 2.1.16

@@ -1,0 +1,27 @@
+{
+  "name": "@markethaus/medusa-plugin-webhooks",
+  "description": "Medusa Markethaus Webhooks",
+  "version": "0.0.2",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "cross-env rm -rf ./dist && tsc --build && npm run build:server",
+    "dev": "tsc-watch --build --watch --verbose --force --onSuccess \"yarn prepare\"",
+    "watch": "tsc --build --watch & yarn prepare",
+    "build:server": "cross-env tsc -p tsconfig.server.json",
+    "build:admin": "cross-env medusa-admin build",
+    "prepare": "cross-env NODE_ENV=production npm run build:server && medusa-admin bundle"
+  },
+  "dependencies": {
+    "@medusajs/admin": "7.1.16",
+    "@medusajs/medusa": "1.20.9",
+    "cross-env": "^7.0.3",
+    "medusa-core-utils": "^1.2.1",
+    "node-fetch": "2.6.6",
+    "typescript": "5.5.4"
+  },
+  "devDependencies": {
+    "tsc-watch": "^6.2.0"
+  }
+}

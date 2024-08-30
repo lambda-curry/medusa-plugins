@@ -1,4 +1,12 @@
-import { EventBusService, Logger, OrderService, ProductService, defaultAdminProductRelations } from '@medusajs/medusa';
+import {
+  CustomerService,
+  EventBusService,
+  Logger,
+  OrderService,
+  ProductService,
+  defaultAdminCustomersRelations,
+  defaultAdminProductRelations,
+} from '@medusajs/medusa';
 import { WebhookService } from '../services';
 
 interface ConstructorArgs {
@@ -6,7 +14,7 @@ interface ConstructorArgs {
   eventBusService: EventBusService;
   webhookService: WebhookService;
   productService: ProductService;
-  orderService: OrderService;
+  customerService: CustomerService;
 }
 
 export class WebhookSubscriber {
@@ -14,14 +22,14 @@ export class WebhookSubscriber {
   private eventBusService_: EventBusService;
   private webhookService_: WebhookService;
   private productService_: ProductService;
-  private orderService_: OrderService;
+  private customerService_: CustomerService;
 
   constructor(args: ConstructorArgs) {
     this.logger_ = args.logger;
     this.eventBusService_ = args.eventBusService;
     this.webhookService_ = args.webhookService;
     this.productService_ = args.productService;
-    this.orderService_ = args.orderService;
+    this.customerService_ = args.customerService;
 
     Object.values(OrderService.Events).forEach((event) => {
       this.eventBusService_.subscribe(event, (payload) => this.handleOrderEvent(event, payload));
@@ -29,6 +37,10 @@ export class WebhookSubscriber {
 
     Object.values(ProductService.Events).forEach((event) => {
       this.eventBusService_.subscribe(event, (payload) => this.handleProductEvent(event, payload));
+    });
+
+    Object.values(CustomerService.Events).forEach((event) => {
+      this.eventBusService_.subscribe(event, (payload) => this.handleCustomerEvent(event, payload));
     });
   }
 
@@ -68,6 +80,22 @@ export class WebhookSubscriber {
         },
         'product',
       ),
+    );
+  }
+
+  async handleCustomerEvent(event: string, payload: any) {
+    const customer = await this.customerService_.retrieve(payload.id, {
+      relations: defaultAdminCustomersRelations,
+    });
+
+    const webhooks = await this.webhookService_.list({
+      event_type: event,
+      active: true,
+    });
+
+    await this.webhookService_.sendWebhooksEvents(
+      webhooks,
+      this.webhookService_.webhookResponse({ event_type: event, payload: customer }, 'customer'),
     );
   }
 }

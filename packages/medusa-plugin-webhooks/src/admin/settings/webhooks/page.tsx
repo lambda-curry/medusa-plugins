@@ -41,9 +41,10 @@ const Webhooks = ({ notify }: SettingProps) => {
       </section>
 
       <Container>
-        <h1 className="inter-xlarge-semibold text-grey-90">Webhooks</h1>
-        <p>Manage the webhooks that you are sending to third party services.</p>
-
+        <div className="mb-3">
+          <h1 className="inter-xlarge-semibold text-grey-90">Webhooks</h1>
+          <p>Manage the webhooks that you are sending to third party services.</p>
+        </div>
         <WebhooksTable
           editWebhookModal={setEditWebhook}
           deleteWebooksModal={setDeleteWebhook}

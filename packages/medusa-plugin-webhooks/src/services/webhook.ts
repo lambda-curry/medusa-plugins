@@ -1,4 +1,5 @@
 import {
+  CustomerService,
   FindConfig,
   Logger,
   OrderService,
@@ -7,7 +8,7 @@ import {
   TransactionBaseService,
   buildQuery,
 } from '@medusajs/medusa';
-import { EntityManager, IsNull } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { WebhookRepository } from '../repositories';
 import { Webhook } from '../models';
 import { MedusaError } from 'medusa-core-utils';
@@ -36,6 +37,7 @@ type InjectedDependencies = {
   manager: EntityManager;
   productService: ProductService;
   orderService: OrderService;
+  customerService: CustomerService;
   readonly webhookRepository: typeof WebhookRepository;
   orderRepository: typeof OrderRepository;
 };
@@ -47,6 +49,7 @@ class WebhookService extends TransactionBaseService {
 
   readonly productService_: ProductService;
   readonly orderService_: OrderService;
+  readonly customerService_: CustomerService;
 
   private readonly webhookRepository_: typeof WebhookRepository;
   private readonly orderRepository_: typeof OrderRepository;
@@ -59,7 +62,7 @@ class WebhookService extends TransactionBaseService {
 
     this.productService_ = container.productService;
     this.orderService_ = container.orderService;
-
+    this.customerService_ = container.customerService;
     this.webhookRepository_ = container.webhookRepository;
     this.orderRepository_ = container.orderRepository;
     this.customSubscriptions = customSubscriptions;
@@ -231,7 +234,7 @@ class WebhookService extends TransactionBaseService {
       event_type: string;
       payload: any;
     },
-    type: 'product' | 'order' | 'custom',
+    type: 'product' | 'order' | 'customer' | 'custom',
   ) {
     return {
       event_type,
@@ -241,28 +244,10 @@ class WebhookService extends TransactionBaseService {
   }
 
   private allEventsForWebhookTests: () => {
-    type: 'orderService' | 'productService' | 'custom';
+    type: 'orderService' | 'productService' | 'customerService' | 'custom';
     eventNames: string[];
     returnFirstEntityObject: any;
   }[] = () => [
-    {
-      type: 'custom',
-      eventNames: this.customSubscriptions,
-      returnFirstEntityObject: async (eventName) => {
-        return this.webhookResponse(
-          {
-            event_type: eventName,
-            payload: {
-              test: true,
-              eventName,
-              description: 'This is a test payload for the webhook',
-            },
-          },
-          'custom',
-        );
-      },
-    },
-
     {
       type: 'orderService',
       eventNames: Object.values(OrderService.Events),
@@ -299,6 +284,38 @@ class WebhookService extends TransactionBaseService {
             payload: product?.length ? product[0] : null,
           },
           'product',
+        );
+      },
+    },
+    {
+      type: 'customerService',
+      eventNames: Object.values(CustomerService.Events),
+      returnFirstEntityObject: async () => {
+        const customer = await this.customerService_.list({}, { take: 1 });
+
+        return this.webhookResponse(
+          {
+            event_type: CustomerService.Events.CREATED,
+            payload: customer?.length ? customer[0] : null,
+          },
+          'customer',
+        );
+      },
+    },
+    {
+      type: 'custom',
+      eventNames: this.customSubscriptions,
+      returnFirstEntityObject: async (eventName) => {
+        return this.webhookResponse(
+          {
+            event_type: eventName,
+            payload: {
+              test: true,
+              eventName,
+              description: 'This is a test payload for the webhook',
+            },
+          },
+          'custom',
         );
       },
     },

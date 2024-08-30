@@ -1,10 +1,25 @@
-import { OrderService, ProductService, type MedusaRequest, type MedusaResponse } from '@medusajs/medusa';
+import {
+  CustomerService,
+  OrderService,
+  ProductService,
+  type MedusaRequest,
+  type MedusaResponse,
+} from '@medusajs/medusa';
 import { WebhookService } from '../../../../services';
+
+interface EventOption {
+  label: string;
+  value: string;
+}
 
 export interface EventOptions {
   label: string;
-  options: { label: string; value: string }[];
+  options: EventOption[];
 }
+
+const mapServiceToEvents = (service: typeof OrderService | typeof ProductService | typeof CustomerService) => {
+  return Object.values(service.Events).map((event) => ({ label: event, value: event })) as EventOption[];
+};
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const webhookService = req.scope.resolve<WebhookService>('webhookService');
@@ -12,11 +27,15 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const options: EventOptions[] = [
     {
       label: 'Orders',
-      options: Object.values(OrderService.Events).map((event) => ({ label: event, value: event })),
+      options: mapServiceToEvents(OrderService),
     },
     {
       label: 'Products',
-      options: Object.values(ProductService.Events).map((event) => ({ label: event, value: event })),
+      options: mapServiceToEvents(ProductService),
+    },
+    {
+      label: 'Customers',
+      options: mapServiceToEvents(CustomerService),
     },
   ];
 

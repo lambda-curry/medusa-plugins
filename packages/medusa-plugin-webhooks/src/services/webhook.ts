@@ -7,19 +7,22 @@ import {
   Selector,
   TransactionBaseService,
   buildQuery,
-} from '@medusajs/medusa';
-import { EntityManager } from 'typeorm';
-import { WebhookRepository } from '../repositories';
-import { Webhook } from '../models';
-import { MedusaError } from 'medusa-core-utils';
-import OrderRepository from '@medusajs/medusa/dist/repositories/order';
-import { defaultAdminOrdersFields, defaultAdminOrdersRelations } from '@medusajs/medusa/dist/types/orders';
-import fetch from 'node-fetch';
+} from "@medusajs/medusa";
+import { EntityManager } from "typeorm";
+import { WebhookRepository } from "../repositories";
+import { Webhook } from "../models";
+import { MedusaError } from "medusa-core-utils";
+import OrderRepository from "@medusajs/medusa/dist/repositories/order";
+import {
+  defaultAdminOrdersFields,
+  defaultAdminOrdersRelations,
+} from "@medusajs/medusa/dist/types/orders";
+import fetch from "node-fetch";
 
 type WebhookSendResponse = {
   event_type: string;
   target_url: string;
-  result: 'success' | 'error';
+  result: "success" | "error";
   data?: any;
   message?: string;
   err?: any;
@@ -42,7 +45,7 @@ type InjectedDependencies = {
   orderRepository: typeof OrderRepository;
 };
 
-type BaseWebhook = Pick<Webhook, 'target_url' | 'event_type'>;
+type BaseWebhook = Pick<Webhook, "target_url" | "event_type">;
 
 class WebhookService extends TransactionBaseService {
   private readonly logger_: Logger;
@@ -56,7 +59,10 @@ class WebhookService extends TransactionBaseService {
 
   public readonly customSubscriptions: string[] = [];
 
-  constructor(container: InjectedDependencies, { customSubscriptions = [] }: { customSubscriptions: string[] }) {
+  constructor(
+    container: InjectedDependencies,
+    { customSubscriptions = [] }: { customSubscriptions: string[] }
+  ) {
     super(container);
     this.logger_ = container.logger;
 
@@ -68,8 +74,12 @@ class WebhookService extends TransactionBaseService {
     this.customSubscriptions = customSubscriptions;
   }
 
-  private onSendError(err: WebhookSendResponseError, subscription: BaseWebhook, payload: any): WebhookSendResponse {
-    this.logger_.error('Error sending webhook', {
+  private onSendError(
+    err: WebhookSendResponseError,
+    subscription: BaseWebhook,
+    payload: any
+  ): WebhookSendResponse {
+    this.logger_.error("Error sending webhook", {
       subscription,
       payload,
       err,
@@ -78,13 +88,16 @@ class WebhookService extends TransactionBaseService {
     return {
       event_type: subscription.event_type,
       target_url: subscription.target_url,
-      result: 'error',
-      message: err?.message ?? err?.cause?.code ?? 'Unknown error',
+      result: "error",
+      message: err?.message ?? err?.cause?.code ?? "Unknown error",
       err: err?.cause ?? err,
     };
   }
 
-  async listAndCount(selector: Selector<Webhook>, config: any): Promise<[Webhook[], number]> {
+  async listAndCount(
+    selector: Selector<Webhook>,
+    config: any
+  ): Promise<[Webhook[], number]> {
     const repo = this.activeManager_.withRepository(this.webhookRepository_);
 
     const query = buildQuery(selector, {
@@ -95,7 +108,10 @@ class WebhookService extends TransactionBaseService {
     return await repo.findAndCount(query);
   }
 
-  public async list(selector: Selector<Webhook>, config?: FindConfig<Webhook>): Promise<Webhook[]> {
+  public async list(
+    selector: Selector<Webhook>,
+    config?: FindConfig<Webhook>
+  ): Promise<Webhook[]> {
     const repo = this.activeManager_.withRepository(this.webhookRepository_);
     const query = buildQuery(selector, config);
 
@@ -104,25 +120,30 @@ class WebhookService extends TransactionBaseService {
     return subscriptions;
   }
 
-  public async send(subscription: BaseWebhook, payload: any): Promise<WebhookSendResponse> {
+  public async send(
+    subscription: BaseWebhook,
+    payload: any
+  ): Promise<WebhookSendResponse> {
     const { event_type, target_url } = subscription;
 
     try {
       const response = await fetch(target_url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
 
-      const contentType = response.headers.get('content-type');
-      const data = contentType?.includes('json') ? await response.json() : await response.text();
+      const contentType = response.headers.get("content-type");
+      const data = contentType?.includes("json")
+        ? await response.json()
+        : await response.text();
 
       return {
         event_type,
         target_url,
-        result: 'success',
+        result: "success",
         data,
       };
     } catch (err) {
@@ -132,13 +153,16 @@ class WebhookService extends TransactionBaseService {
 
   public async sendWebhooksEvents(webhooks: Webhook[], payload: any) {
     const results = (await Promise.allSettled(
-      webhooks.map((webhook) => this.send(webhook, payload)),
+      webhooks.map((webhook) => this.send(webhook, payload))
     )) as PromiseFulfilledResult<WebhookSendResponse>[];
 
     results.forEach((result) => {
-      const resultMessage = result.value?.result === 'error' ? 'failed' : 'succeeded';
+      const resultMessage =
+        result.value?.result === "error" ? "failed" : "succeeded";
 
-      this.logger_.info(`Webhook ${result.value?.event_type} -> ${result.value?.target_url} ${resultMessage}.`);
+      this.logger_.info(
+        `Webhook ${result.value?.event_type} -> ${result.value?.target_url} ${resultMessage}.`
+      );
     });
 
     return results;
@@ -146,7 +170,9 @@ class WebhookService extends TransactionBaseService {
 
   public async createWebhookSubscription(data: Partial<Webhook>) {
     return await this.atomicPhase_(async (transactionManager) => {
-      const webhookRepo = transactionManager.withRepository(this.webhookRepository_);
+      const webhookRepo = transactionManager.withRepository(
+        this.webhookRepository_
+      );
 
       const subscription = webhookRepo.create(data);
 
@@ -158,12 +184,17 @@ class WebhookService extends TransactionBaseService {
 
   public async updateWebhookSubscription(id: string, data: any) {
     return await this.atomicPhase_(async (transactionManager) => {
-      const webhookRepo = transactionManager.withRepository(this.webhookRepository_);
+      const webhookRepo = transactionManager.withRepository(
+        this.webhookRepository_
+      );
 
       const existingWebhook = await webhookRepo.findOne({ where: { id } });
 
       if (!existingWebhook) {
-        throw new MedusaError(MedusaError.Types.NOT_FOUND, `Webhook subscription with id: ${id} was not found.`);
+        throw new MedusaError(
+          MedusaError.Types.NOT_FOUND,
+          `Webhook subscription with id: ${id} was not found.`
+        );
       }
 
       const updatedWebhook = webhookRepo.merge(existingWebhook, data);
@@ -174,12 +205,17 @@ class WebhookService extends TransactionBaseService {
 
   public async deleteWebhookSubscription(id: string) {
     return await this.atomicPhase_(async (transactionManager) => {
-      const webhookRepo = transactionManager.withRepository(this.webhookRepository_);
+      const webhookRepo = transactionManager.withRepository(
+        this.webhookRepository_
+      );
 
       const subscription = await webhookRepo.findOne({ where: { id } });
 
       if (!subscription) {
-        throw new MedusaError(MedusaError.Types.NOT_FOUND, `Webhook subscription with id: ${id} was not found.`);
+        throw new MedusaError(
+          MedusaError.Types.NOT_FOUND,
+          `Webhook subscription with id: ${id} was not found.`
+        );
       }
 
       await webhookRepo.remove(subscription);
@@ -189,7 +225,15 @@ class WebhookService extends TransactionBaseService {
   }
 
   public async retrieveWebhooksOrderWithTotals(orderId: string) {
-    const blacklistedRelations = ['claims', 'swaps', 'children', 'returns', 'payments', 'refunds', 'region'];
+    const blacklistedRelations = [
+      "claims",
+      "swaps",
+      "children",
+      "returns",
+      "payments",
+      "refunds",
+      "region",
+    ];
 
     const order = await this.orderService_.retrieveWithTotals(orderId, {
       relations: defaultAdminOrdersRelations,
@@ -214,10 +258,15 @@ class WebhookService extends TransactionBaseService {
     const eventType = this.detectTypeOfEvent(testData?.event_type);
 
     if (!eventType) {
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Event type ${testData?.event_type} is not supported.`);
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Event type ${testData?.event_type} is not supported.`
+      );
     }
 
-    const finalTestData = (await eventType.returnFirstEntityObject(testData?.event_type)) ?? {
+    const finalTestData = (await eventType.returnFirstEntityObject(
+      testData?.event_type
+    )) ?? {
       test: true,
     };
 
@@ -234,7 +283,7 @@ class WebhookService extends TransactionBaseService {
       event_type: string;
       payload: any;
     },
-    type: 'product' | 'order' | 'customer' | 'custom',
+    type: "product" | "order" | "customer" | "custom"
   ) {
     return {
       event_type,
@@ -244,36 +293,41 @@ class WebhookService extends TransactionBaseService {
   }
 
   private allEventsForWebhookTests: () => {
-    type: 'orderService' | 'productService' | 'customerService' | 'custom';
+    type: "orderService" | "productService" | "customerService" | "custom";
     eventNames: string[];
     returnFirstEntityObject: any;
   }[] = () => [
     {
-      type: 'orderService',
+      type: "orderService",
       eventNames: Object.values(OrderService.Events),
       returnFirstEntityObject: async (eventName) => {
-        const order = await this.orderService_.list({ order_parent_id: null } as any, {
-          order: { created_at: 'DESC' },
-          take: 1,
-        });
+        const order = await this.orderService_.list(
+          {},
+          {
+            order: { created_at: "DESC" },
+            take: 1,
+          }
+        );
 
         if (!order?.length) {
           return null;
         }
 
-        const orderWithTotals = await this.retrieveWebhooksOrderWithTotals(order[0].id);
+        const orderWithTotals = await this.retrieveWebhooksOrderWithTotals(
+          order[0].id
+        );
 
         return this.webhookResponse(
           {
             event_type: eventName,
             payload: orderWithTotals,
           },
-          'order',
+          "order"
         );
       },
     },
     {
-      type: 'productService',
+      type: "productService",
       eventNames: Object.values(ProductService.Events),
       returnFirstEntityObject: async () => {
         const product = await this.productService_.list({}, { take: 1 });
@@ -283,12 +337,12 @@ class WebhookService extends TransactionBaseService {
             event_type: ProductService.Events.CREATED,
             payload: product?.length ? product[0] : null,
           },
-          'product',
+          "product"
         );
       },
     },
     {
-      type: 'customerService',
+      type: "customerService",
       eventNames: Object.values(CustomerService.Events),
       returnFirstEntityObject: async () => {
         const customer = await this.customerService_.list({}, { take: 1 });
@@ -298,12 +352,12 @@ class WebhookService extends TransactionBaseService {
             event_type: CustomerService.Events.CREATED,
             payload: customer?.length ? customer[0] : null,
           },
-          'customer',
+          "customer"
         );
       },
     },
     {
-      type: 'custom',
+      type: "custom",
       eventNames: this.customSubscriptions,
       returnFirstEntityObject: async (eventName) => {
         return this.webhookResponse(
@@ -312,17 +366,19 @@ class WebhookService extends TransactionBaseService {
             payload: {
               test: true,
               eventName,
-              description: 'This is a test payload for the webhook',
+              description: "This is a test payload for the webhook",
             },
           },
-          'custom',
+          "custom"
         );
       },
     },
   ];
 
   private detectTypeOfEvent = (event: string) => {
-    const foundEvent = this.allEventsForWebhookTests().find((e) => e.eventNames.includes(event));
+    const foundEvent = this.allEventsForWebhookTests().find((e) =>
+      e.eventNames.includes(event)
+    );
 
     if (!foundEvent) {
       return false;

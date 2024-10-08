@@ -1,7 +1,7 @@
 {
   "name": "@lambdacurry/medusa-plugin-webhooks",
   "description": "Medusa Markethaus Webhooks",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "files": [
     "dist"
   ],
@@ -19,7 +19,12 @@
     "cross-env": "^7.0.3",
     "medusa-core-utils": "^1.2.1",
     "node-fetch": "2.6.6",
-    "typescript": "5.5.4"
+    "typeorm": "^0.3.20",
+    "typescript": "5.5.4",
+    "util": "^0.12.5"
+  },
+  "browser": {
+    "util": false
   },
   "devDependencies": {
     "tsc-watch": "^6.2.0"

@@ -6,8 +6,8 @@ import {
   ProductService,
   defaultAdminCustomersRelations,
   defaultAdminProductRelations,
-} from '@medusajs/medusa';
-import { WebhookService } from '../services';
+} from "@medusajs/medusa";
+import WebhookService from "../services/webhook";
 
 interface ConstructorArgs {
   logger: Logger;
@@ -32,20 +32,28 @@ export class WebhookSubscriber {
     this.customerService_ = args.customerService;
 
     Object.values(OrderService.Events).forEach((event) => {
-      this.eventBusService_.subscribe(event, (payload) => this.handleOrderEvent(event, payload));
+      this.eventBusService_.subscribe(event, (payload) =>
+        this.handleOrderEvent(event, payload)
+      );
     });
 
     Object.values(ProductService.Events).forEach((event) => {
-      this.eventBusService_.subscribe(event, (payload) => this.handleProductEvent(event, payload));
+      this.eventBusService_.subscribe(event, (payload) =>
+        this.handleProductEvent(event, payload)
+      );
     });
 
     Object.values(CustomerService.Events).forEach((event) => {
-      this.eventBusService_.subscribe(event, (payload) => this.handleCustomerEvent(event, payload));
+      this.eventBusService_.subscribe(event, (payload) =>
+        this.handleCustomerEvent(event, payload)
+      );
     });
   }
 
   async handleOrderEvent(event: string, payload: any) {
-    const order = await this.webhookService_.retrieveWebhooksOrderWithTotals(payload.id);
+    const order = await this.webhookService_.retrieveWebhooksOrderWithTotals(
+      payload.id
+    );
 
     const webhooks = await this.webhookService_.list({
       event_type: event,
@@ -54,7 +62,10 @@ export class WebhookSubscriber {
 
     await this.webhookService_.sendWebhooksEvents(
       webhooks,
-      this.webhookService_.webhookResponse({ event_type: event, payload: order }, 'order'),
+      this.webhookService_.webhookResponse(
+        { event_type: event, payload: order },
+        "order"
+      )
     );
   }
 
@@ -78,8 +89,8 @@ export class WebhookSubscriber {
           event_type: event,
           payload: product,
         },
-        'product',
-      ),
+        "product"
+      )
     );
   }
 
@@ -95,7 +106,10 @@ export class WebhookSubscriber {
 
     await this.webhookService_.sendWebhooksEvents(
       webhooks,
-      this.webhookService_.webhookResponse({ event_type: event, payload: customer }, 'customer'),
+      this.webhookService_.webhookResponse(
+        { event_type: event, payload: customer },
+        "customer"
+      )
     );
   }
 }

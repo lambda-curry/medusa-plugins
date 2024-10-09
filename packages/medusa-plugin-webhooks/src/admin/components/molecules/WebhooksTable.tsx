@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 
 import { useAdminWebhooks } from "../../hooks/webhooks/queries";
 import { DataTable } from "../organisms/data-table";
-import { Webhook } from "../../../models";
+import { Webhook } from "../../../models/webhook";
 import Actionables from "./Actionables";
 import { Pencil, Trash } from "@medusajs/icons";
 import StatusIndicator from "../fundamentals/status-indicator";

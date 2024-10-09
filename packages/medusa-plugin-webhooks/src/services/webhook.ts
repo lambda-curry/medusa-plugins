@@ -9,8 +9,8 @@ import {
   buildQuery,
 } from "@medusajs/medusa";
 import { EntityManager } from "typeorm";
-import { WebhookRepository } from "../repositories";
-import { Webhook } from "../models";
+import WebhookRepository from "../repositories/webhook";
+import { Webhook } from "../models/webhook";
 import { MedusaError } from "medusa-core-utils";
 import OrderRepository from "@medusajs/medusa/dist/repositories/order";
 import {

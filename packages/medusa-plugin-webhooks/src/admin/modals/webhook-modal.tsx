@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { Button, Switch, Select, Input, toast } from '@medusajs/ui';
-import Modal from '../components/molecules/Modal';
-import { Webhook } from '../../models';
-import { useAdminCreateWebhook, useAdminGetWebhookEvents, useAdminUpdateWebhook } from '../hooks/webhooks/mutations';
-import { WebhookTestModal } from './webhook-test-modal';
-import { getErrorMessage } from '../utils/error-messages';
+import React, { useState } from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { Button, Switch, Select, Input, toast } from "@medusajs/ui";
+import Modal from "../components/molecules/Modal";
+import { Webhook } from "../../models/webhook";
+import {
+  useAdminCreateWebhook,
+  useAdminGetWebhookEvents,
+  useAdminUpdateWebhook,
+} from "../hooks/webhooks/mutations";
+import { WebhookTestModal } from "./webhook-test-modal";
+import { getErrorMessage } from "../utils/error-messages";
 
 type WebhookModalProps = {
   onClose: () => void;
@@ -20,12 +24,16 @@ interface WebhookForm {
 }
 
 const defaultValues: WebhookForm = {
-  event_type: { label: '', value: '' },
-  target_url: '',
+  event_type: { label: "", value: "" },
+  target_url: "",
   active: true,
 };
 
-export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, webhook }) => {
+export const WebhookModal: React.FC<WebhookModalProps> = ({
+  onClose,
+  onSuccess,
+  webhook,
+}) => {
   const form = useForm<WebhookForm>({
     defaultValues: webhook
       ? {
@@ -33,7 +41,7 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
           event_type: { label: webhook.event_type, value: webhook.event_type },
         }
       : defaultValues,
-    mode: 'onChange',
+    mode: "onChange",
   });
   const { register, handleSubmit, control, formState } = form;
 
@@ -57,12 +65,12 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
     }
 
     const mutation = webhook
-      ? { mutate: updateWebhook.mutate, successMessage: 'Webhook Updated' }
-      : { mutate: createWebhook.mutate, successMessage: 'Webhook Created' };
+      ? { mutate: updateWebhook.mutate, successMessage: "Webhook Updated" }
+      : { mutate: createWebhook.mutate, successMessage: "Webhook Created" };
 
     return mutation.mutate(data, {
       onSuccess: (data: any) => {
-        toast.success('Success', {
+        toast.success("Success", {
           description: mutation.successMessage,
         });
 
@@ -70,7 +78,7 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
         onClose();
       },
       onError: (error: any) => {
-        toast.error('Error', {
+        toast.error("Error", {
           description: getErrorMessage(error),
         });
       },
@@ -89,7 +97,9 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
         <Modal.Body>
           <Modal.Header handleClose={onClose}>
             <div>
-              <h1 className="inter-xlarge-semibold mb-2xsmall">{webhook ? `Edit Webhook` : 'Add Webhook'}</h1>
+              <h1 className="inter-xlarge-semibold mb-2xsmall">
+                {webhook ? `Edit Webhook` : "Add Webhook"}
+              </h1>
             </div>
           </Modal.Header>
           <FormProvider {...form}>
@@ -98,7 +108,10 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
                 <div>
                   <div>
                     <div className="small:grid-cols-[1fr_2fr] mb-4 grid grid-cols-1 gap-2">
-                      <div className="gap-y-2xsmall flex flex-col" style={{ zIndex: 100 }}>
+                      <div
+                        className="gap-y-2xsmall flex flex-col"
+                        style={{ zIndex: 100 }}
+                      >
                         <Controller
                           name="event_type"
                           control={control}
@@ -107,7 +120,9 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
                               <Select
                                 size="small"
                                 value={value.value}
-                                onValueChange={(value) => onChange({ label: value, value })}
+                                onValueChange={(value) =>
+                                  onChange({ label: value, value })
+                                }
                               >
                                 <Select.Trigger>
                                   <Select.Value placeholder="Select an event type" />
@@ -117,7 +132,10 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
                                     <Select.Group key={group.label}>
                                       <Select.Label>{group.label}</Select.Label>
                                       {group.options.map((option) => (
-                                        <Select.Item key={option.value} value={option.value}>
+                                        <Select.Item
+                                          key={option.value}
+                                          value={option.value}
+                                        >
                                           {option.label}
                                         </Select.Item>
                                       ))}
@@ -135,13 +153,13 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
                           placeholder="Target URL"
                           type="url"
                           required
-                          {...register('target_url', {
-                            required: 'Please enter the target url.',
+                          {...register("target_url", {
+                            required: "Please enter the target url.",
                             pattern: {
                               value:
                                 /^https?:\/\/(?:localhost|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}))(?::(\d+))?(\/[\w .-]*)*\/?(\?[=&\w.-]*)?$/,
 
-                              message: 'Please enter a valid URL.',
+                              message: "Please enter a valid URL.",
                             },
                           })}
                         />
@@ -150,12 +168,19 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
 
                     <div className="w-[100px] pb-3">
                       <div className="flex items-center justify-between">
-                        <h3 className="inter-base-semibold mb-2xsmall">Active</h3>
+                        <h3 className="inter-base-semibold mb-2xsmall">
+                          Active
+                        </h3>
                         <Controller
                           control={control}
-                          name={'active'}
+                          name={"active"}
                           render={({ field: { value, onChange } }) => {
-                            return <Switch checked={value} onCheckedChange={onChange} />;
+                            return (
+                              <Switch
+                                checked={value}
+                                onCheckedChange={onChange}
+                              />
+                            );
                           }}
                         />
                       </div>
@@ -165,7 +190,12 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
               </Modal.Content>
               <Modal.Footer>
                 <div className="flex w-full items-center justify-end gap-2">
-                  <Button variant="secondary" size="small" type="button" onClick={onClose}>
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    type="button"
+                    onClick={onClose}
+                  >
                     Cancel
                   </Button>
 
@@ -179,8 +209,12 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
                     Test
                   </Button>
 
-                  <Button variant="primary" size="small" disabled={!formIsValid}>
-                    {webhook ? 'Save and Close' : 'Create Webhook'}
+                  <Button
+                    variant="primary"
+                    size="small"
+                    disabled={!formIsValid}
+                  >
+                    {webhook ? "Save and Close" : "Create Webhook"}
                   </Button>
                 </div>
               </Modal.Footer>
@@ -190,8 +224,8 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({ onClose, onSuccess, 
       </Modal>
       {openTestModal ? (
         <WebhookTestModal
-          event_type={form.getValues('event_type').value}
-          target_url={form.getValues('target_url')}
+          event_type={form.getValues("event_type").value}
+          target_url={form.getValues("target_url")}
           onClose={closeTestModal}
         />
       ) : null}

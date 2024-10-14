@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2019",
+    "target": "ES6",
     "module": "commonjs",
     "allowJs": true,
     "checkJs": false,
@@ -19,5 +19,14 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/"],
-  "exclude": ["dist", "build", ".cache", "tests", "**/*.spec.js", "**/*.spec.ts", "node_modules", ".eslintrc.js"]
+  "exclude": [
+    "dist",
+    "build",
+    ".cache",
+    "tests",
+    "**/*.spec.js",
+    "**/*.spec.ts",
+    "node_modules",
+    ".eslintrc.js"
+  ]
 }

@@ -9,7 +9,7 @@ import { Pencil, Trash } from "@medusajs/icons";
 import StatusIndicator from "../fundamentals/status-indicator";
 
 interface WebhooksTableProps {
-  setRefreshTable: (callback: VoidFunction | null) => void;
+  setRefreshTable: (callback: () => void | null) => void;
   editWebhookModal: (webhook: Webhook) => void;
   deleteWebooksModal: (webhook: Webhook) => void;
 }

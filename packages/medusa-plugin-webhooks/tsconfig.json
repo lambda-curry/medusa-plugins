@@ -1,32 +1,30 @@
 {
+  "ts-node": {
+    "files": true
+  },
   "compilerOptions": {
-    "target": "ES6",
-    "module": "commonjs",
-    "allowJs": true,
+    "lib": ["es5", "es6", "es2019"],
+    "module": "CommonJS",
     "checkJs": false,
-    "jsx": "react-jsx",
     "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "noEmit": false,
-    "strict": false,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitThis": true,
     "moduleResolution": "node",
+    "target": "es2019",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "jsx": "react-jsx",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "noEmit": false
   },
-  "include": ["src/"],
-  "exclude": [
-    "dist",
-    "build",
-    ".cache",
-    "tests",
-    "**/*.spec.js",
-    "**/*.spec.ts",
-    "node_modules",
-    ".eslintrc.js"
-  ]
+  "include": ["./src/**/*", "medusa-config.js"],
+  "exclude": ["dist", "node_modules", "**/*.spec.ts"]
 }

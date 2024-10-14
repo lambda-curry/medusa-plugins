@@ -1,7 +1,7 @@
 {
   "name": "@lambdacurry/medusa-plugin-webhooks",
   "description": "Medusa Markethaus Webhooks",
-  "version": "1.0.4-rc.1",
+  "version": "1.0.30-rc.1",
   "files": [
     "dist"
   ],
@@ -10,7 +10,8 @@
     "dev": "tsc-watch --build --watch --verbose --force --onSuccess \"yarn prepare\"",
     "watch": "tsc --build --watch & yarn prepare",
     "build:server": "cross-env tsc -p tsconfig.server.json",
-    "build:admin": "cross-env tsc -p tsconfig.admin.json"
+    "build:admin": "cross-env tsc -p tsconfig.admin.json",
+    "publish-to-npm": "npm run build && npm publish --access public"
   },
   "dependencies": {
     "@medusajs/admin": "7.1.16",
@@ -22,7 +23,6 @@
     "typescript": "5.5.4",
     "util": "^0.12.5"
   },
-  "type": "module",
   "browser": {
     "util": false
   },

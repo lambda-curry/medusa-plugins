@@ -29,8 +29,7 @@
     "dev": "medusa plugin:develop",
     "dev:publish": "medusa plugin:publish",
     "prepublishOnly": "medusa plugin:build",
-    "db:generate": "medusa plugin:db:generate",
-    "db:generate2": "MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME=.snapshot medusa plugin:db:generate"
+    "db:generate": "DB_USERNAME=${DB_USERNAME:-postgres} DB_PASSWORD=${DB_PASSWORD:-postgres} medusa plugin:db:generate"
   },
   "devDependencies": {
     "@medusajs/admin-sdk": "2.4.0",

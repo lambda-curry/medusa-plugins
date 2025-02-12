@@ -14,6 +14,8 @@ A plugin that adds product review capabilities to your Medusa commerce applicati
 - [Medusa >=2.3.0 backend](https://docs.medusajs.com/development/backend/install)
 - [PostgreSQL](https://docs.medusajs.com/development/backend/prepare-environment#postgresql)
 
+> **IMPORTANT**: A running PostgreSQL instance is required. The plugin expects `DB_USERNAME` and `DB_PASSWORD` environment variables to be set. If not provided, both default to "postgres".
+
 ## Installation
 
 ```bash
@@ -50,6 +52,25 @@ The plugin adds the following endpoints:
 - `GET /store/product-reviews` - Get product reviews
 - `POST /store/product-reviews` - Create or update a product reviews
 - `GET /store/product-review-stats` - Get review statistics
+
+## Local Development
+
+> **IMPORTANT**: A running PostgreSQL instance is required. The plugin expects `DB_USERNAME` and `DB_PASSWORD` environment variables to be set. If not provided, both default to "postgres".
+
+Available scripts:
+```bash
+# Build the plugin
+yarn build
+
+# Development mode with hot-reload
+yarn dev
+
+# Publish to local registry for testing
+yarn dev:publish
+
+# Generate database migrations
+yarn db:generate
+```
 
 ## Compatibility
 

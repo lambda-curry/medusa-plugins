@@ -1,5 +1,5 @@
-import { AdminProductReview } from '@markethaus/types';
-import { Button, Container, Drawer, Text } from '@medusajs/ui';
+import { AdminProductReview } from '../../sdk/types';
+import { Button, Drawer, Text } from '@medusajs/ui';
 import { DateTime } from 'luxon';
 import { Link } from 'react-router-dom';
 import { ReviewStars } from '../atoms/review-stars';
@@ -19,7 +19,11 @@ export const ProductReviewDetailsDrawer = ({
   const ProductValue = () => (
     <div className="flex items-center gap-4">
       {review.product.thumbnail ? (
-        <img className="h-12 w-12 flex-shrink-0 rounded-md" src={review.product.thumbnail} alt={review.product.title} />
+        <img
+          className="h-12 w-12 flex-shrink-0 rounded-md"
+          src={review.product.thumbnail}
+          alt={review.product.title}
+        />
       ) : (
         <div className="h-12 w-12 flex-shrink-0 rounded-md bg-gray-200" />
       )}
@@ -36,9 +40,7 @@ export const ProductReviewDetailsDrawer = ({
   );
 
   const StatusValue = () => (
-    <Text className="text-ui-fg-subtle text-sm">
-      {review.status}
-    </Text>
+    <Text className="text-ui-fg-subtle text-sm">{review.status}</Text>
   );
 
   const CreatedAtValue = () => (
@@ -62,7 +64,11 @@ export const ProductReviewDetailsDrawer = ({
   const ImagesValue = () => (
     <div className="grid grid-cols-3 gap-2">
       {review.images.map((image, index) => (
-        <img src={image.url} alt={`Review image ${index + 1}`} className="w-full h-full object-cover" />
+        <img
+          src={image.url}
+          alt={`Review image ${index + 1}`}
+          className="w-full h-full object-cover"
+        />
       ))}
     </div>
   );
@@ -86,15 +92,31 @@ export const ProductReviewDetailsDrawer = ({
           <SectionRow title="Created At" value={<CreatedAtValue />} />
           <SectionRow title="Product" value={<ProductValue />} />
           <SectionRow title="Order" value={<OrderValue />} />
-          <SectionRow title="Rating" value={<ReviewStars rating={review.rating} />} />
+          <SectionRow
+            title="Rating"
+            value={<ReviewStars rating={review.rating} />}
+          />
           <SectionRow title="Review" value={<ReviewContent />} />
-          {review.images.length > 0 && <SectionRow title="Images" value={<ImagesValue />} />}
+          {review.images.length > 0 && (
+            <SectionRow title="Images" value={<ImagesValue />} />
+          )}
 
-          <SectionRow title="Response" value={review.response ? <ResponseValue /> : <Text>No response</Text>} />
+          <SectionRow
+            title="Response"
+            value={
+              review.response ? <ResponseValue /> : <Text>No response</Text>
+            }
+          />
           {!!review.response?.created_at && (
             <SectionRow
               title="Responded At"
-              value={<Text>{DateTime.fromISO(review.response.created_at).toFormat('LLL dd yyyy hh:mm a')}</Text>}
+              value={
+                <Text>
+                  {DateTime.fromISO(review.response.created_at).toFormat(
+                    'LLL dd yyyy hh:mm a'
+                  )}
+                </Text>
+              }
             />
           )}
         </Drawer.Body>

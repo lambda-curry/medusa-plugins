@@ -1,8 +1,8 @@
 import { transform } from '@medusajs/framework/workflows-sdk';
 import { createRemoteLinkStep, emitEventStep } from '@medusajs/medusa/core-flows';
 import { type WorkflowData, WorkflowResponse, createWorkflow } from '@medusajs/workflows-sdk';
-import type { CreateProductReviewsWorkflowInput } from '../../../modules/product-review/types/mutations';
-import { createProductReviewsStep } from '../steps/create-product-reviews';
+import type { CreateProductReviewsWorkflowInput } from '../modules/product-review/types/mutations';
+import { createProductReviewsStep } from './steps/create-product-reviews';
 import { Modules } from '@medusajs/framework/utils';
 import { refreshProductReviewStatsWorkflow } from './refresh-product-review-stats';
 import { PRODUCT_REVIEW_MODULE } from 'src/modules/product-review';

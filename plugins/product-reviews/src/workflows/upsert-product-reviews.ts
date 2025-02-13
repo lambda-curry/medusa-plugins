@@ -5,7 +5,7 @@ import { WorkflowData, WorkflowResponse, createWorkflow, when } from '@medusajs/
 import { createProductReviewsWorkflow } from './create-product-reviews';
 import { updateProductReviewsWorkflow } from './update-product-reviews';
 import { OrderLineItemDTO, OrderWorkflowDTO } from '@medusajs/types';
-import { ProductReview } from '../../../modules/product-review/types/common';
+import { ProductReview } from '../modules/product-review/types/common';
 
 export type UpsertProductReviewsWorkflowInput = {
   reviews: {

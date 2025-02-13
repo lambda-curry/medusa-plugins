@@ -1,6 +1,6 @@
 import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
-import ProductReviewService from '../../../modules/product-review/service';
-import { PRODUCT_REVIEW_MODULE } from '../../../modules/product-review';
+import ProductReviewService from '../../modules/product-review/service';
+import { PRODUCT_REVIEW_MODULE } from '../../modules/product-review';
 
 export const recalculateProductReviewStatsStepId = 'recalculate-product-review-stats';
 

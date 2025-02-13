@@ -1,7 +1,7 @@
 import { StepResponse, createStep } from '@medusajs/workflows-sdk';
-import { PRODUCT_REVIEW_MODULE } from '../../../modules/product-review';
-import type ProductReviewResponseService from '../../../modules/product-review/service';
-import { ProductReviewResponse } from 'src/modules/product-review/types/common';
+import { PRODUCT_REVIEW_MODULE } from '../../modules/product-review';
+import type ProductReviewResponseService from '../../modules/product-review/service';
+import { ProductReviewResponse } from '../../modules/product-review/types/common';
 
 export const deleteProductReviewResponseStepId = 'delete-product-review-response-step';
 

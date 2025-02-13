@@ -1,6 +1,6 @@
 import type { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework';
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils';
-import { upsertProductReviewsWorkflow } from '../../../workflows/product-reviews/workflows/upsert-product-reviews';
+import { upsertProductReviewsWorkflow } from '../../../workflows/upsert-product-reviews';
 import { defaultStoreProductReviewFields, UpsertProductReviewsSchema } from './middlewares';
 
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {

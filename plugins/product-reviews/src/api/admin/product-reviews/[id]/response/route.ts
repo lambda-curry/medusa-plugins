@@ -1,9 +1,9 @@
 import type { AuthenticatedMedusaRequest, MedusaContainer, MedusaResponse } from '@medusajs/framework';
 import { MedusaError, remoteQueryObjectFromString } from '@medusajs/framework/utils';
-import { createProductReviewResponsesWorkflow } from '../../../../../workflows/product-reviews/workflows/create-product-review-responses';
+import { createProductReviewResponsesWorkflow } from '../../../../../workflows/create-product-review-responses';
 import type { CreateProductReviewResponseDTO } from './middlewares';
-import { updateProductReviewResponsesWorkflow } from '../../../../../workflows/product-reviews/workflows/update-product-review-responses';
-import { deleteProductReviewResponsesWorkflow } from '../../../../../workflows/product-reviews/workflows/delete-product-review-responses';
+import { updateProductReviewResponsesWorkflow } from '../../../../../workflows/update-product-review-responses';
+import { deleteProductReviewResponsesWorkflow } from '../../../../../workflows/delete-product-review-responses';
 import { ProductReview, ProductReviewResponse } from 'src/modules/product-review/types';
 
 export const fetchReviewResponse = async (

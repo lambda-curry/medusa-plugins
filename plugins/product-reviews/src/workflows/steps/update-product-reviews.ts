@@ -1,8 +1,8 @@
 import { StepResponse, createStep } from '@medusajs/workflows-sdk';
-import { ProductReview } from 'src/modules/product-review/types/common';
-import { PRODUCT_REVIEW_MODULE } from '../../../modules/product-review';
-import type ProductReviewService from '../../../modules/product-review/service';
-import type { UpdateProductReviewInput } from '../../../modules/product-review/types/mutations';
+import { ProductReview } from '../../modules/product-review/types/common';
+import { PRODUCT_REVIEW_MODULE } from '../../modules/product-review';
+import type ProductReviewService from '../../modules/product-review/service';
+import type { UpdateProductReviewInput } from '../../modules/product-review/types/mutations';
 
 export const updateProductReviewsStepId = 'update-product-reviews-step';
 

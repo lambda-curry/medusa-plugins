@@ -1,6 +1,6 @@
 import type { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework';
 import type { UpdateProductReviewStatusSchema } from './middlewares';
-import { updateProductReviewsWorkflow } from '../../../../../workflows/product-reviews/workflows/update-product-reviews';
+import { updateProductReviewsWorkflow } from '../../../../../workflows/update-product-reviews';
 
 export const PUT = async (
   req: AuthenticatedMedusaRequest<UpdateProductReviewStatusSchema>,

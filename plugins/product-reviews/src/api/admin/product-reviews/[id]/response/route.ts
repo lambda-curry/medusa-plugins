@@ -4,7 +4,7 @@ import { createProductReviewResponsesWorkflow } from '../../../../../workflows/c
 import type { CreateProductReviewResponseDTO } from './middlewares';
 import { updateProductReviewResponsesWorkflow } from '../../../../../workflows/update-product-review-responses';
 import { deleteProductReviewResponsesWorkflow } from '../../../../../workflows/delete-product-review-responses';
-import { ProductReview, ProductReviewResponse } from 'src/modules/product-review/types';
+import { ProductReview, ProductReviewResponse } from '../../../../../modules/product-review/types';
 
 export const fetchReviewResponse = async (
   container: MedusaContainer,

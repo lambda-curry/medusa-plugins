@@ -5,7 +5,7 @@ import type { CreateProductReviewsWorkflowInput } from '../modules/product-revie
 import { createProductReviewsStep } from './steps/create-product-reviews';
 import { Modules } from '@medusajs/framework/utils';
 import { refreshProductReviewStatsWorkflow } from './refresh-product-review-stats';
-import { PRODUCT_REVIEW_MODULE } from 'src/modules/product-review';
+import { PRODUCT_REVIEW_MODULE } from '../../src/modules/product-review';
 
 export const createProductReviewsWorkflow = createWorkflow(
   'create-product-reviews-workflow',

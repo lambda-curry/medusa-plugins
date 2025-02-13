@@ -1,7 +1,7 @@
 {
   "name": "@lambdacurry/medusa-plugin-event-bus-dashboard",
   "description": "A Medusa plugin that sets up Bull Board UI based on event-bus-redis settings",
-  "version": "0.1.4",
+  "version": "0.2.2",
   "files": [
     "dist"
   ],
@@ -16,8 +16,8 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@bull-board/express": "^5.15.5",
-    "@bull-board/ui": "^5.15.5",
+    "@bull-board/express": "^6.6.1",
+    "@bull-board/ui": "^6.6.1",
     "@medusajs/medusa": "^1.17.2"
   }
 }

@@ -8,7 +8,15 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { authenticate } from '@medusajs/medusa';
 
 export interface IOptions {
-  eventBusRedisOptions: {
+  eventBusRedisOptions?: {
+    redisUrl: string;
+    redisOptions?: any;
+    queueName?: string;
+    queueOptions?: {
+      prefix?: string;
+    };
+  };
+  jobSchedulerOptions?: {
     redisUrl: string;
     redisOptions?: any;
     queueName?: string;
@@ -17,20 +25,13 @@ export interface IOptions {
     };
   };
   basePath?: string;
+  reverseProxyPrefix?: string;
 }
 
-export default function (rootDirectory: string, options: IOptions) {
-  const router = Router();
-
-  router.use(bodyParser.json());
-
-  const eventBusOptions = options.eventBusRedisOptions;
-
-  const basePath = options.basePath ?? '/queue-ui';
-
-  const serverAdapter = new ExpressAdapter();
-
-  serverAdapter.setBasePath(basePath);
+const eventBusQueue = (eventBusOptions: IOptions['eventBusRedisOptions']) => {
+  if (!eventBusOptions) {
+    return undefined;
+  }
 
   const connection = new Redis(eventBusOptions.redisUrl, {
     maxRetriesPerRequest: null,
@@ -50,12 +51,63 @@ export default function (rootDirectory: string, options: IOptions) {
     queueConfig
   );
 
+  return queue;
+};
+
+export const jobSchedulerQueue = (
+  jobSchedulerOptions?: IOptions['jobSchedulerOptions']
+) => {
+  if (!jobSchedulerOptions) {
+    return undefined;
+  }
+
+  const connection = new Redis(jobSchedulerOptions.redisUrl, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    lazyConnect: true,
+    ...(jobSchedulerOptions?.redisOptions ?? {}),
+  });
+
+  const queueConfig = {
+    prefix: 'JobSchedulerService',
+    ...(jobSchedulerOptions.queueOptions ?? {}),
+    connection,
+  };
+
+  const queue = new Queue(
+    jobSchedulerOptions.queueName ?? `scheduled-jobs:queue`,
+    queueConfig
+  );
+
+  return queue;
+};
+
+export default function (rootDirectory: string, options: IOptions) {
+  const router = Router();
+
+  router.use(bodyParser.json());
+
+  const reverseProxyPrefix =
+    options.reverseProxyPrefix?.replace(/\/$/, '') || '';
+
+  const basePath = options.basePath ?? '/queue-ui';
+
+  const serverAdapter = new ExpressAdapter();
+
+  serverAdapter.setBasePath(`${reverseProxyPrefix}${basePath}`);
+  const queues = [
+    eventBusQueue(options.eventBusRedisOptions),
+    jobSchedulerQueue(options.jobSchedulerOptions),
+  ]
+    .filter(q => !!q)
+    .map(q => new BullMQAdapter(q));
+
   createBullBoard({
-    queues: [new BullMQAdapter(queue)],
+    queues,
     serverAdapter,
     options: {
       uiConfig: {
-        boardTitle: 'Events Dash',
+        boardTitle: 'BullMQ Dashboard',
         boardLogo: {
           path: 'https://user-images.githubusercontent.com/7554214/153162406-bf8fd16f-aa98-4604-b87b-e13ab4baf604.png',
           width: 'auto',

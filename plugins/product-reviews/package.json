@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-product-reviews",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Product Reviews Plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -37,7 +37,6 @@
     "@medusajs/icons": "2.5.0",
     "@medusajs/medusa": "2.5.0",
     "@medusajs/test-utils": "2.5.0",
-    "@medusajs/ui": "4.0.5",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/knex": "6.4.3",
@@ -83,6 +82,7 @@
     "hoistingLimits": "workspaces"
   },
   "dependencies": {
+    "@medusajs/js-sdk": "^2.5.0",
     "@medusajs/workflows-sdk": "^2.5.0",
     "luxon": "^3.5.0"
   }

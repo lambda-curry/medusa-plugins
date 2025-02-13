@@ -1688,9 +1688,9 @@ __metadata:
     "@medusajs/cli": "npm:2.5.0"
     "@medusajs/framework": "npm:2.5.0"
     "@medusajs/icons": "npm:2.5.0"
+    "@medusajs/js-sdk": "npm:^2.5.0"
     "@medusajs/medusa": "npm:2.5.0"
     "@medusajs/test-utils": "npm:2.5.0"
-    "@medusajs/ui": "npm:4.0.5"
     "@medusajs/workflows-sdk": "npm:^2.5.0"
     "@mikro-orm/cli": "npm:6.4.3"
     "@mikro-orm/core": "npm:6.4.3"
@@ -2577,7 +2577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/ui@npm:4.0.5, @medusajs/ui@npm:~4.0.5":
+"@medusajs/ui@npm:~4.0.5":
   version: 4.0.5
   resolution: "@medusajs/ui@npm:4.0.5"
   dependencies:

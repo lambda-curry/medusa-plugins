@@ -1684,13 +1684,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lambdacurry/medusa-product-reviews@workspace:plugins/product-reviews"
   dependencies:
-    "@medusajs/admin-sdk": "npm:2.4.0"
-    "@medusajs/cli": "npm:2.4.0"
-    "@medusajs/framework": "npm:2.4.0"
-    "@medusajs/icons": "npm:2.4.0"
-    "@medusajs/medusa": "npm:2.4.0"
-    "@medusajs/test-utils": "npm:2.4.0"
-    "@medusajs/ui": "npm:4.0.4"
+    "@medusajs/admin-sdk": "npm:2.5.0"
+    "@medusajs/cli": "npm:2.5.0"
+    "@medusajs/framework": "npm:2.5.0"
+    "@medusajs/icons": "npm:2.5.0"
+    "@medusajs/medusa": "npm:2.5.0"
+    "@medusajs/test-utils": "npm:2.5.0"
+    "@medusajs/ui": "npm:4.0.5"
     "@medusajs/workflows-sdk": "npm:^2.5.0"
     "@mikro-orm/cli": "npm:6.4.3"
     "@mikro-orm/core": "npm:6.4.3"
@@ -1715,12 +1715,12 @@ __metadata:
     vite: "npm:^5.2.11"
     yalc: "npm:^1.0.0-pre.53"
   peerDependencies:
-    "@medusajs/admin-sdk": 2.4.0
-    "@medusajs/cli": 2.4.0
-    "@medusajs/framework": 2.4.0
-    "@medusajs/icons": 2.4.0
-    "@medusajs/medusa": 2.4.0
-    "@medusajs/test-utils": 2.4.0
+    "@medusajs/admin-sdk": 2.5.0
+    "@medusajs/cli": 2.5.0
+    "@medusajs/framework": 2.5.0
+    "@medusajs/icons": 2.5.0
+    "@medusajs/medusa": 2.5.0
+    "@medusajs/test-utils": 2.5.0
     "@medusajs/ui": 4.0.3
     "@mikro-orm/cli": 6.4.3
     "@mikro-orm/core": 6.4.3
@@ -1732,54 +1732,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@medusajs/admin-bundler@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/admin-bundler@npm:2.4.0"
+"@medusajs/admin-bundler@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/admin-bundler@npm:2.5.0"
   dependencies:
-    "@medusajs/admin-shared": "npm:2.4.0"
-    "@medusajs/admin-vite-plugin": "npm:2.4.0"
-    "@medusajs/dashboard": "npm:2.4.0"
+    "@medusajs/admin-shared": "npm:2.5.0"
+    "@medusajs/admin-vite-plugin": "npm:2.5.0"
+    "@medusajs/dashboard": "npm:2.5.0"
     "@rollup/plugin-node-resolve": "npm:^16.0.0"
     "@vitejs/plugin-react": "npm:^4.2.1"
     autoprefixer: "npm:^10.4.16"
     compression: "npm:^1.7.4"
+    express: "npm:^4.21.0"
+    get-port: "npm:^5.1.1"
     glob: "npm:^10.3.10"
     postcss: "npm:^8.4.32"
     tailwindcss: "npm:^3.3.6"
     vite: "npm:^5.2.11"
   peerDependencies:
-    express: ^4.21.0
     react-dom: ^18.0.0
-  checksum: 10c0/130add0ae73a619b9cd744103546b102305b9f8218648eb72637740b66693de09f2d2f12cc9ec256202dd79966bc61393f2010ed0326bf590bf0a6036c23f461
+  checksum: 10c0/bced56b6558cd889efd565c6be7a9ee14f19ede86a66c69ec2ebaf78edece19607a9b53a569554907244ac28ba8afe49a337b185d70f83f4d4e530d9d68fd9d6
   languageName: node
   linkType: hard
 
-"@medusajs/admin-sdk@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/admin-sdk@npm:2.4.0"
+"@medusajs/admin-sdk@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/admin-sdk@npm:2.5.0"
   dependencies:
-    "@medusajs/admin-shared": "npm:~2.4.0"
-  peerDependencies:
-    zod: ^3.22
-  checksum: 10c0/fde7fe643c7f790d600d148101c54a25d2df9def7af3c225e60195badace72f9076beddb36070fe020213e5a34992733b0428dfd308df6ce71fdd8be7f637ea3
+    "@medusajs/admin-shared": "npm:^2.5.0"
+    zod: "npm:^3.22"
+  checksum: 10c0/ca673d172bfb0cd05e5a2279a9c687680805c1f00f2f3c62dc0899b18a90c6d2ddba82232c7a67155e8df51a93137906753e7c237816c7a8b61559afbc1fd888
   languageName: node
   linkType: hard
 
-"@medusajs/admin-shared@npm:2.4.0, @medusajs/admin-shared@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/admin-shared@npm:2.4.0"
-  checksum: 10c0/c4b861711b6d35e65e37eee29ecea09ac1e471e10dfea1d707160887a7726d9e5412358b49e07dfd47eeb2dad4b20c41d186c7e449e7c21f7226e733a3553a81
+"@medusajs/admin-shared@npm:2.5.0, @medusajs/admin-shared@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/admin-shared@npm:2.5.0"
+  checksum: 10c0/af3b768f08c847c185d8a954a1482d2590aae18219a00a4994f00fe57abf704b736943713650e29cf9b335d4e2d47eb5c26ab95b2c026c218a88ecc3f339a11b
   languageName: node
   linkType: hard
 
-"@medusajs/admin-vite-plugin@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/admin-vite-plugin@npm:2.4.0"
+"@medusajs/admin-vite-plugin@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/admin-vite-plugin@npm:2.5.0"
   dependencies:
     "@babel/parser": "npm:7.25.6"
     "@babel/traverse": "npm:7.25.6"
     "@babel/types": "npm:7.25.6"
-    "@medusajs/admin-shared": "npm:2.4.0"
+    "@medusajs/admin-shared": "npm:2.5.0"
     chokidar: "npm:3.5.3"
     fdir: "npm:6.1.1"
     magic-string: "npm:0.30.5"
@@ -1787,107 +1787,107 @@ __metadata:
     picocolors: "npm:^1.1.0"
   peerDependencies:
     vite: ^5.0.0
-  checksum: 10c0/07361caf45ddfa4e704e762133a1385f0717e009fd375e53defbe1d90e331028d9c834dfe74ae65642d82116b0be2176479a678ec2486846dbbf3fe3d5474487
+  checksum: 10c0/3e08bc447f679ad13f68d7d1412289eb2d61aa7fea3e3a5e02526be24379c9717cd67dab540f4afa4e4a8b0be6b1b2b5840026fd58ead4161f614871f57396bd
   languageName: node
   linkType: hard
 
-"@medusajs/api-key@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/api-key@npm:2.4.0"
+"@medusajs/api-key@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/api-key@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/d552d71220abb3c371245d2713bcd6d287ea65b0a90dce3c8978d475413a8e4fc68924d5c4750fc6c0bbadd18961e1da966c70885c11c3e633ab7275030e40bf
+  checksum: 10c0/b34780e99641824605bc12d51464144d7df31af632dc89078f6bec306dc6ae20d96692c554a872fb22d86cfe9104d95b70281cada83688d5c5276144ee485988
   languageName: node
   linkType: hard
 
-"@medusajs/auth-emailpass@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/auth-emailpass@npm:2.4.0"
+"@medusajs/auth-emailpass@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/auth-emailpass@npm:2.5.0"
   dependencies:
     scrypt-kdf: "npm:^2.0.1"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/5952e0a71afa84955bf84211309c751eee133b2fe01adbc732869c9ba20e918e1c5d5730981b72ff9cbed5b09edc16edd347178a2d224f34ce52f139268ac545
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/e7d0b4aee7441a0dd66043392b59353b480fc465c1646b831451bed60714d38ded000217738616bf734d6a7dc569f5797f4bdd06ed9d5a5ba40020681d3a106e
   languageName: node
   linkType: hard
 
-"@medusajs/auth-github@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/auth-github@npm:2.4.0"
+"@medusajs/auth-github@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/auth-github@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/d79e3e3749ff857ed4a692f05a0d3c599377af4b809a022033f72658f85ed40640e222b82a97d081bb7123d9299b3e15d1e707279b5e8c7139060b3745ab400c
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/b47264a403be5c946fdae7a3c19367bf03f4008c1f6a00aa1d24a2ba508c329e56fac1397d2553ba6ea6ae6aa8a5d094478a5082a50703fc7d70f3a847bf7a23
   languageName: node
   linkType: hard
 
-"@medusajs/auth-google@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/auth-google@npm:2.4.0"
+"@medusajs/auth-google@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/auth-google@npm:2.5.0"
   dependencies:
     jsonwebtoken: "npm:^9.0.2"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/9f27cfbd43a79cc3fe1bca5e2f0fdcae20e0885d0e7d78cd0506a27354e0eef429110a5173793529a858035721c42a6644b29725e51720323c45904cf6fe2d96
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/d2754447b07d4947251c2b80deb2430d447d9e71a698e30e7c902f95b6aa4268d41d137e30e825d7894cc59633cbd181766ab7745192ae69e6c72e26275b1061
   languageName: node
   linkType: hard
 
-"@medusajs/auth@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/auth@npm:2.4.0"
+"@medusajs/auth@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/auth@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/839486e7264ffd7f491d2e2e8804122654dd86f7eb79b96eb0e355fb16f1d2131459e3d36a6f33ced6eb8c8d0468c9bf0ccacf59dd0a70923e7b9a9ecc333fb0
+  checksum: 10c0/7abceb619f0d9fc91bf3a9d52825d272095f4e1fa198ad9f853e24f5e525a835a1754fa76296b56cc7b93d18b47e10b73b29426e52bed434e2d6102c55355c0b
   languageName: node
   linkType: hard
 
-"@medusajs/cache-inmemory@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/cache-inmemory@npm:2.4.0"
+"@medusajs/cache-inmemory@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/cache-inmemory@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/51e209c3c7d9ede0cdc9ea7debc44fd507fd429b42ef3ad7f67e0a7a264ebece8ed2e2092a8729180ede7618933029517c85be098b4ea273a157a9ea7af71627
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/6e630d2f50d40121233f75c45099ca860bd37c88196ee435b7d08bdddfe5cad02571ec527ce91ba3e7a47f74d350bba20750bdd0d087417b384a50cfa9549803
   languageName: node
   linkType: hard
 
-"@medusajs/cache-redis@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/cache-redis@npm:2.4.0"
+"@medusajs/cache-redis@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/cache-redis@npm:2.5.0"
   dependencies:
     ioredis: "npm:^5.4.1"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     awilix: ^8.0.1
-  checksum: 10c0/136f5ef3e1064922d25e037523c6393dd7330072d82d8032e85a008e880b9c65ac310ca252bd1fc7d270e956b1dea4d271079b1acf8c53a175fb14eb46c46da7
+  checksum: 10c0/cadef98b856adf879532d22f4707ad4a4e8edc5029d3982ef718ca7220dbea416361ee913bdbe7b5b45baef932ae5f6760afef6b00c9a11fa25069cf8bf52f91
   languageName: node
   linkType: hard
 
-"@medusajs/cart@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/cart@npm:2.4.0"
+"@medusajs/cart@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/cart@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/d0d0cfb393a0e37635f358bae46db90fd5b58320af54e52e5086a7db587f615a9d8c9f96689678a3dabdda311a22c7d406c530a072d9f0a19b7714d24ceb4c4f
+  checksum: 10c0/a9b63d5f8a8ac417d3c6bd46e19ad0ec45d03a285022b91e88c54b55af72788f468c11753000218d1bf9b4540c2f6900989475c03c53db5da75fd13c61263c17
   languageName: node
   linkType: hard
 
-"@medusajs/cli@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/cli@npm:2.4.0"
+"@medusajs/cli@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/cli@npm:2.5.0"
   dependencies:
-    "@medusajs/telemetry": "npm:~2.4.0"
-    "@medusajs/utils": "npm:2.4.0"
+    "@medusajs/telemetry": "npm:^2.5.0"
+    "@medusajs/utils": "npm:2.5.0"
     "@types/express": "npm:^4.17.17"
     chalk: "npm:^4.0.0"
     configstore: "npm:5.0.1"
@@ -1919,62 +1919,61 @@ __metadata:
     pg: ^8.13.0
   bin:
     medusa: cli.js
-  checksum: 10c0/57eb6b8a6a92e40da6cc1796961291c466c2d4ec416ef77a3e5e4964eb4848ddd133fd34dae586c7f34c0e1202cfdcc6b706a6d38fe4503ce08f0d805c95da71
+  checksum: 10c0/6a8907980c23af1ed9c32237c3e042e82371bc20c827dccab1fd08e9bed83812175895fe06edc56f22f38faaebc55ef5bf0c2a4afc5e46c048ed2ea09e31770e
   languageName: node
   linkType: hard
 
-"@medusajs/core-flows@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/core-flows@npm:2.4.0"
+"@medusajs/core-flows@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/core-flows@npm:2.5.0"
   dependencies:
     json-2-csv: "npm:^5.5.4"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     awilix: ^8.0.1
-  checksum: 10c0/b562b72fd0f10c186f00e7e3c7d0a90040a3b7faa67a6c294f1791e2d5ed5f2dd347f6107c7c6312dcd39e6cabdc58cb2a7427f52fb57872419d0281aa0cd589
+  checksum: 10c0/00d26957abc63676badbabfd2a165f0b48910d95fc0b3503ad833f70dcde04c011a7e864719353dd2aa0197aa8cfc2b6cc86db5c41de7729b81eade5796cfb9b
   languageName: node
   linkType: hard
 
-"@medusajs/currency@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/currency@npm:2.4.0"
+"@medusajs/currency@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/currency@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/2f53337c468a0d54b145b717ac0009259c702c9e4b4800f9bfe105d616e53079af0c7b9fce5f91380c0a6c93900d5a7b4942a05f64f677eeea0eb858e081df55
+  checksum: 10c0/90fa20077c6fc7a060a72d2353b9d4f38a10de4be711c9e5ef2033a1ea072eab765978e2a81ccd9a91e656a5fad488f3d050d40ab8f57f7c026091b41b5ea5e1
   languageName: node
   linkType: hard
 
-"@medusajs/customer@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/customer@npm:2.4.0"
+"@medusajs/customer@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/customer@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/2ea91319090b7d8c5d9320d46960713872fd163c152316ce717906be58070476b3f30ce6e2201c81dfef9e08e102a17f798bfbcd9e9c2fe04cd9dfec0b28c082
+  checksum: 10c0/20dc20987a1d42c794dc1f59c1717cb1741f463223231b8176d013c148104064b5c4c9633f3892db18c15294a6bd568a0ba238d00a447359cc1d4ce958a7f004
   languageName: node
   linkType: hard
 
-"@medusajs/dashboard@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/dashboard@npm:2.4.0"
+"@medusajs/dashboard@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/dashboard@npm:2.5.0"
   dependencies:
     "@ariakit/react": "npm:^0.4.15"
     "@dnd-kit/core": "npm:^6.1.0"
     "@dnd-kit/sortable": "npm:^8.0.0"
     "@hookform/error-message": "npm:^2.0.1"
     "@hookform/resolvers": "npm:3.4.2"
-    "@medusajs/admin-shared": "npm:2.4.0"
-    "@medusajs/icons": "npm:2.4.0"
-    "@medusajs/js-sdk": "npm:2.4.0"
-    "@medusajs/ui": "npm:4.0.4"
-    "@radix-ui/react-collapsible": "npm:1.1.0"
+    "@medusajs/admin-shared": "npm:^2.5.0"
+    "@medusajs/icons": "npm:^2.5.0"
+    "@medusajs/js-sdk": "npm:^2.5.0"
+    "@medusajs/ui": "npm:~4.0.5"
     "@tanstack/react-query": "npm:5.64.2"
     "@tanstack/react-table": "npm:8.20.5"
     "@tanstack/react-virtual": "npm:^3.8.3"
@@ -1988,6 +1987,7 @@ __metadata:
     match-sorter: "npm:^6.3.4"
     motion: "npm:^11.15.0"
     qs: "npm:^6.12.0"
+    radix-ui: "npm:1.1.2"
     react: "npm:^18.2.0"
     react-country-flag: "npm:^3.1.0"
     react-currency-input-field: "npm:^3.6.11"
@@ -1998,77 +1998,77 @@ __metadata:
     react-jwt: "npm:^1.2.0"
     react-router-dom: "npm:6.20.1"
     zod: "npm:3.22.4"
-  checksum: 10c0/56abca49be100faee9512dc8ad8a5f7e7ef33580ef2617ce6a77409c4970e4a7bced5898b1ff8d8c4600d031bd2b24697e5034cc6241bc24f718078edb6605aa
+  checksum: 10c0/ebd7564612384354826ee2d354b2772a31d91dfb64a34ed122cb55dd982714e077918da42bbd4c22ef62e7ae65511df53e5a49d727503b86c8e2301bdf8261ea
   languageName: node
   linkType: hard
 
-"@medusajs/event-bus-local@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/event-bus-local@npm:2.4.0"
+"@medusajs/event-bus-local@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/event-bus-local@npm:2.5.0"
   dependencies:
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/188c6edea7f789a2156c78489d0e722398fc2e6131916a3efe57c12b4504238759bdd526203003d56176501344f01aa357686d6c030605cc5ce45083e62ec1fa
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/05597633772860625a7c066ed5c96a5261735de1705c2369ab374a5907802a514933ec3c05e33a547883f0b72a3b9d7344f056ec92c27a328d47329fa5c13cc4
   languageName: node
   linkType: hard
 
-"@medusajs/event-bus-redis@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/event-bus-redis@npm:2.4.0"
+"@medusajs/event-bus-redis@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/event-bus-redis@npm:2.5.0"
   dependencies:
     bullmq: "npm:5.13.0"
     ioredis: "npm:^5.4.1"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     awilix: ^8.0.1
-  checksum: 10c0/86cde33d6e5cb48dacedab7799d66eecf87f19983785f36c5e7ec0d53a8d3d89a4ef4202d2261171ff9050674b57a26e8580048781b6b5f007ccaad5818aa382
+  checksum: 10c0/cf6ef94a8a7037db8748c439efe9cd656b57d11792a5288765b408772aa97e52a3d0bed6953cfe432de03f997a2c9e627cd594ac92510488121a9e330ddb5ac4
   languageName: node
   linkType: hard
 
-"@medusajs/file-local@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/file-local@npm:2.4.0"
+"@medusajs/file-local@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/file-local@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/5c8a7f539cb1d03aaec2aa5b1d44eea11fccba8a2f65b71c7a9477f6eaa85f98b72fa3c42aeaab445af68d83599a60250493853dc2406845431bd0b7fa25ff5a
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/a82bbc5c66bdc4f305772d01f1ceb35567eb5d50955c9a47258a6e8d255dc59b3060f067b2c04388829ca4123a86ac9a7f5f26318bf18cbaa3d7607d0a065fb5
   languageName: node
   linkType: hard
 
-"@medusajs/file-s3@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/file-s3@npm:2.4.0"
+"@medusajs/file-s3@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/file-s3@npm:2.5.0"
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.556.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.556.0"
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/4487ced89497090c37254d3b409fb5dfd3a6c84dba297dceeac172f68017a0480418b9bb901762fc02fd94d76459e1fe2fbf4d926822e657cf6fa3880adeac9b
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/d919e81b8e51562ccee35f120778df240bdaffdcf197ce5e2dd7c11819dcb089ebc12eb8d4342ebb86b3c18547a7d11cc99573228214d238762049ac5ccbb2da
   languageName: node
   linkType: hard
 
-"@medusajs/file@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/file@npm:2.4.0"
+"@medusajs/file@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/file@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     awilix: ^8.0.1
-  checksum: 10c0/e3917945754792fb43ef03c820e49b051ec59fd5c9599ce147bee965f0652ad78413866a64e9a3f95b381221efc3272be9d53cabda71e8a0dd83c05c73e937e4
+  checksum: 10c0/2cec62877677b949846d730d1e89ab48a494a7abb2b9538b59f891976e0ea1668be23d9aee0980e1e9e1971154c4559e1a965db93996517d36e2570901116117
   languageName: node
   linkType: hard
 
-"@medusajs/framework@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/framework@npm:2.4.0"
+"@medusajs/framework@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/framework@npm:2.5.0"
   dependencies:
     "@jercle/yargonaut": "npm:^1.1.5"
-    "@medusajs/modules-sdk": "npm:~2.4.0"
-    "@medusajs/orchestration": "npm:~2.4.0"
-    "@medusajs/telemetry": "npm:~2.4.0"
-    "@medusajs/types": "npm:~2.4.0"
-    "@medusajs/utils": "npm:~2.4.0"
-    "@medusajs/workflows-sdk": "npm:~2.4.0"
+    "@medusajs/modules-sdk": "npm:^2.5.0"
+    "@medusajs/orchestration": "npm:^2.5.0"
+    "@medusajs/telemetry": "npm:^2.5.0"
+    "@medusajs/types": "npm:^2.5.0"
+    "@medusajs/utils": "npm:^2.5.0"
+    "@medusajs/workflows-sdk": "npm:^2.5.0"
     "@opentelemetry/api": "npm:^1.9.0"
     "@types/express": "npm:^4.17.17"
     chokidar: "npm:^3.4.2"
@@ -2085,7 +2085,7 @@ __metadata:
     tsconfig-paths: "npm:^4.2.0"
     zod: "npm:3.22.4"
   peerDependencies:
-    "@medusajs/cli": ~2.4.0
+    "@medusajs/cli": ^2.4.0
     "@mikro-orm/cli": 6.4.3
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/knex": 6.4.3
@@ -2104,174 +2104,174 @@ __metadata:
       optional: true
   bin:
     medusa-mikro-orm: dist/mikro-orm-cli/bin.js
-  checksum: 10c0/7f2fe92722b5b8e7f1c2cad61fa75a4fc21f51c6e4bc13c627945e935800b4164794fb8792a68a7113dfe10b79d99222e7b32a2925a5aa69c04eb0c3ec2804e0
+  checksum: 10c0/a7e12d8db90a40814fc49c51d60da7eca3ce463c94fca14e8c74a5f99d73f94b342ff1285c4ac690a686a14ddda5db3a7349345eb5d8e750f00be0f1e3fa059b
   languageName: node
   linkType: hard
 
-"@medusajs/fulfillment-manual@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/fulfillment-manual@npm:2.4.0"
+"@medusajs/fulfillment-manual@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/fulfillment-manual@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/a0d4407709044cd0c81989107da3ef42ea97caec3982a00f69b4d895a71045bb11bfa804ea2f4df8d707de0ad6e514ea68e42dac5ac892dc6bd3304b50733f03
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/8ea9da4d559d7a44e6ea593c03e62208a2c2173826144f4683a59ae2dfc55c4fafaa6a54d2c92800f8238ebdd70c9ed7eab1e24bb91ffa4d58a31e76882368b2
   languageName: node
   linkType: hard
 
-"@medusajs/fulfillment@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/fulfillment@npm:2.4.0"
+"@medusajs/fulfillment@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/fulfillment@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/2a345b8fd126d2809bf21f03663a44bf8f4f211689a3f0458f2a4b6472fd278882752271f10e85f6b3262e46097c7344593cfe3345fa3e9df78ffe0d06ee604f
+  checksum: 10c0/3e7a30fa7238ad347d45fad56c1a8fc05ebec05a836a67abbacc2b381275cfb78ac77ccdfa78014767d5cc1c139750d8d1b1ef276f81f4f24c262fe9d0a6635a
   languageName: node
   linkType: hard
 
-"@medusajs/icons@npm:2.4.0, @medusajs/icons@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/icons@npm:2.4.0"
+"@medusajs/icons@npm:2.5.0, @medusajs/icons@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/icons@npm:2.5.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-  checksum: 10c0/2cfe2b1913e79a92247ce09becd5c9a7d67b45fb23d59519ffc0b515df82e12646f9c4e2de7c320120fe298540cf9ad60ca24f2ff9a2f91b583c92405f58e801
+  checksum: 10c0/e02ba38794c06e269aead08a19c99bf8d203ab8f3ba190bfefcb361d190bdfe049ad365c8af0e2a412bd0c34d66b12ef2ca16627df357a2dd3a8d97d6acf4288
   languageName: node
   linkType: hard
 
-"@medusajs/index@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/index@npm:2.4.0"
+"@medusajs/index@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/index@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/knex": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/c6249b61980e9c7d8d177390aab5ced8bb419a2f287ee1b19b03406fb631c61d9e6ac09ab8c9dcc90681f648f751d17ab534a8ac8371c8bfa022afd7f2de8a93
+  checksum: 10c0/4f7f223aed7e22726427f103496b01004bed656d2eacf8b367fafc4bd4953e909dde5e805f4af942a2eb7a848a7bf974a2af4cbaec29826a1833ecbc52834968
   languageName: node
   linkType: hard
 
-"@medusajs/inventory@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/inventory@npm:2.4.0"
+"@medusajs/inventory@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/inventory@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/5f45009d6e02b50a8e1f595402a23eca07df8eeccf231d3b163f0e31624ab86db32fcf10e31f166b27203154707cf0e7c7965576611f14d95ed9b35fabfb0c45
+  checksum: 10c0/7d5e63969cdf6ca10e1d2c98a671dea614d3a1ede66e1ac5c411c5f47da20c11e16f5b6f9aa6f0b5ea5d3e1b27f91b2a1357cc6f43e9ce3ede2778626516e560
   languageName: node
   linkType: hard
 
-"@medusajs/js-sdk@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/js-sdk@npm:2.4.0"
+"@medusajs/js-sdk@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/js-sdk@npm:2.5.0"
   dependencies:
-    "@medusajs/types": "npm:~2.4.0"
+    "@medusajs/types": "npm:^2.5.0"
     fetch-event-stream: "npm:^0.1.5"
     qs: "npm:^6.12.1"
-  checksum: 10c0/5348f4d73a3a789adfed032cb9e7225ad872d40b7f5bf5a1c0864dd21e3984eafa310c0d4591606b6ba8554b7c2f0f70baa5977f24ccd3ce7c51861beccf386c
+  checksum: 10c0/d5c4a29590e1727882d4eb329292b64f8b4315ddb37dcea7bf9fb236e6ace20d5116c0fb6c64a33ac4db03b9f7c89a2e180880cd00dd10942580b659653c44ab
   languageName: node
   linkType: hard
 
-"@medusajs/link-modules@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/link-modules@npm:2.4.0"
+"@medusajs/link-modules@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/link-modules@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/7e35c3b6892d615daa35b324ef59829b769f736083606d8019eb90ef444aa633bd311eace38c4080d5291683039b92faff4347db33e3f05b39dc2655978c25ce
+  checksum: 10c0/cbe744a4fe76ae27dda30b38f4bdd29f63c76d557ae4eaa4457e8e7cf24d87203410121e6b0619e648c45352caa2c049b1e554fe3fd255f1a80513197e42b2ed
   languageName: node
   linkType: hard
 
-"@medusajs/locking-postgres@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/locking-postgres@npm:2.4.0"
+"@medusajs/locking-postgres@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/locking-postgres@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/7aed6083c1bf520e0c8cf6c57704c4f75e2aee9bb6e2ca9da5ea8106cc2f0abf2331086f0c947e48a4c19cddc196ae600656e38726a52f7b6004e5ab9223a57b
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/0f7ca0a89ca982c8a3f28740f75a2d1feee166f7821a840327e98590e278bc000be1fb6ee025157e1646c77a20dca1366c75ce756c7b9b609b2fecf1634571d8
   languageName: node
   linkType: hard
 
-"@medusajs/locking-redis@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/locking-redis@npm:2.4.0"
+"@medusajs/locking-redis@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/locking-redis@npm:2.5.0"
   dependencies:
     ioredis: "npm:^5.4.1"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/23712804a33a1f99461091318cb4f465ed09016991a14b9aec475093ad851d49933b8cbebc6e0faca9d0ee484fc6967d78709e2a1a68c69370b03e3485ed5f12
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/0c7dbea07cb89943aeb10c24c38830b045e685e7dbf19fdf0fdc372462f4fede484e453393debf14af122516b680c0e2796a8fa65a38fd9ed03a30338b94730f
   languageName: node
   linkType: hard
 
-"@medusajs/locking@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/locking@npm:2.4.0"
+"@medusajs/locking@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/locking@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/60f2a82fed0bc06ef435ef1e6fdfc74908c26c3cf630fbccda0010711be6becda53dd25eca4986e96e7b49cc5a9822be75d94bc4fbe85a987a9fee229d408505
+  checksum: 10c0/759a3f6103746038b2223dfe13820e5b8757333d84d463390e7cc1c9dd114a16ccae00fddc74703e4973b730aa6a3f1882f30922213671bbc015bdb71efa99b1
   languageName: node
   linkType: hard
 
-"@medusajs/medusa@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/medusa@npm:2.4.0"
+"@medusajs/medusa@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/medusa@npm:2.5.0"
   dependencies:
     "@inquirer/checkbox": "npm:^2.3.11"
     "@inquirer/input": "npm:^2.2.9"
-    "@medusajs/admin-bundler": "npm:~2.4.0"
-    "@medusajs/api-key": "npm:~2.4.0"
-    "@medusajs/auth": "npm:~2.4.0"
-    "@medusajs/auth-emailpass": "npm:~2.4.0"
-    "@medusajs/auth-github": "npm:~2.4.0"
-    "@medusajs/auth-google": "npm:~2.4.0"
-    "@medusajs/cache-inmemory": "npm:~2.4.0"
-    "@medusajs/cache-redis": "npm:~2.4.0"
-    "@medusajs/cart": "npm:~2.4.0"
-    "@medusajs/core-flows": "npm:~2.4.0"
-    "@medusajs/currency": "npm:~2.4.0"
-    "@medusajs/customer": "npm:~2.4.0"
-    "@medusajs/event-bus-local": "npm:~2.4.0"
-    "@medusajs/event-bus-redis": "npm:~2.4.0"
-    "@medusajs/file": "npm:~2.4.0"
-    "@medusajs/file-local": "npm:~2.4.0"
-    "@medusajs/file-s3": "npm:~2.4.0"
-    "@medusajs/fulfillment": "npm:~2.4.0"
-    "@medusajs/fulfillment-manual": "npm:~2.4.0"
-    "@medusajs/index": "npm:~2.4.0"
-    "@medusajs/inventory": "npm:~2.4.0"
-    "@medusajs/link-modules": "npm:~2.4.0"
-    "@medusajs/locking": "npm:~2.4.0"
-    "@medusajs/locking-postgres": "npm:~2.4.0"
-    "@medusajs/locking-redis": "npm:~2.4.0"
-    "@medusajs/notification": "npm:~2.4.0"
-    "@medusajs/notification-local": "npm:~2.4.0"
-    "@medusajs/notification-sendgrid": "npm:~2.4.0"
-    "@medusajs/order": "npm:~2.4.0"
-    "@medusajs/payment": "npm:~2.4.0"
-    "@medusajs/payment-stripe": "npm:~2.4.0"
-    "@medusajs/pricing": "npm:~2.4.0"
-    "@medusajs/product": "npm:~2.4.0"
-    "@medusajs/promotion": "npm:~2.4.0"
-    "@medusajs/region": "npm:~2.4.0"
-    "@medusajs/sales-channel": "npm:~2.4.0"
-    "@medusajs/stock-location": "npm:~2.4.0"
-    "@medusajs/store": "npm:~2.4.0"
-    "@medusajs/tax": "npm:~2.4.0"
-    "@medusajs/telemetry": "npm:~2.4.0"
-    "@medusajs/user": "npm:~2.4.0"
-    "@medusajs/workflow-engine-inmemory": "npm:~2.4.0"
-    "@medusajs/workflow-engine-redis": "npm:~2.4.0"
+    "@medusajs/admin-bundler": "npm:^2.5.0"
+    "@medusajs/api-key": "npm:^2.5.0"
+    "@medusajs/auth": "npm:^2.5.0"
+    "@medusajs/auth-emailpass": "npm:^2.5.0"
+    "@medusajs/auth-github": "npm:^2.5.0"
+    "@medusajs/auth-google": "npm:^2.5.0"
+    "@medusajs/cache-inmemory": "npm:^2.5.0"
+    "@medusajs/cache-redis": "npm:^2.5.0"
+    "@medusajs/cart": "npm:^2.5.0"
+    "@medusajs/core-flows": "npm:^2.5.0"
+    "@medusajs/currency": "npm:^2.5.0"
+    "@medusajs/customer": "npm:^2.5.0"
+    "@medusajs/event-bus-local": "npm:^2.5.0"
+    "@medusajs/event-bus-redis": "npm:^2.5.0"
+    "@medusajs/file": "npm:^2.5.0"
+    "@medusajs/file-local": "npm:^2.5.0"
+    "@medusajs/file-s3": "npm:^2.5.0"
+    "@medusajs/fulfillment": "npm:^2.5.0"
+    "@medusajs/fulfillment-manual": "npm:^2.5.0"
+    "@medusajs/index": "npm:^2.5.0"
+    "@medusajs/inventory": "npm:^2.5.0"
+    "@medusajs/link-modules": "npm:^2.5.0"
+    "@medusajs/locking": "npm:^2.5.0"
+    "@medusajs/locking-postgres": "npm:^2.5.0"
+    "@medusajs/locking-redis": "npm:^2.5.0"
+    "@medusajs/notification": "npm:^2.5.0"
+    "@medusajs/notification-local": "npm:^2.5.0"
+    "@medusajs/notification-sendgrid": "npm:^2.5.0"
+    "@medusajs/order": "npm:^2.5.0"
+    "@medusajs/payment": "npm:^2.5.0"
+    "@medusajs/payment-stripe": "npm:^2.5.0"
+    "@medusajs/pricing": "npm:^2.5.0"
+    "@medusajs/product": "npm:^2.5.0"
+    "@medusajs/promotion": "npm:^2.5.0"
+    "@medusajs/region": "npm:^2.5.0"
+    "@medusajs/sales-channel": "npm:^2.5.0"
+    "@medusajs/stock-location": "npm:^2.5.0"
+    "@medusajs/store": "npm:^2.5.0"
+    "@medusajs/tax": "npm:^2.5.0"
+    "@medusajs/telemetry": "npm:^2.5.0"
+    "@medusajs/user": "npm:^2.5.0"
+    "@medusajs/workflow-engine-inmemory": "npm:^2.5.0"
+    "@medusajs/workflow-engine-redis": "npm:^2.5.0"
     "@swc/core": "npm:1.5.7"
     "@swc/helpers": "npm:^0.5.11"
     "@types/express": "npm:^4.17.17"
@@ -2291,17 +2291,20 @@ __metadata:
     uuid: "npm:^9.0.0"
     zod: "npm:3.22.4"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/knex": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
+    react-dom: ^18.0.0
     yalc: 1.0.0-pre.53
   peerDependenciesMeta:
+    react-dom:
+      optional: true
     yalc:
       optional: true
-  checksum: 10c0/0e3488aca8175d4e49388543bd637089dd4ad116d710da0e3421ed8dad983ecbf8a779663adcba1a7915dc44306bdb0a6cd6b92ad9f36263e15456557a2415df
+  checksum: 10c0/ba70a437dd123a1f80bbf99f6ec39d30ff2399044a8e5b9ee74625bb3e13fb078631ed90a5b8e631105f270732564df5e0d7eb7c48eb2e95970192f2bcd15ba4
   languageName: node
   linkType: hard
 
@@ -2324,55 +2327,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/modules-sdk@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/modules-sdk@npm:2.4.0"
-  dependencies:
-    "@medusajs/orchestration": "npm:~2.4.0"
-    "@medusajs/types": "npm:~2.4.0"
-    "@medusajs/utils": "npm:~2.4.0"
+"@medusajs/notification-local@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/notification-local@npm:2.5.0"
   peerDependencies:
-    "@mikro-orm/core": 6.4.3
-    "@mikro-orm/knex": 6.4.3
-    "@mikro-orm/migrations": 6.4.3
-    "@mikro-orm/postgresql": 6.4.3
-    awilix: ^8.0.1
-    express: ^4.21.0
-    pg: ^8.13.0
-  checksum: 10c0/91b1eca5ff009333363626f337217efb1c8633e39157646e74e2517c67ca835b5e67fc6740fd31fe60cb4cd4cc61c63ae6f0e19b45185604d08090f54f6b1ba2
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/9168591af9d734f4fe0875575ad016ea3e27aea85025b98f1384ad39c3fc481196f7effc3c1f4023adf7fd786de30267e554d6e3f174d44ace7e127b3d16db7d
   languageName: node
   linkType: hard
 
-"@medusajs/notification-local@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/notification-local@npm:2.4.0"
-  peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/9f84e1300711498df13248a2ff956957acf8d562ace18f97e85460f2be85707ec36a3ffc24321055432451eb89f98277b32eafa5665b6cec645aefd7a743d2cf
-  languageName: node
-  linkType: hard
-
-"@medusajs/notification-sendgrid@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/notification-sendgrid@npm:2.4.0"
+"@medusajs/notification-sendgrid@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/notification-sendgrid@npm:2.5.0"
   dependencies:
     "@sendgrid/mail": "npm:^8.1.3"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-  checksum: 10c0/29b72f1ff1f27550000fec6f359f2cf143d0314e18435e963ba4ecd3a48b16e49560768b4a74f19411782a6ea5df0576b128dfdd558471f269da7c5a4b304b0c
+    "@medusajs/framework": ^2.4.0
+  checksum: 10c0/11d8af55822d975026f9c5a5eaf59aa39ef15bbd5dc2df0a42631d6b2d4cb43deb5f62cd693ab698bf532e6bdadf77237cab1bac1c364fd6a767138663cdffec
   languageName: node
   linkType: hard
 
-"@medusajs/notification@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/notification@npm:2.4.0"
+"@medusajs/notification@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/notification@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/6d8dedb643c38d5d581254a82c032b293ca8740a65823287b74b09072bae9ffdcc2f204010af87ce4807435897dbf4daddc59e62d1aab823014c2130eae6582a
+  checksum: 10c0/9a735acd3b6e97dfc1e8f0d489a6bdc1d6b50879dc5726d996744eb687f23009d874a84ec5839361b2fd2d2d4521d11df0a21db80314e8d4425ad5169c011a6c
   languageName: node
   linkType: hard
 
@@ -2394,169 +2378,151 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/orchestration@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/orchestration@npm:2.4.0"
-  dependencies:
-    "@medusajs/types": "npm:~2.4.0"
-    "@medusajs/utils": "npm:~2.4.0"
+"@medusajs/order@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/order@npm:2.5.0"
   peerDependencies:
-    "@mikro-orm/core": 6.4.3
-    "@mikro-orm/knex": 6.4.3
-    "@mikro-orm/migrations": 6.4.3
-    "@mikro-orm/postgresql": 6.4.3
-    awilix: ^8.0.1
-    express: ^4.21.0
-    pg: ^8.13.0
-  checksum: 10c0/1a51a72ca7ac7380bd2163c54a28eb7a23a133981e2d2298c9d110184130b4d080743cd2c388ea05d9581823c0e76856168b9d15c577a21360c6e7e2ddbc617c
-  languageName: node
-  linkType: hard
-
-"@medusajs/order@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/order@npm:2.4.0"
-  peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/286ccc7b75862e88e213267f563706973ccc02dddf1f3a183c4e8447cad821435d46353352fe1c93f66b7dfd35806703461799d79de7462233662fff1b1cdd71
+  checksum: 10c0/72f1fe82958daf66c0ed7f675e121d9133bfcdaf2ed3405dc89351ef0ee7e0f32d8ec92879f0c51abe176e5c93d3e4be7ce7795fc79b745cb721853449c57d4b
   languageName: node
   linkType: hard
 
-"@medusajs/payment-stripe@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/payment-stripe@npm:2.4.0"
+"@medusajs/payment-stripe@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/payment-stripe@npm:2.5.0"
   dependencies:
     stripe: "npm:^15.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     awilix: ^8.0.1
-  checksum: 10c0/e850c9823f066d4907151575f872cbec4e5ba0f2a0c6a6152b0463a5b9b04d8b65233690a1123dab34f49638da37f817dcab5746a7c5a411b16b985cc999d173
+  checksum: 10c0/fdf73bbad93ef34f6c7e08309a3efca40ab322b13b038b01e6c4d1a0f47f7efcc7b2ab3c0012b87873e339b91e501b946046b3b218406ade8e06269a2a9a9d92
   languageName: node
   linkType: hard
 
-"@medusajs/payment@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/payment@npm:2.4.0"
+"@medusajs/payment@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/payment@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/86acaac28ba4448fdacb23c198dc1c07300224489235673ef7d512bbc303931f2cf35317b040980522047eccacf890ce5fe75345a51e1754f81826f04dbeabc5
+  checksum: 10c0/7399fa040eadd5091bad60a64c340b07f6400d15f8d41b025be3a1bdd68a092f6d6bd609532a19e9c447140f2103b5e0324761267493d6f5eb1b978e8f030058
   languageName: node
   linkType: hard
 
-"@medusajs/pricing@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/pricing@npm:2.4.0"
+"@medusajs/pricing@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/pricing@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/43c86f22b6c3aa3a5b0a5a3758b3d13cf175ea2771b93aaf8118ef74c554b44ad2d596f753d654c628c0ea0676d6552d881bcbbe6ace4f6abdb0a1d84b3a8176
+  checksum: 10c0/c3fcc34b9884230ee21f35f5c813bdb3f1c236424a860a2584d8ff08e0773ab6e59dc05633c22138772f1e8573422ce9bfb4c92361f45b999f0ac44b7b7bdde4
   languageName: node
   linkType: hard
 
-"@medusajs/product@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/product@npm:2.4.0"
+"@medusajs/product@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/product@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/80817dd21a0c0775aabd33d354c1f2c860465653b2bda214048459d3d9c792e0004192c6804ca92d4b8075a0dcac8b8f9d3baa33de98ac5f0393a76294eed3d1
+  checksum: 10c0/d8e11a766797f06d77518a154c7ca82858ade181e483825ef05ce87b528aa4e07195f41635a58dee9599b164379281aca28d2bbfe14a7d81e4a76cf55a0cb2e0
   languageName: node
   linkType: hard
 
-"@medusajs/promotion@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/promotion@npm:2.4.0"
+"@medusajs/promotion@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/promotion@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/5b35036442f17b28cc30a17a6fa67609cda8dc0958c7df268340d7c4880648d98de9d446882c73aa1efb903189fba335ba11eec2befd00e4a94e298239e6dc36
+  checksum: 10c0/8203f8ba0d87b42e935a93847280f09fe8defe4d0ccca0b585e25187bcf8cb68981c2c8159db762267f68c3ace89e208a5bbc4bd4b888587c391c11aa8ea55ee
   languageName: node
   linkType: hard
 
-"@medusajs/region@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/region@npm:2.4.0"
+"@medusajs/region@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/region@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/5c37d28ba66cc110320df00b00d4bf8f3afdf465a796fc9eb5f950024796703b76f6c5b3da31d5c6df07cb4fa1aed43f9eb5e1d399f6f124647b5399dba35259
+  checksum: 10c0/b07f724fc86a84c72b5aa888f0192d3c416d074a71094c3706f124bad26229968296d91660bf33ed55fbb6d3762d2e4b019e14ca8322252ae51c089bf096ff62
   languageName: node
   linkType: hard
 
-"@medusajs/sales-channel@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/sales-channel@npm:2.4.0"
+"@medusajs/sales-channel@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/sales-channel@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/2fe0fa044ef15b910030db00a0008b513a1196bb29ef24cf23f4b4a18d40f4a96f8167867d88317c8fcac203206dffdb4a3bc01b75bc182336f69d3a084fc573
+  checksum: 10c0/99942fafbc8e1e3ee847901da37846e53d7e8210aa32f4c50479ab1313e074227884a6e198961bae35f44b7876099b5270269a13fd5fc6f9d5ed6261b17d0e3c
   languageName: node
   linkType: hard
 
-"@medusajs/stock-location@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/stock-location@npm:2.4.0"
+"@medusajs/stock-location@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/stock-location@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/e9170cbaf224658a58cb3bc8c5ac630f79bbef79cbfd010135b50875b2d19817046504cd874a3eab437d534e0a65bb159a0dc0d6c365f84e8537d53698389cc6
+  checksum: 10c0/8e3b6f34cf20f12c9b6230ee6477f3bb7d8facca8c79b7d4812510376019bda82d2c770c45fed33b9c8651ab811d8a845b3fda769422a9b2093766c0962c2076
   languageName: node
   linkType: hard
 
-"@medusajs/store@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/store@npm:2.4.0"
+"@medusajs/store@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/store@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/858dcdfa7bb93afc507828353d8323282350dde4b7a623a1394642e860e281da720b73026f3832b961ccc83185a806298f9f55f46ff8d75aedc07c93571f9763
+  checksum: 10c0/ffd8e4f62301972af427b0bb9e3b3d12e56dea3366341c0b53d1de5a4bc7e0142b3ef097995cd08a0c0bea91a221859fb229408ce8969b7f0f18b70ae26c9c9e
   languageName: node
   linkType: hard
 
-"@medusajs/tax@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/tax@npm:2.4.0"
+"@medusajs/tax@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/tax@npm:2.5.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/8de71ecf0825f874419e5a095703eef82ee777293a7ca5f7ca711f7d417a545f24d498416fd5f02a1b643eb23c6a23360cf3f7c69841c2ab215eee34ea22c4d0
+  checksum: 10c0/d3ebf6e176841af3d0bc6154e9474e7be7e65b5419da3c22a0b5639b0bfcc9abee6a97d55216045c51e93d1478cfd2180f4ec35700e82cd6dd7f4cd6412fd505
   languageName: node
   linkType: hard
 
-"@medusajs/telemetry@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/telemetry@npm:2.4.0"
+"@medusajs/telemetry@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/telemetry@npm:2.5.0"
   dependencies:
     "@babel/runtime": "npm:^7.22.10"
     axios: "npm:^0.21.4"
@@ -2568,13 +2534,13 @@ __metadata:
     is-docker: "npm:^2.2.1"
     remove-trailing-slash: "npm:^0.1.1"
     uuid: "npm:^8.3.2"
-  checksum: 10c0/50984058c691175400d1996d3e32392549c103e51bf41d1895ab132a8b1dc340822d767045878d660957ff97d76550362a032449caf961beee5d647f7557361d
+  checksum: 10c0/93fe6999c41987fe5caa124cf8dfbc711b2143ea86aeba32c95b2bd158e0c0c4515ed5deb92a58f65cdd557d91aaa3042c69b236efa39d81026b37a3fa4d8360
   languageName: node
   linkType: hard
 
-"@medusajs/test-utils@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/test-utils@npm:2.4.0"
+"@medusajs/test-utils@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/test-utils@npm:2.5.0"
   dependencies:
     "@types/express": "npm:^4.17.17"
     axios: "npm:^0.21.4"
@@ -2582,14 +2548,14 @@ __metadata:
     get-port: "npm:^5.1.0"
     randomatic: "npm:^3.1.1"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
-    "@medusajs/medusa": ~2.4.0
+    "@medusajs/framework": ^2.4.0
+    "@medusajs/medusa": ^2.4.0
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
   peerDependenciesMeta:
     "@medusajs/medusa":
       optional: true
-  checksum: 10c0/86831984a68d417547dab990c60350c3a67e8a9876e338cc31f71e28606c616d06f1f6c35862d277be725513ebfdc8491432c04a6639d241beed1db3911c7924
+  checksum: 10c0/b1f68212fd20b560727b3267ae97dd204cb06494406bd954e895da70daa987433f46eb617f32b5d65a493b69e1c55d8097230e3b3a8d2c8eb7b6dbb7376d5440
   languageName: node
   linkType: hard
 
@@ -2611,50 +2577,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/types@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/types@npm:2.4.0"
+"@medusajs/ui@npm:4.0.5, @medusajs/ui@npm:~4.0.5":
+  version: 4.0.5
+  resolution: "@medusajs/ui@npm:4.0.5"
   dependencies:
-    bignumber.js: "npm:^9.1.2"
-  peerDependencies:
-    awilix: ^8.0.1
-    ioredis: ^5.4.1
-    vite: ^5.2.11
-  peerDependenciesMeta:
-    ioredis:
-      optional: true
-    vite:
-      optional: true
-  checksum: 10c0/710f4082fc44cb9028b0f58349f99ce64077bc88b9c7f01fe6e1dc79992652b11b885cbde5751b404d7aa005a739a599817ab1acc1b0aaee8a37b65e1a92ccc7
-  languageName: node
-  linkType: hard
-
-"@medusajs/ui@npm:4.0.4":
-  version: 4.0.4
-  resolution: "@medusajs/ui@npm:4.0.4"
-  dependencies:
-    "@medusajs/icons": "npm:~2.4.0"
-    "@radix-ui/react-accordion": "npm:1.2.0"
-    "@radix-ui/react-alert-dialog": "npm:1.1.1"
-    "@radix-ui/react-avatar": "npm:1.1.0"
-    "@radix-ui/react-checkbox": "npm:1.1.1"
-    "@radix-ui/react-dialog": "npm:1.1.1"
-    "@radix-ui/react-dropdown-menu": "npm:2.1.1"
-    "@radix-ui/react-label": "npm:2.1.0"
-    "@radix-ui/react-popover": "npm:1.1.1"
-    "@radix-ui/react-portal": "npm:1.1.1"
-    "@radix-ui/react-radio-group": "npm:1.2.0"
-    "@radix-ui/react-select": "npm:2.1.1"
-    "@radix-ui/react-slot": "npm:1.1.0"
-    "@radix-ui/react-switch": "npm:1.1.0"
-    "@radix-ui/react-tabs": "npm:1.1.0"
-    "@radix-ui/react-tooltip": "npm:1.1.2"
+    "@medusajs/icons": "npm:^2.5.0"
     "@tanstack/react-table": "npm:8.20.5"
     clsx: "npm:^1.2.1"
     copy-to-clipboard: "npm:^3.3.3"
     cva: "npm:1.0.0-beta.1"
     prism-react-renderer: "npm:^2.0.6"
     prismjs: "npm:^1.29.0"
+    radix-ui: "npm:1.1.2"
     react-aria: "npm:^3.33.1"
     react-currency-input-field: "npm:^3.6.11"
     react-stately: "npm:^3.31.1"
@@ -2663,56 +2597,26 @@ __metadata:
   peerDependencies:
     react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-  checksum: 10c0/ae90527f30f2f1ef32e3c3d15284f94de798c1590ae065df09f7a401c0d0b6e0cedcb1027156bae36b9e525286d5c4453b0e9fd9ee044ffc5b1d9c47ed5d0846
+  checksum: 10c0/5066b41d7e101432006bfbda7f14775e0dac1a232feeb7057bc69c98acf6018425b56bd02d5515aa0c50d745b18cf1d2fdc4d750d3af424eb7474b24d18f82e3
   languageName: node
   linkType: hard
 
-"@medusajs/user@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/user@npm:2.4.0"
+"@medusajs/user@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/user@npm:2.5.0"
   dependencies:
     jsonwebtoken: "npm:^9.0.2"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/b3861008a288eeca43efd3d593ec7189f4548331f1b72352f1033f3c5f0a05df3d8b32519e0bad727deb162af1c8adbf64714d1d32658e835119b83bc072a90c
+  checksum: 10c0/c48442a8caec3888d7e8235d70a7f22daec49e6958a173eb645d919a97ec43835a01cafdda14547d77879ae395357a84e52861d1c2701d21c16fa8c22b2b5008
   languageName: node
   linkType: hard
 
-"@medusajs/utils@npm:2.4.0, @medusajs/utils@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/utils@npm:2.4.0"
-  dependencies:
-    "@graphql-codegen/core": "npm:^4.0.2"
-    "@graphql-codegen/typescript": "npm:^4.0.9"
-    "@graphql-tools/merge": "npm:^9.0.7"
-    "@graphql-tools/schema": "npm:^10.0.6"
-    "@medusajs/types": "npm:~2.4.0"
-    "@types/pluralize": "npm:^0.0.33"
-    bignumber.js: "npm:^9.1.2"
-    dotenv: "npm:^16.4.5"
-    dotenv-expand: "npm:^11.0.6"
-    graphql: "npm:^16.9.0"
-    jsonwebtoken: "npm:^9.0.2"
-    pg-connection-string: "npm:^2.7.0"
-    pluralize: "npm:^8.0.0"
-    ulid: "npm:^2.3.0"
-  peerDependencies:
-    "@mikro-orm/core": 6.4.3
-    "@mikro-orm/knex": 6.4.3
-    "@mikro-orm/migrations": 6.4.3
-    "@mikro-orm/postgresql": 6.4.3
-    awilix: ^8.0.1
-    express: ^4.21.0
-    pg: ^8.13.0
-  checksum: 10c0/ef9b741d6eaba205b3f35de95540bcb132a55295ee60c5fd361475865cd563c8ad9fb26ab533d11ab6c1185c3e68dd40c6fc2fe52cd6461fd39d7bd311bb5ac1
-  languageName: node
-  linkType: hard
-
-"@medusajs/utils@npm:^2.5.0":
+"@medusajs/utils@npm:2.5.0, @medusajs/utils@npm:^2.5.0":
   version: 2.5.0
   resolution: "@medusajs/utils@npm:2.5.0"
   dependencies:
@@ -2742,36 +2646,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/workflow-engine-inmemory@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/workflow-engine-inmemory@npm:2.4.0"
+"@medusajs/workflow-engine-inmemory@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/workflow-engine-inmemory@npm:2.5.0"
   dependencies:
     cron-parser: "npm:^4.9.0"
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/c17ddfb04bf02bc773e4dd9cc64191c6b674b98950e4393aeca3ec98dc04078db8163005d4a47a5d2045fd7fcef922c2e4edfe56c27d3375022d1b8bbbe1bc86
+  checksum: 10c0/36375a123eac18b6f25ba1ba39df10cff887e2970bb7be05de3d6021a236d722b7aa82227d59ad62153156c8aa81b6d34d4294e7f3651706b178763f7729d96a
   languageName: node
   linkType: hard
 
-"@medusajs/workflow-engine-redis@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/workflow-engine-redis@npm:2.4.0"
+"@medusajs/workflow-engine-redis@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@medusajs/workflow-engine-redis@npm:2.5.0"
   dependencies:
     bullmq: "npm:5.13.0"
     ioredis: "npm:^5.4.1"
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": ~2.4.0
+    "@medusajs/framework": ^2.4.0
     "@mikro-orm/core": 6.4.3
     "@mikro-orm/migrations": 6.4.3
     "@mikro-orm/postgresql": 6.4.3
     awilix: ^8.0.1
-  checksum: 10c0/e72c1bb10ae46af56f47ab099018943df292a2395021d42d038b28dfa74282a3a3a92663f09d82e10bb855fa1ba18357f6a83b31d5fcdab10819e7da3a44bfc9
+  checksum: 10c0/acdd0c496ca2b7b90a34d2917bbe00839acbb779d01babb975dd1c11b0a48db893e0a0cf2201c2ee88d69c3463b0f8086b7f347f5d6c2bfb6528da3d835baa89
   languageName: node
   linkType: hard
 
@@ -2793,27 +2697,6 @@ __metadata:
     express: ^4.21.0
     pg: ^8.13.0
   checksum: 10c0/d77747e99425e0c886579a994e783d4a7cc010fce45a3190ed780d10bd1dfb7aa0be6240ecbce07e0e9fd38a3fd5c26dc3952161b747b9c6de699960273be883
-  languageName: node
-  linkType: hard
-
-"@medusajs/workflows-sdk@npm:~2.4.0":
-  version: 2.4.0
-  resolution: "@medusajs/workflows-sdk@npm:2.4.0"
-  dependencies:
-    "@medusajs/modules-sdk": "npm:~2.4.0"
-    "@medusajs/orchestration": "npm:~2.4.0"
-    "@medusajs/types": "npm:~2.4.0"
-    "@medusajs/utils": "npm:~2.4.0"
-    ulid: "npm:^2.3.0"
-  peerDependencies:
-    "@mikro-orm/core": 6.4.3
-    "@mikro-orm/knex": 6.4.3
-    "@mikro-orm/migrations": 6.4.3
-    "@mikro-orm/postgresql": 6.4.3
-    awilix: ^8.0.1
-    express: ^4.21.0
-    pg: ^8.13.0
-  checksum: 10c0/7138dc75856a5be4b20d4c8f5dab28ad237a6de416a0d3b1b767d56f65eb50ae7b5ef1d77a1e09646e6ea4cc542f5ea8d1863e306a0f4fcec3d352bda6c6aa60
   languageName: node
   linkType: hard
 
@@ -3167,25 +3050,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/primitive@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/primitive@npm:1.1.0"
-  checksum: 10c0/1dcc8b5401799416ff8bdb15c7189b4536c193220ad8fd348a48b88f804ee38cec7bd03e2b9641f7da24610e2f61f23a306911ce883af92c4e8c1abac634cb61
+"@radix-ui/primitive@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/primitive@npm:1.1.1"
+  checksum: 10c0/6457bd8d1aa4ecb948e5d2a2484fc570698b2ab472db6d915a8f1eec04823f80423efa60b5ba840f0693bec2ca380333cc5f3b52586b40f407d9f572f9261f8d
   languageName: node
   linkType: hard
 
-"@radix-ui/react-accordion@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@radix-ui/react-accordion@npm:1.2.0"
+"@radix-ui/react-accessible-icon@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-accessible-icon@npm:1.1.1"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-collapsible": "npm:1.1.0"
-    "@radix-ui/react-collection": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/react-visually-hidden": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/f5d75ec8d76c39a387736f045f7fb279399fc0322fd09843fcaa76d6e5fae5d38b2b2c2ee159fa05f7b67de32ad5953fc7b9d2d6e35255ba7eb45e4096e36b8e
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-accordion@npm:1.2.2":
+  version: 1.2.2
+  resolution: "@radix-ui/react-accordion@npm:1.2.2"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collapsible": "npm:1.1.2"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-direction": "npm:1.1.0"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
   peerDependencies:
     "@types/react": "*"
@@ -3197,20 +3099,39 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/324d7eb1653f57431297a2f3428f6221edf54d712b94ce9194243cfaef462490bd9d9976ec3cc868f5598f156242068f84d674a3febcf1c8ea8c4115efea0ae2
+  checksum: 10c0/2279c24de3296714ad14e0b83e7ea55f1b0d1585650b48ddb9295a44e6f0ab4e860526e9263c8f18cbdfa702648644d1bfa50f18c22e6f9de303b4b19ebef63a
   languageName: node
   linkType: hard
 
-"@radix-ui/react-alert-dialog@npm:1.1.1":
+"@radix-ui/react-alert-dialog@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@radix-ui/react-alert-dialog@npm:1.1.5"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dialog": "npm:1.1.5"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/5af5d2aad24bce15119e9485e02d7dd735ff78e43a979c1242f17160de8483cb429539dbc24b5a55bad42fd0b88b112e613915cb0622271c4a905c462b45ba60
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-arrow@npm:1.1.1":
   version: 1.1.1
-  resolution: "@radix-ui/react-alert-dialog@npm:1.1.1"
+  resolution: "@radix-ui/react-arrow@npm:1.1.1"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-dialog": "npm:1.1.1"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3221,15 +3142,15 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/65185c77fd13e60035717d312aa8cc4f8637ce65215ffa3d6acdc1d7735872e64c21c53523d7d9c27b45a49041765bdb83cd157fe916903fcd80f355c3d532b1
+  checksum: 10c0/714c8420ee4497775a1119ceba1391a9e4fed07185ba903ade571251400fd25cedb7bebf2292ce778e74956dfa079078b2afbb67d12001c6ea5080997bcf3612
   languageName: node
   linkType: hard
 
-"@radix-ui/react-arrow@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-arrow@npm:1.1.0"
+"@radix-ui/react-aspect-ratio@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-aspect-ratio@npm:1.1.1"
   dependencies:
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3240,16 +3161,16 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/cbe059dfa5a9c1677478d363bb5fd75b0c7a08221d0ac7f8e7b9aec9dbae9754f6a3518218cf63e4ed53df6c36d193c8d2618d03433a37aa0cb7ee77a60a591f
+  checksum: 10c0/e99ceebb32a743fd99bdae54480213de20580a194ebdf1ca5ca2046cecc964dec8f05d29cad00740f97a790bfa05d2374dd34e6abecbb98fd5cc90937407a25f
   languageName: node
   linkType: hard
 
-"@radix-ui/react-avatar@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-avatar@npm:1.1.0"
+"@radix-ui/react-avatar@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-avatar@npm:1.1.2"
   dependencies:
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
     "@radix-ui/react-use-layout-effect": "npm:1.1.0"
   peerDependencies:
@@ -3262,19 +3183,19 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/6358ae171c886aa66a4b381d847ef8c84b7020adceaea8676f4f434e5229ff06a13022ff611557f548dd4e8739eadf1b0d22111ae3d47e08b5dd1005edcf76a5
+  checksum: 10c0/84a55872452e2ad07ae418d97231b4de547b176b8731541eb01f360ca1f306ae9fd2bfb6ec59ea47d90e16970db101476c3cb9c3282e4d444bf1c9d734d9c729
   languageName: node
   linkType: hard
 
-"@radix-ui/react-checkbox@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@radix-ui/react-checkbox@npm:1.1.1"
+"@radix-ui/react-checkbox@npm:1.1.3":
+  version: 1.1.3
+  resolution: "@radix-ui/react-checkbox@npm:1.1.3"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
     "@radix-ui/react-use-previous": "npm:1.1.0"
     "@radix-ui/react-use-size": "npm:1.1.0"
@@ -3288,20 +3209,20 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/2d7d35b8319298166905057e9f7fb1d4b51d73bdec6c7c2127d2266e0f053c39586e316ea0da9a24612dfa86b8fc1f5160d4c37f79ae567025b62616de95c2c7
+  checksum: 10c0/88a28be73b849f158a47e8ee9432dede92932fcda678ecd971de131efb805aff29e33f382afdc722ca3f54f7a3d262125814ee812d5e73cc85e61bca62963bb7
   languageName: node
   linkType: hard
 
-"@radix-ui/react-collapsible@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-collapsible@npm:1.1.0"
+"@radix-ui/react-collapsible@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-collapsible@npm:1.1.2"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
     "@radix-ui/react-use-layout-effect": "npm:1.1.0"
   peerDependencies:
@@ -3314,18 +3235,18 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/07d6d0be153d0c56d533e820005caa13a8305ba34b55af74180180113074979bcfd1d7414ba2533272deb659275c0c38eb48004338fd542fdcbd1962925f199f
+  checksum: 10c0/8a725539c0c259ea53a0e35d4ddd3acca42cab5113fd537758450ad1e76f0b757423f18aca29364f963bef4f0624d57feb32bf9d12a3ea6b2c084b523ba65205
   languageName: node
   linkType: hard
 
-"@radix-ui/react-collection@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-collection@npm:1.1.0"
+"@radix-ui/react-collection@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-collection@npm:1.1.1"
   dependencies:
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3336,7 +3257,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/fecb9f0871c827070a8794b39c7379fdc7d0855c4b05804f0b395eef39c37b2c2b6779865d6cb35d3bc74b6b380107bd8b3754d1730a34ea88913e6cd0eb84d4
+  checksum: 10c0/f01bba02e11944fa98f588a0c8dc7657228c9e7dd32ef66acdec6a540385c1e9471ef9e7dfa6184b524fdf923cf5a08892ffda3fe6d60cee34c690d9914373ce
   languageName: node
   linkType: hard
 
@@ -3351,16 +3272,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-compose-refs@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-compose-refs@npm:1.1.0"
+"@radix-ui/react-compose-refs@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-compose-refs@npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/7e18706084397d9458ca3473d8565b10691da06f6499a78edbcc4bd72cde08f62e91120658d17d58c19fc39d6b1dffe0133cc4535c8f5fce470abd478f6107e5
+  checksum: 10c0/3e84580024e66e3cc5b9ae79355e787815c1d2a3c7d46e7f47900a29c33751ca24cf4ac8903314957ab1f7788aebe1687e2258641c188cf94653f7ddf8f70627
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-context-menu@npm:2.2.5":
+  version: 2.2.5
+  resolution: "@radix-ui/react-context-menu@npm:2.2.5"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-menu": "npm:2.1.5"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.0"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/98ae3ce113fa1539b5af2bc8ea38844f209f7ec0203d25b5bd0b307f89e0b0d8f421384fcbcf81e60898ab9c5311dace0a2ceecb624978facce8b5977a6a79b6
   languageName: node
   linkType: hard
 
@@ -3375,16 +3320,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-context@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-context@npm:1.1.0"
+"@radix-ui/react-context@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-context@npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/c843980f568cc61b512708863ec84c42a02e0f88359b22ad1c0e290cea3e6d7618eccbd2cd37bd974fadaa7636cbed5bda27553722e61197eb53852eaa34f1bb
+  checksum: 10c0/fc4ace9d79d7954c715ade765e06c95d7e1b12a63a536bcbe842fb904f03f88fc5bd6e38d44bd23243d37a270b4c44380fedddaeeae2d274f0b898a20665aba2
   languageName: node
   linkType: hard
 
@@ -3414,24 +3359,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@radix-ui/react-dialog@npm:1.1.1"
+"@radix-ui/react-dialog@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@radix-ui/react-dialog@npm:1.1.5"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-dismissable-layer": "npm:1.1.0"
-    "@radix-ui/react-focus-guards": "npm:1.1.0"
-    "@radix-ui/react-focus-scope": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-focus-guards": "npm:1.1.1"
+    "@radix-ui/react-focus-scope": "npm:1.1.1"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-portal": "npm:1.1.1"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
-    aria-hidden: "npm:^1.1.1"
-    react-remove-scroll: "npm:2.5.7"
+    aria-hidden: "npm:^1.2.4"
+    react-remove-scroll: "npm:^2.6.2"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3442,7 +3387,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/a21e318e8d45bed22067880f66beb4ea91118a6c0d43aa20de495c0373b53c12dfe28f58196d5b33300573a5e24e064ec53648a576f02366fb5a297d887b0860
+  checksum: 10c0/486f1b6cb9de310ab03ec201701b79912eb38565175bbbd6b6399ff0d7ca5fd2ead7bb7f072a8d2acf07d0a53154e7292abee404ca9f9a26b826a649cee06a21
   languageName: node
   linkType: hard
 
@@ -3476,13 +3421,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dismissable-layer@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-dismissable-layer@npm:1.1.0"
+"@radix-ui/react-dismissable-layer@npm:1.1.4":
+  version: 1.1.4
+  resolution: "@radix-ui/react-dismissable-layer@npm:1.1.4"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
     "@radix-ui/react-use-escape-keydown": "npm:1.1.0"
   peerDependencies:
@@ -3495,20 +3440,20 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/72967068ab02127b668ecfd0a1863149e2a42d9fd12d3247f51422a41f3d5faa82a147a5b0a8a6ec609eff8fe6baede6fb7d6111f76896656d13567e3ec29ba8
+  checksum: 10c0/8657bf3e7e9e6ffeec9b23fbea4ae4e35f0a8fb474b5562636c721be82a95df30da32b9957dfc3826caa0b2e0b79a1333e7589d64de44b3ea02a667c83622efb
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dropdown-menu@npm:2.1.1":
-  version: 2.1.1
-  resolution: "@radix-ui/react-dropdown-menu@npm:2.1.1"
+"@radix-ui/react-dropdown-menu@npm:2.1.5":
+  version: 2.1.5
+  resolution: "@radix-ui/react-dropdown-menu@npm:2.1.5"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-menu": "npm:2.1.1"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-menu": "npm:2.1.5"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
   peerDependencies:
     "@types/react": "*"
@@ -3520,7 +3465,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/b54f1e41ddc8c3709ba2f8a59621138268d0380aca8399450a234997cc2214e4a6acf1a64ab387558ba39c0bd5839995a668bd71781762daac7618a2d71b4082
+  checksum: 10c0/1b32444758058f97d8222029c66fb277405811b6ed42d02122b9d12953d484a04602778ccfcae29522216fc64c0a9d0b007c40074049928b9b034454cae548d6
   languageName: node
   linkType: hard
 
@@ -3535,16 +3480,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-focus-guards@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-focus-guards@npm:1.1.0"
+"@radix-ui/react-focus-guards@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-focus-guards@npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/23af9ff17244568db9b2e99ae6e5718747a4b656bf12b1b15b0d3adca407988641a930612eca35a61b7e15d1ce312b3db13ea95999fa31ae641aaaac1e325df8
+  checksum: 10c0/2e99750ca593083a530542a185d656b45b100752353a7a193a67566e3c256414a76fa9171d152f8c0167b8d6c1fdf62b2e07750d7af2974bf8ef39eb204aa537
   languageName: node
   linkType: hard
 
@@ -3563,12 +3508,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-focus-scope@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-focus-scope@npm:1.1.0"
+"@radix-ui/react-focus-scope@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-focus-scope@npm:1.1.1"
   dependencies:
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
   peerDependencies:
     "@types/react": "*"
@@ -3580,7 +3525,58 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/2593d4bbd4a3525624675ec1d5a591a44f015f43f449b99a5a33228159b83f445e8f1c6bc6f9f2011387abaeadd3df406623c08d4e795b7ae509795652a1d069
+  checksum: 10c0/a430264a32e358c05dfa1c3abcf6c3d0481cbcbb2547532324c6d69fa7f9e3ed77b5eb2dd64d42808ec62c8d69abb573d6076907764af126d14ea18febf45d7b
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-form@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@radix-ui/react-form@npm:0.1.1"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-id": "npm:1.1.0"
+    "@radix-ui/react-label": "npm:2.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/78c41d03abab2744fd4026c1b365b8977b00749b86085db5579eed3a57c91748b344d64014a4437204f3eecd334e8284b25f85b24192c9100178559bf3797d05
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-hover-card@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@radix-ui/react-hover-card@npm:1.1.5"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-popper": "npm:1.2.1"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/69b434a44eef9f47224a0d27980e4ecc7922029bbbe4ae8868a54d23a8c3bcdd495cd82eb9e0872c3df095cd65015c59f05f66de7a38cd00025d5a6feb046b77
   languageName: node
   linkType: hard
 
@@ -3611,47 +3607,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-label@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@radix-ui/react-label@npm:2.1.0"
-  dependencies:
-    "@radix-ui/react-primitive": "npm:2.0.0"
-  peerDependencies:
-    "@types/react": "*"
-    "@types/react-dom": "*"
-    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    "@types/react-dom":
-      optional: true
-  checksum: 10c0/282d3b1b72ff14b431b3bb427d66d14253bbd30fad2437d8f4e7d5c0b6a41f6f7ed157460e02fb91b67b1c8cebc65f2c6fe1d3a32f4459d41238fc0fd4719875
-  languageName: node
-  linkType: hard
-
-"@radix-ui/react-menu@npm:2.1.1":
+"@radix-ui/react-label@npm:2.1.1":
   version: 2.1.1
-  resolution: "@radix-ui/react-menu@npm:2.1.1"
+  resolution: "@radix-ui/react-label@npm:2.1.1"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-collection": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/902628dc2c05610462a264feedc8c548d7ecad7f000efb9a4190e365ee2b7f75eccf98b43925fac6e1fa940c437abbce03ecc6868e06e0a197c779973ccc839d
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-menu@npm:2.1.5":
+  version: 2.1.5
+  resolution: "@radix-ui/react-menu@npm:2.1.5"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-direction": "npm:1.1.0"
-    "@radix-ui/react-dismissable-layer": "npm:1.1.0"
-    "@radix-ui/react-focus-guards": "npm:1.1.0"
-    "@radix-ui/react-focus-scope": "npm:1.1.0"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-focus-guards": "npm:1.1.1"
+    "@radix-ui/react-focus-scope": "npm:1.1.1"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-popper": "npm:1.2.0"
-    "@radix-ui/react-portal": "npm:1.1.1"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-roving-focus": "npm:1.1.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-popper": "npm:1.2.1"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
-    aria-hidden: "npm:^1.1.1"
-    react-remove-scroll: "npm:2.5.7"
+    aria-hidden: "npm:^1.2.4"
+    react-remove-scroll: "npm:^2.6.2"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3662,29 +3658,24 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/2cb11867430276d8db595886ae0e01e67a555676d37e108d5a6c386df23329482115a041b6a4057fad6b855aa423681805c20d1f290fd1502e521e8e55aafb54
+  checksum: 10c0/45a246efaecf2de16d748eaa515be089ab8f55f8e375887e3b7e4b89faf0555429cb934aa4dda1fe380a12b1c962dd8e32458e84465be5652e7be879c6889095
   languageName: node
   linkType: hard
 
-"@radix-ui/react-popover@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@radix-ui/react-popover@npm:1.1.1"
+"@radix-ui/react-menubar@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@radix-ui/react-menubar@npm:1.1.5"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-dismissable-layer": "npm:1.1.0"
-    "@radix-ui/react-focus-guards": "npm:1.1.0"
-    "@radix-ui/react-focus-scope": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-direction": "npm:1.1.0"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-popper": "npm:1.2.0"
-    "@radix-ui/react-portal": "npm:1.1.1"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-menu": "npm:2.1.5"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
-    aria-hidden: "npm:^1.1.1"
-    react-remove-scroll: "npm:2.5.7"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3695,19 +3686,84 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/4539082143c6c006727cf4a6300479f3dd912e85291d5ed7f084d8a7730acc3b5f6589925ab70eca025d3c78026f52f99c0155e11a35de37fe26b8078e6802b3
+  checksum: 10c0/1f5d6f42189a0ac3608b85a6f5cae4ca278bcb792f11d6134bb060c80c69008b1b31f82fa32ca83595a3f0968fb898353428f574d2017f9a999c9d945b718237
   languageName: node
   linkType: hard
 
-"@radix-ui/react-popper@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@radix-ui/react-popper@npm:1.2.0"
+"@radix-ui/react-navigation-menu@npm:1.2.4":
+  version: 1.2.4
+  resolution: "@radix-ui/react-navigation-menu@npm:1.2.4"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-id": "npm:1.1.0"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.0"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.0"
+    "@radix-ui/react-use-previous": "npm:1.1.0"
+    "@radix-ui/react-visually-hidden": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/7b32dc6fb7a685ca1ab1b948b739d1c7e71835e92307da6735bb6afd39f31dd7c8fdea30168ab3f860dea60f73b136ce8db2dbb9d120205d6ae6c1e146036b75
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-popover@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@radix-ui/react-popover@npm:1.1.5"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-focus-guards": "npm:1.1.1"
+    "@radix-ui/react-focus-scope": "npm:1.1.1"
+    "@radix-ui/react-id": "npm:1.1.0"
+    "@radix-ui/react-popper": "npm:1.2.1"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+    aria-hidden: "npm:^1.2.4"
+    react-remove-scroll: "npm:^2.6.2"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/95265a40ed7055a34b9b4d54fc644d3ea9d9e4e532f7562b6eb92c9923a8ce2a5bec8945f1c611ff59a9af741a403ce5a2a7e26736629b54a1c325300d47aab9
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-popper@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@radix-ui/react-popper@npm:1.2.1"
   dependencies:
     "@floating-ui/react-dom": "npm:^2.0.0"
-    "@radix-ui/react-arrow": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-arrow": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
     "@radix-ui/react-use-layout-effect": "npm:1.1.0"
     "@radix-ui/react-use-rect": "npm:1.1.0"
@@ -3723,7 +3779,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/a78ea534b9822d07153fff0895b6cdf742e7213782b140b3ab94a76df0ca70e6001925aea946e99ca680fc63a7fcca49c1d62e8dc5a2f651692fba3541e180c0
+  checksum: 10c0/514468b51e66ff2da3400fa782f4b52f9bad60517e3047cccf56488aa17a3c3f62ff2650b0216be31345dc3be6035999c7160788c92e35c7f8d53ddde2fb92f1
   languageName: node
   linkType: hard
 
@@ -3740,11 +3796,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-portal@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@radix-ui/react-portal@npm:1.1.1"
+"@radix-ui/react-portal@npm:1.1.3":
+  version: 1.1.3
+  resolution: "@radix-ui/react-portal@npm:1.1.3"
   dependencies:
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-layout-effect": "npm:1.1.0"
   peerDependencies:
     "@types/react": "*"
@@ -3756,7 +3812,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/7e7130fcb0d99197322cd97987e1d7279b6c264fb6be3d883cbfcd49267740d83ca17b431e0d98848afd6067a13ee823ca396a8b63ae68f18a728cf70398c830
+  checksum: 10c0/b3cd1a81513e528d261599cffda8d7d6094a8598750eaa32bac0d64dbc9a3b4d4e1c10f5bdadf7051b5fd77033b759dbeb4838dae325b94bf8251804c61508c5
   languageName: node
   linkType: hard
 
@@ -3774,11 +3830,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-presence@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-presence@npm:1.1.0"
+"@radix-ui/react-presence@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-presence@npm:1.1.2"
   dependencies:
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
     "@radix-ui/react-use-layout-effect": "npm:1.1.0"
   peerDependencies:
     "@types/react": "*"
@@ -3790,7 +3846,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/58acb658b15b72991ad7a234ea90995902c470b3a182aa90ad03145cbbeaa40f211700c444bfa14cf47537cbb6b732e1359bc5396182de839bd680843c11bf31
+  checksum: 10c0/0c6fa281368636308044df3be4c1f02733094b5e35ba04f26e610dd1c4315a245ffc758e0e176c444742a7a46f4328af1a9d8181e860175ec39338d06525a78d
   languageName: node
   linkType: hard
 
@@ -3807,11 +3863,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-primitive@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@radix-ui/react-primitive@npm:2.0.0"
+"@radix-ui/react-primitive@npm:2.0.1":
+  version: 2.0.1
+  resolution: "@radix-ui/react-primitive@npm:2.0.1"
   dependencies:
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-slot": "npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3822,21 +3878,41 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/00cb6ca499252ca848c299212ba6976171cea7608b10b3f9a9639d6732dea2df1197ba0d97c001a4fdb29313c3e7fc2a490f6245dd3579617a0ffd85ae964fdd
+  checksum: 10c0/6a562bec14f8e9fbfe0012d6c2932b0e54518fed898fa0622300c463611e77a4ca28a969f0cd484efd6570c01c5665dd6151f736262317d01715bc4da1a7dea6
   languageName: node
   linkType: hard
 
-"@radix-ui/react-radio-group@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@radix-ui/react-radio-group@npm:1.2.0"
+"@radix-ui/react-progress@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-progress@npm:1.1.1"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/dcf4ab20ff3a19a4be5a6e2502c42cd2c2770c6356b86301a548f725d33b8054dafe411b3c0f2b0b9465b225a31e8eb9f6bcc338d1936fb89312b517e1e7f2ec
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-radio-group@npm:1.2.2":
+  version: 1.2.2
+  resolution: "@radix-ui/react-radio-group@npm:1.2.2"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-direction": "npm:1.1.0"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-roving-focus": "npm:1.1.0"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
     "@radix-ui/react-use-previous": "npm:1.1.0"
     "@radix-ui/react-use-size": "npm:1.1.0"
@@ -3850,21 +3926,21 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/24764236699e397c65ed32260e91d40681e24f3808b19c1f8fec4757641e3f959a32dacd83f23aaf4abda6c26d28af6ce293e5736f7d6220a129c15953b21ab7
+  checksum: 10c0/450592e3a5aa1f9d53f21aefafb977e04b5a0c3a8a8080653f9d9c8117a381b4489bbb4fb4743bd52f043f6aff6e4b279926352c1dd9589fd541cb924533fc17
   languageName: node
   linkType: hard
 
-"@radix-ui/react-roving-focus@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-roving-focus@npm:1.1.0"
+"@radix-ui/react-roving-focus@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-roving-focus@npm:1.1.1"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-collection": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-direction": "npm:1.1.0"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
   peerDependencies:
@@ -3877,35 +3953,62 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/ce367d3033a12d639a8d445d2efa090aa4bc5a78125be568f8c8e4e59f30afd51b585a90031ec18cdba19afbaf1974633dbc0c2c3d2a14d9eb1bfea2ddbe5369
+  checksum: 10c0/ee41eb60b0c300ef3bb130f7ca6c7333148669f2a50b841027910158c06be215967880da932ac14b83d130a9ca5ffb33d6a1a0f067d5048f8db2c3884bbd9b85
   languageName: node
   linkType: hard
 
-"@radix-ui/react-select@npm:2.1.1":
-  version: 2.1.1
-  resolution: "@radix-ui/react-select@npm:2.1.1"
+"@radix-ui/react-scroll-area@npm:1.2.2":
+  version: 1.2.2
+  resolution: "@radix-ui/react-scroll-area@npm:1.2.2"
   dependencies:
     "@radix-ui/number": "npm:1.1.0"
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-collection": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-direction": "npm:1.1.0"
-    "@radix-ui/react-dismissable-layer": "npm:1.1.0"
-    "@radix-ui/react-focus-guards": "npm:1.1.0"
-    "@radix-ui/react-focus-scope": "npm:1.1.0"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.0"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/a959c199780d5ef931a4bc9323a009dff8207ccb21ea42131e259cd32fdea035ccddca7f161e3ac1eb93691644b39a6a274329637234d525c2543ceb299493fb
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-select@npm:2.1.5":
+  version: 2.1.5
+  resolution: "@radix-ui/react-select@npm:2.1.5"
+  dependencies:
+    "@radix-ui/number": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-focus-guards": "npm:1.1.1"
+    "@radix-ui/react-focus-scope": "npm:1.1.1"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-popper": "npm:1.2.0"
-    "@radix-ui/react-portal": "npm:1.1.1"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-popper": "npm:1.2.1"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
     "@radix-ui/react-use-callback-ref": "npm:1.1.0"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
     "@radix-ui/react-use-layout-effect": "npm:1.1.0"
     "@radix-ui/react-use-previous": "npm:1.1.0"
-    "@radix-ui/react-visually-hidden": "npm:1.1.0"
-    aria-hidden: "npm:^1.1.1"
-    react-remove-scroll: "npm:2.5.7"
+    "@radix-ui/react-visually-hidden": "npm:1.1.1"
+    aria-hidden: "npm:^1.2.4"
+    react-remove-scroll: "npm:^2.6.2"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -3916,7 +4019,55 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/f12bce67f49f82e44f04d109f53be195d7a415e89e29aa09ec704899d6a7198486f118f3d1e37aa7afd3e14524951752fc79170ac5bd4c831cdc4032ea1c0382
+  checksum: 10c0/adbaffbe7f7d4662adb10c5af8da279d380f310647a0412a6eb733426881239ac4bca78479b11211dca1ecb3dd1f7eeb6d042d6d8a107c25bc2440606f093758
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-separator@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-separator@npm:1.1.1"
+  dependencies:
+    "@radix-ui/react-primitive": "npm:2.0.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/4b0dc0db4e31d4d71a2a688581707dedb19a9e13378e86dbbab467970c5b271afc189ebba0e340495e15ce0fbbc42445d0be43ff8104de5f5c96cf3b822e801d
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-slider@npm:1.2.2":
+  version: 1.2.2
+  resolution: "@radix-ui/react-slider@npm:1.2.2"
+  dependencies:
+    "@radix-ui/number": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.0"
+    "@radix-ui/react-use-previous": "npm:1.1.0"
+    "@radix-ui/react-use-size": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/cd57454a20739523cba8762a6cc0a5beeaa1393e7aed5cb00ce1fdaa5b821c710865d2e746a639feac69025a4e02ff0b211cf515b02bfcf37dc9b633aa63ed70
   languageName: node
   linkType: hard
 
@@ -3932,29 +4083,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-slot@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-slot@npm:1.1.0"
+"@radix-ui/react-slot@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-slot@npm:1.1.1"
   dependencies:
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/a2e8bfb70c440506dd84a1a274f9a8bc433cca37ceae275e53552c9122612e3837744d7fc6f113d6ef1a11491aa914f4add71d76de41cb6d4db72547a8e261ae
+  checksum: 10c0/f3cc71c16529c67a8407a89e0ac13a868cafa0cd05ca185b464db609aa5996a3f00588695518e420bd47ffdb4cc2f76c14cc12ea5a38fc2ca3578a30d2ca58b9
   languageName: node
   linkType: hard
 
-"@radix-ui/react-switch@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-switch@npm:1.1.0"
+"@radix-ui/react-switch@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-switch@npm:1.1.2"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
     "@radix-ui/react-use-previous": "npm:1.1.0"
     "@radix-ui/react-use-size": "npm:1.1.0"
@@ -3968,21 +4119,21 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/49a250371dccce2a06564ce5812ffbd13b7b69fffe8473529a8a344d8caf95d4068f7d47bd257228e35802f008ba66af410b4d8456bc4257da237fa657c74d50
+  checksum: 10c0/5ae76c25ab6e9b401a562818b9507acb5994d4b8db828a21fde3d415fde8196c86f7f4025e5bccf72991a4e6801f008e05de02216be20e1f36b6f6411cd27939
   languageName: node
   linkType: hard
 
-"@radix-ui/react-tabs@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-tabs@npm:1.1.0"
+"@radix-ui/react-tabs@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-tabs@npm:1.1.2"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
     "@radix-ui/react-direction": "npm:1.1.0"
     "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-roving-focus": "npm:1.1.0"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
   peerDependencies:
     "@types/react": "*"
@@ -3994,26 +4145,26 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/d6cb742c36a6918dd37c6a3c531b1f6832916dde26855f6c94baf4a17d20bbb17ffd8ba9844539c568a4484a39bbdf5fc528d44534d1d46d094840836c9ff47d
+  checksum: 10c0/035db9d439d41e60218ea64c8c4cf4a8496eb885aa1caa3cace545a941766dbab7faa1a670ffb49389c55345028203927b424b8cbaa8f2f0cd0cda9974c2fcc6
   languageName: node
   linkType: hard
 
-"@radix-ui/react-tooltip@npm:1.1.2":
-  version: 1.1.2
-  resolution: "@radix-ui/react-tooltip@npm:1.1.2"
+"@radix-ui/react-toast@npm:1.2.5":
+  version: 1.2.5
+  resolution: "@radix-ui/react-toast@npm:1.2.5"
   dependencies:
-    "@radix-ui/primitive": "npm:1.1.0"
-    "@radix-ui/react-compose-refs": "npm:1.1.0"
-    "@radix-ui/react-context": "npm:1.1.0"
-    "@radix-ui/react-dismissable-layer": "npm:1.1.0"
-    "@radix-ui/react-id": "npm:1.1.0"
-    "@radix-ui/react-popper": "npm:1.2.0"
-    "@radix-ui/react-portal": "npm:1.1.1"
-    "@radix-ui/react-presence": "npm:1.1.0"
-    "@radix-ui/react-primitive": "npm:2.0.0"
-    "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.0"
     "@radix-ui/react-use-controllable-state": "npm:1.1.0"
-    "@radix-ui/react-visually-hidden": "npm:1.1.0"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.0"
+    "@radix-ui/react-visually-hidden": "npm:1.1.1"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -4024,7 +4175,108 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/76f3abcd27f7f673612631abc340a17e6ab0e5d20b901fe4828400de05d4d8a8711392417b028be86a3053a0881b80d0ed41c4e027eb64c1af9fe74db70d3786
+  checksum: 10c0/8f3f03355fdbf49d6705205357f17dd4f0f5ad874dd753da09f46bfb2145ac63780d4445dd1b1f70337185b4f34b43e33e82c4be988eee3fccae62cfc26b2d00
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-toggle-group@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-toggle-group@npm:1.1.1"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
+    "@radix-ui/react-toggle": "npm:1.1.1"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/730403b34ab2578fb660d6704ae56a11ea34a708ff5289bf828dc128286c6b7755f35186b7e4865bf41a11563f49dbc6cacb1ff2261ca8606394893f52ac86a7
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-toggle@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-toggle@npm:1.1.1"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/c38e6221fb0eb533dfe866cebf9ba3feceaf323ace799042161fe5246407199e4ceecbde27625955fcce894f902c2350f849cb4b924d59f91b5b41de49cd41e6
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-toolbar@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-toolbar@npm:1.1.1"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
+    "@radix-ui/react-separator": "npm:1.1.1"
+    "@radix-ui/react-toggle-group": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/003ea69d55dc3e05cd152096920ee04d46568fc76e682254666ba2cfcc7bb1a90fa38c41c08b0a8e08035ce5349497811c1f8786f2c5d662b98a93557fe261b9
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-tooltip@npm:1.1.7":
+  version: 1.1.7
+  resolution: "@radix-ui/react-tooltip@npm:1.1.7"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-id": "npm:1.1.0"
+    "@radix-ui/react-popper": "npm:1.2.1"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-slot": "npm:1.1.1"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+    "@radix-ui/react-visually-hidden": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/25c11cbc8b6aa4115c5fd10aa6fb414e5f4169d83334bd7711fd597dad938122839b801a4b4c13bd0295131db4b0527e18338a203cc6281721342251d01a2d48
   languageName: node
   linkType: hard
 
@@ -4173,11 +4425,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-visually-hidden@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@radix-ui/react-visually-hidden@npm:1.1.0"
+"@radix-ui/react-visually-hidden@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@radix-ui/react-visually-hidden@npm:1.1.1"
   dependencies:
-    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-primitive": "npm:2.0.1"
   peerDependencies:
     "@types/react": "*"
     "@types/react-dom": "*"
@@ -4188,7 +4440,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/db138dd5f3c94958a9f836740d4408c89c4a73e770eaba5ead921e69b3c0d196c5cd58323d82829a9bc05a74873c299195dfd8366b9808e53a9a3dbca5a1e5fe
+  checksum: 10c0/9a34b8e09dc79983626194fdfb4bd24c79060034a226153a2bd9f726f056139316e7a6360583567c6ccd5d9589e6d230fe2c436abea455f73e2d27b73412c412
   languageName: node
   linkType: hard
 
@@ -7280,7 +7532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aria-hidden@npm:^1.1.1":
+"aria-hidden@npm:^1.1.1, aria-hidden@npm:^1.2.4":
   version: 1.2.4
   resolution: "aria-hidden@npm:1.2.4"
   dependencies:
@@ -9304,7 +9556,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-port@npm:^5.1.0":
+"get-port@npm:^5.1.0, get-port@npm:^5.1.1":
   version: 5.1.1
   resolution: "get-port@npm:5.1.1"
   checksum: 10c0/2873877a469b24e6d5e0be490724a17edb39fafc795d1d662e7bea951ca649713b4a50117a473f9d162312cb0e946597bd0e049ed2f866e79e576e8e213d3d1c
@@ -11782,6 +12034,74 @@ __metadata:
   languageName: node
   linkType: hard
 
+"radix-ui@npm:1.1.2":
+  version: 1.1.2
+  resolution: "radix-ui@npm:1.1.2"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-accessible-icon": "npm:1.1.1"
+    "@radix-ui/react-accordion": "npm:1.2.2"
+    "@radix-ui/react-alert-dialog": "npm:1.1.5"
+    "@radix-ui/react-aspect-ratio": "npm:1.1.1"
+    "@radix-ui/react-avatar": "npm:1.1.2"
+    "@radix-ui/react-checkbox": "npm:1.1.3"
+    "@radix-ui/react-collapsible": "npm:1.1.2"
+    "@radix-ui/react-collection": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-context-menu": "npm:2.2.5"
+    "@radix-ui/react-dialog": "npm:1.1.5"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.4"
+    "@radix-ui/react-dropdown-menu": "npm:2.1.5"
+    "@radix-ui/react-focus-guards": "npm:1.1.1"
+    "@radix-ui/react-focus-scope": "npm:1.1.1"
+    "@radix-ui/react-form": "npm:0.1.1"
+    "@radix-ui/react-hover-card": "npm:1.1.5"
+    "@radix-ui/react-label": "npm:2.1.1"
+    "@radix-ui/react-menu": "npm:2.1.5"
+    "@radix-ui/react-menubar": "npm:1.1.5"
+    "@radix-ui/react-navigation-menu": "npm:1.2.4"
+    "@radix-ui/react-popover": "npm:1.1.5"
+    "@radix-ui/react-popper": "npm:1.2.1"
+    "@radix-ui/react-portal": "npm:1.1.3"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.1"
+    "@radix-ui/react-progress": "npm:1.1.1"
+    "@radix-ui/react-radio-group": "npm:1.2.2"
+    "@radix-ui/react-roving-focus": "npm:1.1.1"
+    "@radix-ui/react-scroll-area": "npm:1.2.2"
+    "@radix-ui/react-select": "npm:2.1.5"
+    "@radix-ui/react-separator": "npm:1.1.1"
+    "@radix-ui/react-slider": "npm:1.2.2"
+    "@radix-ui/react-slot": "npm:1.1.1"
+    "@radix-ui/react-switch": "npm:1.1.2"
+    "@radix-ui/react-tabs": "npm:1.1.2"
+    "@radix-ui/react-toast": "npm:1.2.5"
+    "@radix-ui/react-toggle": "npm:1.1.1"
+    "@radix-ui/react-toggle-group": "npm:1.1.1"
+    "@radix-ui/react-toolbar": "npm:1.1.1"
+    "@radix-ui/react-tooltip": "npm:1.1.7"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.0"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+    "@radix-ui/react-use-escape-keydown": "npm:1.1.0"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.0"
+    "@radix-ui/react-use-size": "npm:1.1.0"
+    "@radix-ui/react-visually-hidden": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/ccab21c23b7f8d7fdc5a98313dbb9427c3b7e97277cebc08f1c40db444bc6741626f433b21c6e483232b236478cc3d7c00be69d30ea416ddea84018e73c7d297
+  languageName: node
+  linkType: hard
+
 "random-bytes@npm:~1.0.0":
   version: 1.0.0
   resolution: "random-bytes@npm:1.0.0"
@@ -11974,7 +12294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-remove-scroll-bar@npm:^2.3.3, react-remove-scroll-bar@npm:^2.3.4":
+"react-remove-scroll-bar@npm:^2.3.3, react-remove-scroll-bar@npm:^2.3.7":
   version: 2.3.8
   resolution: "react-remove-scroll-bar@npm:2.3.8"
   dependencies:
@@ -12009,22 +12329,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-remove-scroll@npm:2.5.7":
-  version: 2.5.7
-  resolution: "react-remove-scroll@npm:2.5.7"
+"react-remove-scroll@npm:^2.6.2":
+  version: 2.6.3
+  resolution: "react-remove-scroll@npm:2.6.3"
   dependencies:
-    react-remove-scroll-bar: "npm:^2.3.4"
-    react-style-singleton: "npm:^2.2.1"
+    react-remove-scroll-bar: "npm:^2.3.7"
+    react-style-singleton: "npm:^2.2.3"
     tslib: "npm:^2.1.0"
-    use-callback-ref: "npm:^1.3.0"
-    use-sidecar: "npm:^1.1.2"
+    use-callback-ref: "npm:^1.3.3"
+    use-sidecar: "npm:^1.1.3"
   peerDependencies:
-    "@types/react": ^16.8.0 || ^17.0.0 || ^18.0.0
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    "@types/react": "*"
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/dcd523ada602bd0a839c2032cadf0b3e4af55ee85acefee3760976a9cceaa4606927801b093bbb8bf3c2989c71e048f5428c2c6eb9e6681762e86356833d039b
+  checksum: 10c0/068e9704ff26816fffc4c8903e2c6c8df7291ee08615d7c1ab0cf8751f7080e2c5a5d78ef5d908b11b9cfc189f176d312e44cb02ea291ca0466d8283b479b438
   languageName: node
   linkType: hard
 
@@ -12087,7 +12407,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-style-singleton@npm:^2.2.1, react-style-singleton@npm:^2.2.2":
+"react-style-singleton@npm:^2.2.1, react-style-singleton@npm:^2.2.2, react-style-singleton@npm:^2.2.3":
   version: 2.2.3
   resolution: "react-style-singleton@npm:2.2.3"
   dependencies:
@@ -13512,7 +13832,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-callback-ref@npm:^1.3.0":
+"use-callback-ref@npm:^1.3.0, use-callback-ref@npm:^1.3.3":
   version: 1.3.3
   resolution: "use-callback-ref@npm:1.3.3"
   dependencies:
@@ -13527,7 +13847,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sidecar@npm:^1.1.2":
+"use-sidecar@npm:^1.1.2, use-sidecar@npm:^1.1.3":
   version: 1.1.3
   resolution: "use-sidecar@npm:1.1.3"
   dependencies:
@@ -13961,5 +14281,12 @@ __metadata:
   version: 3.22.4
   resolution: "zod@npm:3.22.4"
   checksum: 10c0/7578ab283dac0eee66a0ad0fc4a7f28c43e6745aadb3a529f59a4b851aa10872b3890398b3160f257f4b6817b4ce643debdda4fb21a2c040adda7862cab0a587
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.22":
+  version: 3.24.2
+  resolution: "zod@npm:3.24.2"
+  checksum: 10c0/c638c7220150847f13ad90635b3e7d0321b36cce36f3fc6050ed960689594c949c326dfe2c6fa87c14b126ee5d370ccdebd6efb304f41ef5557a4aaca2824565
   languageName: node
   linkType: hard

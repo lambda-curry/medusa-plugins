@@ -82,6 +82,7 @@
     "hoistingLimits": "workspaces"
   },
   "dependencies": {
+    "@lambdacurry/medusa-plugins-sdk": "file:.yalc/@lambdacurry/medusa-plugins-sdk",
     "@medusajs/js-sdk": "^2.5.0",
     "@medusajs/workflows-sdk": "^2.5.0",
     "luxon": "^3.5.0"

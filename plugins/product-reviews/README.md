@@ -72,6 +72,18 @@ yarn dev:publish
 yarn db:generate
 ```
 
+### Installing the plugin in your Medusa project for local development
+After publishing the plugin locally by running yarn dev:publish, go to the root of your Medusa project and run the following commands:
+
+```bash
+cd path/to/your/medusa-application
+
+yarn medusa plugin:add @lambdacurry/medusa-product-reviews
+
+# If you are yarn with a monorepo, you may also need to run
+yarn install
+```
+
 ## Compatibility
 
 This plugin is compatible with versions >= 2.3.0 of `@medusajs/medusa`.

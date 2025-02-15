@@ -1,23 +1,19 @@
 import { Auth, Client, type Config } from '@medusajs/js-sdk';
-import { Admin } from './admin';
-import { Store } from './store';
+import { ExtendedAdminSDK } from './admin';
+import { ExtendedStorefrontSDK } from './store';
 
-class MedusaPluginsSDK {
+export class MedusaPluginsSDK {
   public client: Client
 
-  public admin: Admin
-  public store: Store
+  public admin: ExtendedAdminSDK
+  public store: ExtendedStorefrontSDK
   public auth: Auth
 
   constructor(config: Config) {
     this.client = new Client(config)
-
-    this.admin = new Admin(this.client)
-    this.store = new Store(this.client)
+    this.admin = new ExtendedAdminSDK(this.client)
+    this.store = new ExtendedStorefrontSDK(this.client)
     this.auth = new Auth(this.client, config)
   }
 }
 
-export {
-  MedusaPluginsSDK
-}

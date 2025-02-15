@@ -13,7 +13,8 @@
     "node": ">=20"
   },
   "workspaces": [
-    "plugins/*"
+    "./plugins/*",
+    "./packages/*"
   ],
   "packageManager": "yarn@4.6.0"
 }

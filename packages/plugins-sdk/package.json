@@ -1,0 +1,50 @@
+{
+  "name": "@lambdacurry/medusa-plugins-sdk",
+  "version": "0.0.1",
+  "description": "SDK for Medusa plugins",
+  "author": "Lambda Curry (https://lambdacurry.dev)",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "keywords": [
+    "medusa",
+    "plugin",
+    "sdk",
+    "medusa-plugins-sdk",
+    "medusa-v2",
+    "lambdacurry"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "prepublishOnly": "yarn build",
+    "dev:publish": "yalc publish --push"
+  },
+  "devDependencies": {
+    "@medusajs/js-sdk": "2.5.0",
+    "prettier": "^3.2.5",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "yalc": "^1.0.0-pre.53"
+  },
+  "peerDependencies": {
+    "@medusajs/js-sdk": "2.5.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

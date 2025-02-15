@@ -26,3 +26,6 @@ build
 .medusa
 
 .turbo
+
+.yalc
+yalc.lock

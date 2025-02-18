@@ -1,59 +1,131 @@
-# Medusa Product Reviews Plugin
+# @lambdacurry/medusa-product-reviews
 
-A plugin that adds product review capabilities to your Medusa commerce application.
+A plugin that adds product review and moderation capabilities to your Medusa application, with built-in admin responses and review statistics.
 
 > This plugin is part of the [Medusa Plugins Collection](https://github.com/lambda-curry/medusa-plugins).
 
 ## Features
+> See a demo in our [Medusa Starter](https://github.com/lambda-curry/medusa2-starter)
 
-- Customer product reviews with ratings
-- Review moderation system (Admin)
-- API endpoints for review management
-- Store API endpoints for review retrieval
+- Product reviews with ratings
+- Review statistics and analytics
+- Review moderation workflow (`approved`/`pending`/`flagged`)
+- Admin response management
+- SDK for Store and Admin operations
 
 ## Prerequisites
 
 - [Medusa >=2.5.0 backend](https://docs.medusajs.com/development/backend/install)
 - [PostgreSQL](https://docs.medusajs.com/development/backend/prepare-environment#postgresql)
 
-> **IMPORTANT**: A running PostgreSQL instance is required. The plugin expects `DB_USERNAME` and `DB_PASSWORD` environment variables to be set. If not provided, both default to "postgres".
-
-## Installation
-
+## Installation and Configuration
+1. Install the plugin:
 ```bash
-npm install @lambdacurry/medusa-product-reviews
-# or
 yarn add @lambdacurry/medusa-product-reviews
+
+# or, if you're using yarn workspaces
+yarn workspace my-app add @lambdacurry/medusa-product-reviews
 ```
 
-## Configuration
-
-Add the following to your `medusa-config.ts`:
-
+2. Add to `medusa-config.ts`:
 ```js
-{
-  resolve: `@lambdacurry/medusa-product-reviews`,
-  options: {
-    defaultReviewStatus: 'pending', // optional, default is 'approved'
-  }
-}
+module.exports = defineConfig({
+  plugins: [
+    {
+      resolve: '@lambdacurry/medusa-product-reviews',
+      options: {
+        defaultReviewStatus: 'pending', // OPTIONAL, default is 'approved'
+      },
+    },
+  ],
+});
 ```
 
-## API Documentation
+3. Run migrations:
+```bash
+yarn medusa db:migrate
+```
 
-The plugin adds the following endpoints:
+## Using the Plugin SDK
 
-- `GET /admin/product-reviews` - List all reviews (admin)
-- `POST /admin/product-reviews/:id/response` - Add a response to a review (admin)
-- `PUT /admin/product-reviews/:id/response` - Update a response to a review (admin)
-- `DELETE /admin/product-reviews/:id/response` - Delete a response to a review (admin)
-- `PUT /admin/product-reviews/:id/status` - Update review status (admin)
-- `GET /admin/product-review-stats` - Get review statistics (admin)
+> For detailed SDK setup and configuration, refer to the [@lambdacurry/medusa-plugins-sdk README](../packages/plugins-sdk/README.md).
 
+### Store Operations
 
-- `GET /store/product-reviews` - Get product reviews
-- `POST /store/product-reviews` - Create or update a product reviews
-- `GET /store/product-review-stats` - Get review statistics
+```typescript
+// List product reviews
+const { reviews, count } = await sdk.store.productReviews.list(
+  query: StoreListProductReviewsQuery,
+  headers?: ClientHeaders
+);
+
+// Create/Update a review
+const review = await sdk.store.productReviews.upsert(
+  data: StoreUpsertProductReviewsDTO,
+  headers?: ClientHeaders
+);
+
+// Get review statistics
+const stats = await sdk.store.productReviews.listStats(
+  query: StoreListProductReviewStatsQuery,
+  headers?: ClientHeaders
+);
+```
+
+### Admin Operations
+
+```typescript
+// List reviews
+const { reviews, count } = await sdk.admin.productReviews.list(
+  query: AdminListProductReviewsQuery
+);
+
+// Update review status
+const review = await sdk.admin.productReviews.updateStatus(
+  productReviewId: string,
+  status: 'pending' | 'approved' | 'flagged'
+);
+
+// Manage review responses
+const review = await sdk.admin.productReviews.createResponse(
+  productReviewId: string,
+  data: AdminCreateProductReviewResponseDTO
+);
+
+await sdk.admin.productReviews.updateResponse(
+  productReviewId: string,
+  data: AdminUpdateProductReviewResponseDTO
+);
+
+await sdk.admin.productReviews.deleteResponse(
+  productReviewId: string
+);
+```
+
+## Review Workflow
+
+1. **Creation**: Reviews are set to:
+   - `approved` status by default
+   - `pending` status if `defaultReviewStatus: 'pending'` is set in plugin options
+
+2. **Moderation**: Admins can:
+   - List and filter reviews
+   - Update review status (approve/flag)
+   - Manage responses (create/update/delete)
+
+## Available Endpoints
+
+### Admin Endpoints
+- `GET /admin/product-reviews` - List all reviews
+- `POST /admin/product-reviews/:id/response` - Add a response
+- `PUT /admin/product-reviews/:id/response` - Update response
+- `DELETE /admin/product-reviews/:id/response` - Delete response
+- `PUT /admin/product-reviews/:id/status` - Update status
+
+### Store Endpoints
+- `GET /store/product-reviews` - List reviews
+- `POST /store/product-reviews` - Create/Update review
+- `GET /store/product-review-stats` - Get statistics
 
 ## Local Development
 
@@ -88,7 +160,7 @@ yarn install
 
 ## Compatibility
 
-This plugin is compatible with versions >= 2.5.0 of `@medusajs/medusa`.
+This plugin is compatible with versions `>= 2.5.0` of `@medusajs/medusa`.
 
 ## License
 

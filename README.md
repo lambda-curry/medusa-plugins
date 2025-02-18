@@ -3,17 +3,19 @@
 A collection of plugins for enhancing your Medusa commerce application with additional features and functionalities.
 
 ## Plugins SDK
-You can use the [Plugins SDK](./packages/plugins-sdk) to interact with the Medusa API and the plugins in this collection.
+You can use the [Plugins SDK](./packages/plugins-sdk) to interact with the plugins in this collection. The SDK provides a unified way to interact with all plugins through both Store and Admin operations.
 
 ## Available Plugins
 
 ### [Product Reviews](./plugins/product-reviews)
 Add product review capabilities to your Medusa store:
-- Customer ratings and reviews
-- Review moderation system
+- Product reviews with ratings
+- Review statistics and analytics
+- Review moderation workflow (`approved`/`pending`/`flagged`)
 - Admin response management
-- Review statistics
-- Store and Admin API endpoints
+- SDK for Store and Admin operations
+
+> See a demo in our [Medusa Starter](https://github.com/lambda-curry/medusa2-starter)
 
 ## Requirements
 

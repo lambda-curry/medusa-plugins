@@ -2,6 +2,8 @@
 
 A plugin that adds product review capabilities to your Medusa commerce application.
 
+> This plugin is part of the [Medusa Plugins Collection](https://github.com/lambda-curry/medusa-plugins).
+
 ## Features
 
 - Customer product reviews with ratings

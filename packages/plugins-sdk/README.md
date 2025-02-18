@@ -2,6 +2,8 @@
 
 SDK for Medusa plugins by Lambda Curry.
 
+> This package is part of the [Medusa Plugins Collection](https://github.com/lambda-curry/medusa-plugins).
+
 ## Installation
 
 ```bash

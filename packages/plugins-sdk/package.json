@@ -4,6 +4,11 @@
   "description": "SDK for Medusa plugins",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lambda-curry/medusa-plugins"
+  },
+  "homepage": "https://github.com/lambda-curry/medusa-plugins/tree/main/packages/plugins-sdk",
   "files": [
     "dist"
   ],

@@ -1,6 +1,11 @@
 {
   "name": "medusa-plugins",
   "author": "Lambda Curry (https://lambdacurry.dev)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lambda-curry/medusa-plugins"
+  },
+  "homepage": "https://github.com/lambda-curry/medusa-plugins",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev"

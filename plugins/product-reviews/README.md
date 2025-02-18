@@ -11,7 +11,7 @@ A plugin that adds product review capabilities to your Medusa commerce applicati
 
 ## Prerequisites
 
-- [Medusa >=2.3.0 backend](https://docs.medusajs.com/development/backend/install)
+- [Medusa >=2.5.0 backend](https://docs.medusajs.com/development/backend/install)
 - [PostgreSQL](https://docs.medusajs.com/development/backend/prepare-environment#postgresql)
 
 > **IMPORTANT**: A running PostgreSQL instance is required. The plugin expects `DB_USERNAME` and `DB_PASSWORD` environment variables to be set. If not provided, both default to "postgres".
@@ -86,7 +86,7 @@ yarn install
 
 ## Compatibility
 
-This plugin is compatible with versions >= 2.3.0 of `@medusajs/medusa`.
+This plugin is compatible with versions >= 2.5.0 of `@medusajs/medusa`.
 
 ## License
 

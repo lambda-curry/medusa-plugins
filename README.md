@@ -14,7 +14,7 @@ Add product review capabilities to your Medusa store:
 
 ## Requirements
 
-- Medusa >= 2.3.0
+- Medusa >= 2.5.0
 - Node >= 20
 
 ## Development

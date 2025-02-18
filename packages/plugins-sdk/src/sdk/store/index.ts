@@ -1,11 +1,11 @@
 import type { Client } from '@medusajs/js-sdk';
 import { Store } from '@medusajs/js-sdk';
-import { StoreProductReviews } from './store-product-reviews';
+import { StoreProductReviewsResource } from './store-product-reviews';
 
 export class ExtendedStorefrontSDK extends Store {
-  public productReviews: StoreProductReviews;
+  public productReviews: StoreProductReviewsResource;
   constructor(client: Client) {
     super(client);
-    this.productReviews = new StoreProductReviews(client);
+    this.productReviews = new StoreProductReviewsResource(client);
   }
 }

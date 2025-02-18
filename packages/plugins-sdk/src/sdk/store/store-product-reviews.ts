@@ -8,7 +8,7 @@ import type {
   StoreUpsertProductReviewsResponse,
 } from '../../types';
 
-export class StoreProductReviews {
+export class StoreProductReviewsResource {
   constructor(private client: Client) {}
 
   async upsert(data: StoreUpsertProductReviewsDTO, headers?: ClientHeaders) {

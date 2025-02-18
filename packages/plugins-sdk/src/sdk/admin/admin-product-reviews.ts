@@ -7,7 +7,7 @@ import type {
   AdminListProductReviewsResponse,
 } from '../../types';
 
-export class AdminProductReviews {
+export class AdminProductReviewsResource {
   constructor(private client: Client) {}
 
   async list(query: AdminListProductReviewsQuery) {

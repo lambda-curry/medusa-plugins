@@ -30,7 +30,7 @@
     "lint": "prettier --check \"src/**/*.{ts,tsx}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "prepublishOnly": "yarn build",
-    "dev:publish": "yalc publish --push"
+    "dev:publish": "yalc publish"
   },
   "devDependencies": {
     "@medusajs/js-sdk": "2.5.0",

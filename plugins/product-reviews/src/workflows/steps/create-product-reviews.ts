@@ -2,12 +2,9 @@ import { StepResponse, createStep } from '@medusajs/workflows-sdk';
 import { PRODUCT_REVIEW_MODULE } from '../../modules/product-review';
 import type ProductReviewService from '../../modules/product-review/service';
 import type { CreateProductReviewInput } from '../../modules/product-review/types/mutations';
-import { ProductReview } from '../../modules/product-review/types/common';
 
 export const createProductReviewsStepId = 'create-product-review-step';
 
-const DEFAULT_PRODUCT_REVIEW_STATUS =
-  process.env.DEFAULT_PRODUCT_REVIEW_STATUS || 'approved';
 
 export const createProductReviewsStep = createStep(
   createProductReviewsStepId,
@@ -22,7 +19,7 @@ export const createProductReviewsStep = createStep(
 
     const createData: any[] = data.map(d => ({
       ...d,
-      status: DEFAULT_PRODUCT_REVIEW_STATUS,
+      status: productReviewService.defaultReviewStatus,
       images:
         d.images?.map(image => ({
           url: image.url,

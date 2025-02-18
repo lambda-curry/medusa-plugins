@@ -8,6 +8,7 @@ import {
   ProductReviewStatsModel,
 } from './models';
 import { ProductReviewStats } from './types';
+import { z } from 'zod';
 
 interface CalculatedProductReviewStats {
   product_id: string;
@@ -20,12 +21,30 @@ interface CalculatedProductReviewStats {
   rating_count_5: number;
 }
 
+export const modduleOptionsSchema = z.object({
+  defaultReviewStatus: z.enum(['pending', 'approved', 'flagged']).default('approved'),
+}).default({
+  defaultReviewStatus: 'approved',
+});
+
+export type ModuleOptions = z.infer<typeof modduleOptionsSchema>;
+
 class ProductReviewService extends MedusaService({
   ProductReview: ProductReviewModel,
   ProductReviewImage: ProductReviewImageModel,
   ProductReviewResponse: ProductReviewResponseModel,
   ProductReviewStats: ProductReviewStatsModel,
 }) {
+  public readonly defaultReviewStatus: string
+
+  constructor(container, options: ModuleOptions) {
+    super(container, options);
+
+    const { defaultReviewStatus } = modduleOptionsSchema.parse(options);
+
+    this.defaultReviewStatus = defaultReviewStatus;
+  }
+
   async refreshProductReviewStats(productIds: string[], sharedContext?: Context): Promise<ProductReviewStats[]> {
     const foundStats = await this.listProductReviewStats({ product_id: productIds }, {});
 

@@ -46,6 +46,10 @@ export const defaultStoreProductReviewFields = [
   'updated_at',
   'response.*',
   'images.*',
+  'order.customer.first_name',
+  'order.customer.last_name',
+  'order.billing_address.first_name',
+  'order.billing_address.last_name',
 ];
 
 export const allowedStoreProductReviewFields = [
@@ -59,6 +63,10 @@ export const allowedStoreProductReviewFields = [
   'updated_at',
   'response',
   'images',
+  'order.customer.first_name',
+  'order.customer.last_name',
+  'order.billing_address.first_name',
+  'order.billing_address.last_name',
 ];
 
 export const defaultStoreReviewsQueryConfig: QueryConfig<ProductReview> = {

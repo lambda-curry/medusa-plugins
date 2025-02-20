@@ -1,4 +1,3 @@
-// other imports...
 import { MiddlewareRoute } from '@medusajs/framework/http';
 import multer from 'multer';
 

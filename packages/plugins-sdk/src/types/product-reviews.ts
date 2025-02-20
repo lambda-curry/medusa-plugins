@@ -126,10 +126,21 @@ export type StoreUpsertProductReviewsDTO = {
     order_line_item_id: string;
     rating: number;
     content: string;
-    images: { url: string }[];
+    images: (Express.Multer.File | string)[];
   }[];
 };
 
 export type StoreUpsertProductReviewsResponse = {
   product_reviews: StoreProductReview[];
 };
+
+
+export type StoreUploadProductReviewImagesResponse = {
+  uploads: [{
+    url: string;
+    key: string;
+  }] | {
+    url: string;
+    key: string;
+  } | undefined
+}

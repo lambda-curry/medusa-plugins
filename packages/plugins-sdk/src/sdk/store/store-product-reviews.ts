@@ -1,4 +1,6 @@
 import type { Client, ClientHeaders } from '@medusajs/js-sdk';
+import FormData from 'form-data';
+import { createReadStream } from 'fs';
 import type {
   StoreListProductReviewsResponse,
   StoreListProductReviewsQuery,
@@ -6,6 +8,7 @@ import type {
   StoreListProductReviewStatsResponse,
   StoreUpsertProductReviewsDTO,
   StoreUpsertProductReviewsResponse,
+  StoreUploadProductReviewImagesResponse,
 } from '../../types';
 
 export class StoreProductReviewsResource {
@@ -32,6 +35,29 @@ export class StoreProductReviewsResource {
       method: 'GET',
       query,
       headers,
+    });
+  }
+
+  async uploadImages(
+    images: File[],
+    headers?: ClientHeaders
+  ) {
+
+    const formData = new FormData();
+
+    for (const image of images) {
+      if ('getFilePath' in image) {
+        
+        formData.append('files', createReadStream((image.getFilePath as () => string)()));
+      } else {
+        return;
+      }
+    }
+
+    return await this.client.fetch<StoreUploadProductReviewImagesResponse>(`/store/product-reviews/uploads`, {
+      method: 'POST',
+      body: formData,
+      headers: formData.getHeaders(),
     });
   }
 }

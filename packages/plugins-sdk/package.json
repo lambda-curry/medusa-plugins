@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-plugins-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "SDK for Medusa plugins",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -46,7 +46,10 @@
     "yalc": "^1.0.0-pre.53"
   },
   "dependencies": {
-    "@medusajs/js-sdk": "^2.5.0"
+    "@medusajs/js-sdk": "^2.5.0",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "form-data": "^4.0.2"
   },
   "engines": {
     "node": ">=20"

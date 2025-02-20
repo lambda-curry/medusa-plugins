@@ -1868,6 +1868,9 @@ __metadata:
   resolution: "@lambdacurry/medusa-plugins-sdk@workspace:packages/plugins-sdk"
   dependencies:
     "@medusajs/js-sdk": "npm:2.5.0"
+    "@types/express": "npm:^5.0.0"
+    "@types/multer": "npm:^1.4.12"
+    form-data: "npm:^4.0.2"
     prettier: "npm:^3.2.5"
     rimraf: "npm:^6.0.1"
     tsup: "npm:^8.0.2"
@@ -7313,7 +7316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*":
+"@types/express@npm:*, @types/express@npm:^5.0.0":
   version: 5.0.0
   resolution: "@types/express@npm:5.0.0"
   dependencies:
@@ -9697,7 +9700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.2":
   version: 4.0.2
   resolution: "form-data@npm:4.0.2"
   dependencies:

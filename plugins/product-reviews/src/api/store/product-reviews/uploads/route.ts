@@ -1,11 +1,14 @@
-import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework/http';
+import { AuthenticatedMedusaRequest, MedusaRequest, MedusaResponse } from '@medusajs/framework/http';
 import { uploadFilesWorkflow } from '@medusajs/medusa/core-flows';
 import { MedusaError } from '@medusajs/framework/utils';
+import { AdminUploadFile } from '@medusajs/framework/types';
 
-export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
+
+export const POST = async (req: MedusaRequest<AdminUploadFile>, res: MedusaResponse) => {
   const access = 'public';
   const input = req.files as Express.Multer.File[];
-
+  console.log("\n\n\n🚀 ~ POST ~ input:", input)
+  
   if (!input?.length) {
     throw new MedusaError(MedusaError.Types.INVALID_DATA, 'No files were uploaded');
   }

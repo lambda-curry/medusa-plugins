@@ -1871,6 +1871,7 @@ __metadata:
   resolution: "@lambdacurry/medusa-plugins-sdk@workspace:packages/plugins-sdk"
   dependencies:
     "@medusajs/js-sdk": "npm:2.5.0"
+    "@medusajs/types": "npm:^2.5.0"
     "@types/express": "npm:^5.0.0"
     "@types/multer": "npm:^1.4.12"
     form-data: "npm:^4.0.2"

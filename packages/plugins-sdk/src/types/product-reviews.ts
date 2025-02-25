@@ -126,7 +126,7 @@ export type StoreUpsertProductReviewsDTO = {
     order_line_item_id: string;
     rating: number;
     content: string;
-    images: (Express.Multer.File | string)[];
+    images: {url:string}[];
   }[];
 };
 

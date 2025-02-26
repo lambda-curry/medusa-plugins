@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-plugins-sdk",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "SDK for Medusa plugins",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",

@@ -87,9 +87,9 @@ export type StoreListProductReviewsResponse = {
 export type StoreProductReviewResponse = {
   id: string;
   content: string;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
   product_review_id: string;
 }
 
@@ -99,7 +99,6 @@ export type StoreProductReview = {
   rating: number;
   name: string;
   email: string;
-  order_id?: string;
   product_id?: string;
   order_item_id?: string;
   images: {
@@ -107,15 +106,6 @@ export type StoreProductReview = {
   }[];
   created_at: string;
   updated_at: string;
-  product: {
-    id: string;
-    thumbnail?: string;
-    title: string;
-  };
-  order: {
-    id: string;
-    display_id: string;
-  };
   response?: StoreProductReviewResponse;
 };
 

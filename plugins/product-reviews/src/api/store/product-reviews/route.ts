@@ -11,7 +11,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     ...req.queryConfig,
     filters: {
       ...req.filterableFields,
-    }
+    },
   });
 
   res.status(200).json({ product_reviews, count: metadata.count, offset: metadata.skip, limit: metadata.take });
@@ -26,6 +26,8 @@ export const POST = async (req: AuthenticatedMedusaRequest<UpsertProductReviewsS
   const createdReviewIds = result.creates.map((review) => review.id);
   const updatedReviewIds = result.updates.map((review) => review.id);
 
+
+  
   const { data: product_reviews } = await query.graph({
     entity: 'product_review',
     fields: [...defaultStoreProductReviewFields],

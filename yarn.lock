@@ -1854,19 +1854,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lambdacurry/medusa-plugins-sdk@npm:latest":
-  version: 0.0.3
-  resolution: "@lambdacurry/medusa-plugins-sdk@npm:0.0.3"
-  dependencies:
-    "@medusajs/js-sdk": "npm:^2.5.0"
-    "@types/express": "npm:^5.0.0"
-    "@types/multer": "npm:^1.4.12"
-    form-data: "npm:^4.0.2"
-  checksum: 10c0/6233911b46033b83c37846643840cad10eb7c8414ff4cbd2314f2aad9bca189456c4bf9eaa695bd8caf5e508f9455f83ad6f99fc8d4c22ec91c53494db71eeb5
-  languageName: node
-  linkType: hard
-
-"@lambdacurry/medusa-plugins-sdk@workspace:packages/plugins-sdk":
+"@lambdacurry/medusa-plugins-sdk@npm:0.0.5, @lambdacurry/medusa-plugins-sdk@workspace:packages/plugins-sdk":
   version: 0.0.0-use.local
   resolution: "@lambdacurry/medusa-plugins-sdk@workspace:packages/plugins-sdk"
   dependencies:
@@ -1887,7 +1875,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lambdacurry/medusa-product-reviews@workspace:plugins/product-reviews"
   dependencies:
-    "@lambdacurry/medusa-plugins-sdk": "npm:latest"
+    "@lambdacurry/medusa-plugins-sdk": "npm:0.0.5"
     "@medusajs/admin-sdk": "npm:2.5.0"
     "@medusajs/cli": "npm:2.5.0"
     "@medusajs/framework": "npm:2.5.0"

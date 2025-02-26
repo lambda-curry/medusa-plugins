@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-product-reviews",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Product Reviews Plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -87,7 +87,7 @@
     "hoistingLimits": "workspaces"
   },
   "dependencies": {
-    "@lambdacurry/medusa-plugins-sdk": "latest",
+    "@lambdacurry/medusa-plugins-sdk": "0.0.5",
     "@medusajs/js-sdk": "^2.5.0",
     "@medusajs/workflows-sdk": "^2.5.0",
     "luxon": "^3.5.0"

@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { StatusBadge } from "@medusajs/ui";
+import { Button, StatusBadge } from "@medusajs/ui";
 
 import {
   AdminWebhooksResponse,
@@ -9,7 +9,7 @@ import {
 import { DataTable } from "../organisms/data-table";
 
 import Actionables from "./Actionables";
-import { Pencil, Trash } from "@medusajs/icons";
+import { Pencil, Plus, Trash } from "@medusajs/icons";
 import { Webhook } from "../../hooks/webhooks/mutations";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 
@@ -107,13 +107,14 @@ export const WebhooksTable: React.FC<WebhooksTableProps> = ({
   if (totalCount === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <button
+        <Button
           onClick={() => editWebhookModal({} as Webhook)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 text-white rounded transition-colors"
           type="button"
         >
+          <Plus />
           Create New Webhook
-        </button>
+        </Button>
       </div>
     );
   }

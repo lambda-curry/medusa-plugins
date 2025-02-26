@@ -1,20 +1,40 @@
-# LambdaCurry Medusa Plugins
+# Medusa Plugins Collection
 
-Open source plugins and modules for Medusa
+A collection of plugins for enhancing your Medusa commerce application with additional features and functionalities.
 
-## What's inside?
+## Plugins SDK
+You can use the [Plugins SDK](./packages/plugins-sdk) to interact with the plugins in this collection. The SDK provides a unified way to interact with all plugins through both Store and Admin operations.
 
-This Turborepo includes the following packages/modules:
+## Available Plugins
 
-### Packages and Modules
+### [Product Reviews](./plugins/product-reviews)
+Add product review capabilities to your Medusa store:
+- Product reviews with ratings
+- Review statistics and analytics
+- Review moderation workflow (`approved`/`pending`/`flagged`)
+- Admin response management
+- SDK for Store and Admin operations
 
-- `@lambdacurry/medusa-plugin-event-bus-dashboard`: a plugin to install bull-board to the api so you can view event-bus events
-- `@lambdacurry/event-bus-redis`: A replacement of `@medusajs/event-bus-redis` module that has some additional flexibility for error logging.
+> See a demo in our [Medusa Starter](https://github.com/lambda-curry/medusa2-starter)
 
-### Build
+## Requirements
 
-To build all apps and packages, run the following command:
+- Medusa >= 2.5.0
+- Node >= 20
+- yarn@4.6.0
+
+## Development
+In order to develop and test the plugins, you need to have a running Medusa instance. You can use our [Medusa Starter](https://github.com/lambda-curry/medusa2-starter) for this purpose.
 
 ```bash
+# Clone the repository
+git clone https://github.com/lambda-curry/medusa-plugins.git
+# Install dependencies
+yarn install
+# Test the setup
 yarn build
 ```
+
+## License
+
+MIT

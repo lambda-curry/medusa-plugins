@@ -1,0 +1,21 @@
+{
+  "name": "medusa-packages",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "workspaces": [
+    "packages/*",
+    "modules/*"
+  ],
+  "packageManager": "yarn@4.1.1"
+}

@@ -1,21 +1,25 @@
 {
-  "name": "medusa-packages",
+  "name": "medusa-plugins",
+  "author": "Lambda Curry (https://lambdacurry.dev)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lambda-curry/medusa-plugins"
+  },
+  "homepage": "https://github.com/lambda-curry/medusa-plugins",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "dev": "turbo dev"
   },
   "devDependencies": {
-    "prettier": "^3.2.5",
-    "turbo": "latest"
+    "turbo": "latest",
+    "typescript": "^5.7.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "workspaces": [
-    "packages/*",
-    "modules/*"
+    "./plugins/*",
+    "./packages/*"
   ],
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.6.0"
 }

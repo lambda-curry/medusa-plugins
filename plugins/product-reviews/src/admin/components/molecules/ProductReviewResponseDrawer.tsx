@@ -1,7 +1,7 @@
-import { AdminProductReview } from '@markethaus/types';
+import type { AdminProductReview } from '@lambdacurry/medusa-plugins-sdk';
 import { Button, Label, Text, Textarea } from '@medusajs/ui';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+// import { zodResolver } from '@hookform/resolvers';
 import * as z from 'zod';
 
 import { Drawer } from '@medusajs/ui';
@@ -35,7 +35,7 @@ export const ProductReviewResponseDrawer = ({
     defaultValues: {
       content: review?.response?.content ?? '',
     },
-    resolver: zodResolver(schema),
+    // resolver: zodResolver(schema),
   });
 
   if (!review) return null;

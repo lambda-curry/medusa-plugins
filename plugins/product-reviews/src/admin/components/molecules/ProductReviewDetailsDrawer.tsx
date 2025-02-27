@@ -1,4 +1,4 @@
-import { AdminProductReview } from '../../sdk/types';
+import type { AdminProductReview } from '@lambdacurry/medusa-plugins-sdk';
 import { Button, Drawer, Text } from '@medusajs/ui';
 import { DateTime } from 'luxon';
 import { Link } from 'react-router-dom';

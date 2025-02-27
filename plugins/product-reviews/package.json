@@ -33,7 +33,8 @@
     "dev": "medusa plugin:develop",
     "dev:publish": "medusa plugin:publish",
     "prepublishOnly": "medusa plugin:build",
-    "db:generate": "DB_USERNAME=${DB_USERNAME:-postgres} DB_PASSWORD=${DB_PASSWORD:-postgres} medusa plugin:db:generate"
+    "db:generate": "DB_USERNAME=${DB_USERNAME:-postgres} DB_PASSWORD=${DB_PASSWORD:-postgres} medusa plugin:db:generate",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@medusajs/admin-sdk": "2.5.0",
@@ -42,6 +43,7 @@
     "@medusajs/icons": "2.5.0",
     "@medusajs/medusa": "2.5.0",
     "@medusajs/test-utils": "2.5.0",
+    "@medusajs/ui": "^4.0.6",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/knex": "6.4.3",
@@ -59,6 +61,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.54.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2",
     "vite": "^5.2.11",
@@ -87,9 +90,11 @@
     "hoistingLimits": "workspaces"
   },
   "dependencies": {
+    "@hookform/resolvers": "3.4.2",
     "@lambdacurry/medusa-plugins-sdk": "0.0.5",
     "@medusajs/js-sdk": "^2.5.0",
     "@medusajs/workflows-sdk": "^2.5.0",
-    "luxon": "^3.5.0"
+    "luxon": "^3.5.0",
+    "zod": "3.22.4"
   }
 }

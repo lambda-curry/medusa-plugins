@@ -1,0 +1,108 @@
+{
+  "name": "@lambdacurry/medusa-webhooks",
+  "version": "1.0.0-rc.1",
+  "description": "A Medusa plugin that enables webhook management and integration, allowing you to configure and manage outgoing webhooks for your e-commerce events.",
+  "author": "Medusa (https://medusajs.com)",
+  "license": "MIT",
+  "files": [
+    ".medusa/server"
+  ],
+  "types": "./.medusa/server/src/types/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    "./workflows": {
+      "types": "./.medusa/server/src/workflows/index.d.ts",
+      "default": "./.medusa/server/src/workflows/index.js"
+    },
+    "./.medusa/server/src/modules/*": {
+      "types": "./.medusa/server/src/modules/*/index.d.ts",
+      "default": "./.medusa/server/src/modules/*/index.js"
+    },
+    "./modules/*": {
+      "types": "./.medusa/server/src/modules/*/index.d.ts",
+      "default": "./.medusa/server/src/modules/*/index.js"
+    },
+    "./providers/*": {
+      "types": "./.medusa/server/src/providers/*/index.d.ts",
+      "default": "./.medusa/server/src/providers/*/index.js"
+    },
+    "./*": {
+      "types": "./.medusa/server/src/*.d.ts",
+      "default": "./.medusa/server/src/*.js"
+    }
+  },
+  "keywords": [
+    "medusa",
+    "plugin",
+    "webhooks",
+    "medusa-plugin-webhooks",
+    "medusa-plugin",
+    "medusa-v2",
+    "event-driven",
+    "integration",
+    "notifications"
+  ],
+  "scripts": {
+    "build": "npm run resolve:aliases && medusa build",
+    "dev": "medusa plugin:develop",
+    "prepublishOnly": "medusa plugin:build",
+    "generate": "medusa plugin:db:generate",
+    "resolve:aliases": "tsc --showConfig -p tsconfig.json > tsconfig.resolved.json && tsc-alias -p tsconfig.resolved.json && rimraf tsconfig.resolved.json"
+  },
+  "devDependencies": {
+    "@medusajs/admin-sdk": "2.4.0",
+    "@medusajs/cli": "2.4.0",
+    "@medusajs/framework": "2.4.0",
+    "@medusajs/icons": "2.4.0",
+    "@medusajs/medusa": "2.4.0",
+    "@medusajs/test-utils": "2.4.0",
+    "@medusajs/ui": "4.0.4",
+    "@mikro-orm/cli": "6.4.3",
+    "@mikro-orm/core": "6.4.3",
+    "@mikro-orm/knex": "6.4.3",
+    "@mikro-orm/migrations": "6.4.3",
+    "@mikro-orm/postgresql": "6.4.3",
+    "@swc/core": "1.5.7",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.2.25",
+    "awilix": "^8.0.1",
+    "pg": "^8.13.0",
+    "prop-types": "^15.8.1",
+    "react": "^19.0.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
+    "typescript": "^5.6.2",
+    "vite": "^5.2.11",
+    "yalc": "^1.0.0-pre.53"
+  },
+  "peerDependencies": {
+    "@medusajs/admin-sdk": "2.4.0",
+    "@medusajs/cli": "2.4.0",
+    "@medusajs/framework": "2.4.0",
+    "@medusajs/icons": "2.4.0",
+    "@medusajs/medusa": "2.4.0",
+    "@medusajs/test-utils": "2.4.0",
+    "@medusajs/ui": "4.0.3",
+    "@mikro-orm/cli": "6.4.3",
+    "@mikro-orm/core": "6.4.3",
+    "@mikro-orm/knex": "6.4.3",
+    "@mikro-orm/migrations": "6.4.3",
+    "@mikro-orm/postgresql": "6.4.3",
+    "awilix": "^8.0.1",
+    "pg": "^8.13.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@medusajs/js-sdk": "^2.5.0",
+    "@tanstack/react-query": "^5.66.9",
+    "@tanstack/react-table": "^8.21.2",
+    "clsx": "^2.1.1",
+    "react-hook-form": "^7.54.2",
+    "react-json-view-lite": "^2.3.0"
+  }
+}

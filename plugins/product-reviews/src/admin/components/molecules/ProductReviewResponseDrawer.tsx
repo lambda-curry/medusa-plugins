@@ -1,4 +1,4 @@
-import { AdminProductReview } from '@markethaus/types';
+import type { AdminProductReview } from '@lambdacurry/medusa-plugins-sdk';
 import { Button, Label, Text, Textarea } from '@medusajs/ui';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

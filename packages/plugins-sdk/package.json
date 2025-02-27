@@ -38,7 +38,7 @@
     "dev:publish": "yalc publish"
   },
   "devDependencies": {
-    "@medusajs/js-sdk": "2.5.0",
+    "@medusajs/js-sdk": "2.5.1",
     "@medusajs/types": "^2.5.0",
     "prettier": "^3.2.5",
     "rimraf": "^6.0.1",

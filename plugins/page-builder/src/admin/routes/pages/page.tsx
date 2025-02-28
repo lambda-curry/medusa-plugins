@@ -1,6 +1,7 @@
-import { Container, Heading } from "@medusajs/ui"
+import { Container, Heading, Button } from "@medusajs/ui"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { ChatBubbleLeftRight } from "@medusajs/icons"
+import { DocumentText } from "@medusajs/icons"
+import { Link } from "react-router-dom"
 
 const PagesPage = () => {
   return (
@@ -9,7 +10,9 @@ const PagesPage = () => {
         <Heading level="h2">Page Builder</Heading>
       </div>
       <div className="px-6 py-4">
-        Hello from the Page Builder plugin!
+        <Link to="/pages/edit/test-page-id">
+          <Button>View Test Page</Button>
+        </Link>
       </div>
     </Container>
   )
@@ -17,9 +20,7 @@ const PagesPage = () => {
 
 export const config = defineRouteConfig({
   label: "Pages",
-  icon: ChatBubbleLeftRight,
+  icon: DocumentText,
 })
-
-
 
 export default PagesPage 

@@ -2,7 +2,7 @@ import { Button } from "@medusajs/ui"
 import { Breadcrumbs, SidebarToggle } from "../../molecules"
 
 /**
- * Top navigation bar component for the page editor
+ * Top navigation bar component for the post editor
  */
 export const Topbar = () => {
   return (
@@ -13,7 +13,7 @@ export const Topbar = () => {
       </div>
       <div className="flex items-center gap-x-1.5">
         <Button variant="primary" size="small">Save</Button>
-        <SidebarToggle side="right" />
+        <SidebarToggle side="right" drawerOnly />
       </div>
     </div>
   )

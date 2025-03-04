@@ -1,7 +1,7 @@
 import { useContext } from "react"
-import { EditorSidebarContext } from "./editor-sidebar-context"
+import { EditorSidebarContext, EditorSidebarContextType } from "./editor-sidebar-context"
 
-export const useEditorSidebar = () => {
+export const useEditorSidebar = (): EditorSidebarContextType => {
   const context = useContext(EditorSidebarContext)
 
   if (!context) {

@@ -4,7 +4,7 @@ import { Link, useLoaderData } from "react-router-dom"
 
 type Crumb = {
   label: string
-  path: string
+  path?: string
 }
 
 /**
@@ -19,16 +19,24 @@ export const Breadcrumbs = () => {
       path: "/",
     },
     {
-      label: "Pages",
-      path: "/pages",
+      label: "Content",
+      path: "/content",
     },
   ]
 
-  if (data?.page) {
-    crumbs.push({
-      label: data?.page?.title as string,
-      path: data?.page?.id as string,
-    })
+  if (data?.post) {
+    const post = data.post
+    const type = post.type?.charAt(0).toUpperCase() + post.type?.slice(1) as string
+
+    crumbs.push(...[
+      {
+        label: type,
+      },
+      {
+        label: post.title as string,
+        path: post.id as string,
+      },
+    ])
   }
   
   return (
@@ -43,7 +51,7 @@ export const Breadcrumbs = () => {
 
         return (
           <li key={index} className={clx("flex items-center")}>
-            {!isLast ? (
+            {!isLast && crumb.path ? (
               <Link
                 className="transition-fg hover:text-ui-fg-subtle"
                 to={crumb.path}
@@ -52,11 +60,11 @@ export const Breadcrumbs = () => {
               </Link>
             ) : (
               <div>
-                {!isSingle && <span className="block lg:hidden">...</span>}
+                {!isSingle && isLast && <span className="block lg:hidden">...</span>}
                 <span
                   key={index}
                   className={clx({
-                    "hidden lg:block": !isSingle,
+                    "hidden lg:block": !isSingle && isLast,
                   })}
                 >
                   {crumb.label}

@@ -1,32 +1,27 @@
-import { Button } from "@medusajs/ui"
 import { LoaderFunctionArgs, useLoaderData, useParams } from "react-router-dom"
-import { PageLayout } from "../../../../components/templates"
-import { EditorSidebarProvider } from "../../../../providers/sidebar"
-import { AnimatePresence } from "motion/react"
-import { useState } from "react"
-import { useEffect } from "react"
 import { EditorModal, Topbar } from "../../../../components/organisms"
+import { EditorSidebarProvider } from "../../../../providers/sidebar"
+import { PostLayout } from "../../../../components/templates/post-layout/post-layout"
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  // TODO fetch page
-
-  console.log("🚀 ~ loader ~ pages/:id ~ params:", params)
+  console.log("🚀 ~ loader ~ content/editor/:id ~ params:", params)
 
   return {
-    page: {
+    post: {
       id: params.id,
       title: "Test Page",
       description: "Test Page Description",
       content: "Test Page Content",
+      type: "page",
     },
   }
 }
 
-const PageDetailsPage = () => {
+const PostDetailsPage = () => {
   const { id } = useParams()
-  console.log("🚀 ~ PageDetailsPage ~ id:", id)
-  const pageData = useLoaderData() as Awaited<ReturnType<typeof loader>>
-  console.log("🚀 ~ PageDetailsPage ~ page:", pageData)
+  console.log("🚀 ~ PostDetailsPage ~ id:", id)
+  const postData = useLoaderData() as Awaited<ReturnType<typeof loader>>
+  console.log("🚀 ~ PostDetailsPage ~ post:", postData)
 
   return (
     <EditorSidebarProvider>
@@ -36,9 +31,10 @@ const PageDetailsPage = () => {
             <Topbar />
           </EditorModal.Header>
           <EditorModal.Body className="flex flex-col items-center">
-            <PageLayout>
-              <h1>Page Details2</h1>
-            </PageLayout>
+            <PostLayout>
+              <h1>{postData.post?.title}</h1>
+              <p>{postData.post?.description}</p>
+            </PostLayout>
           </EditorModal.Body>
         </EditorModal.Content>
       </EditorModal>
@@ -46,4 +42,4 @@ const PageDetailsPage = () => {
   )
 }
 
-export default PageDetailsPage 
+export default PostDetailsPage 

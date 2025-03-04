@@ -1,106 +1,65 @@
-import {
-  ShoppingCart,
-  Tag,
-  Buildings,
-  Users,
-  ReceiptPercent,
-  CurrencyDollar,
-} from "@medusajs/icons"
-import { INavItem, NavItem } from "../../../components/molecules/nav-item/nav-item"
+import { SquareTwoStackSolid } from "@medusajs/icons"
+import { NavItem } from "../../molecules/nav-item/nav-item"
+import { DrawerSidebarContainer } from "../sidebar-container/drawer-sidebar-container"
+import { StaticSidebarContainer } from "../sidebar-container/static-sidebar-container"
 
 /**
- * Sidebar for the page editor with sections menu
+ * EditorSidebar is a responsive sidebar for the page builder
+ * - Rendered as a static sidebar on desktop screens 
+ * - Rendered as a drawer on mobile/smaller screens
  */
 export const EditorSidebar = () => {
-  return (
+  const sidebarContent = (
     <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
       <SectionsMenu />
     </aside>
   )
-}
-
-const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
-  return [
-    {
-      icon: <ShoppingCart />,
-      label: 'orders',
-      to: "/orders",
-      items: [
-        // TODO: Enable when domin is introduced
-        // {
-        //   label: 'draftOrders',
-        //   to: "/draft-orders",
-        // },
-      ],
-    },
-    {
-      icon: <Tag />,
-      label: 'products',
-      to: "/products",
-      items: [
-        {
-          label: 'collections',
-          to: "/collections",
-        },
-        {
-          label: 'categories',
-          to: "/categories",
-        },
-        // TODO: Enable when domin is introduced
-        // {
-        //   label: 'giftCards',
-        //   to: "/gift-cards",
-        // },
-      ],
-    },
-    {
-      icon: <Buildings />,
-      label: 'inventory',
-      to: "/inventory",
-      items: [
-        {
-          label: 'reservations',
-          to: "/reservations",
-        },
-      ],
-    },
-    {
-      icon: <Users />,
-      label: 'customers',
-      to: "/customers",
-      items: [
-        {
-          label: 'customerGroups',
-          to: "/customer-groups",
-        },
-      ],
-    },
-    {
-      icon: <ReceiptPercent />,
-      label: 'promotions',
-      to: "/promotions",
-      items: [
-        {
-          label: 'campaigns',
-          to: "/campaigns",
-        },
-      ],
-    },
-    {
-      icon: <CurrencyDollar />,
-      label: 'priceLists',
-      to: "/price-lists",
-    },
-  ]
-}
-
-const SectionsMenu = () => {
-  const coreRoutes = useCoreRoutes()
 
   return (
-    <nav className="flex flex-col gap-y-1 py-3">
-      {coreRoutes.map((route) => {
-        return <NavItem key={route.to} {...route} />
+    <>
+      <DrawerSidebarContainer side="left" title="Editor">
+        {sidebarContent}
+      </DrawerSidebarContainer>
+      <StaticSidebarContainer side="left">
+        {sidebarContent}
+      </StaticSidebarContainer>
+    </>
+  )
+}
+
+const sections = [
+  {
+    icon: <SquareTwoStackSolid />,
+    label: 'Section 1',
+    to: "sections/section_id_1",
+  },
+  {
+    icon: <SquareTwoStackSolid />,
+    label: 'Section 2',
+    to: "sections/section_id_2",
+  },
+  {
+    icon: <SquareTwoStackSolid />,
+    label: 'Section 3',
+    to: "sections/section_id_3",
+  },
+  {
+    icon: <SquareTwoStackSolid />,
+    label: 'Section 4',
+    to: "sections/section_id_4",
+  },
+  {
+    icon: <SquareTwoStackSolid />,
+    label: 'Section 5',
+    to: "sections/section_id_5",
+  },
+]
+
+const SectionsMenu = () => {
+  return (
+    <nav className="flex flex-col gap-y-1 py-5">
+      {sections.map((section) => {
+        return <NavItem key={section.to} {...section} />
       })}
     </nav>
   )

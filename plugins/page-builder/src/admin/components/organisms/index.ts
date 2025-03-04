@@ -6,7 +6,7 @@
 // Export organisms as they are created
 export * from './top-bar/top-bar'
 export * from './editor-modal/editor-modal'
-export * from './sidebar-container/desktop-sidebar-container'
-export * from './sidebar-container/mobile-sidebar-container'
+export * from './sidebar-container/static-sidebar-container'
+export * from './sidebar-container/drawer-sidebar-container'
 export * from './editor-sidebar/editor-sidebar'
-export * from './page-settings-sidebar/page-settings-sidebar'
+export * from './post-settings-sidebar/post-settings-sidebar'

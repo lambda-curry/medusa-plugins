@@ -1,24 +1,22 @@
-import { TooltipProvider } from "@medusajs/ui"
 import { PropsWithChildren, ReactNode } from "react"
+import { TooltipProvider } from "@medusajs/ui"
 import { MainContent } from "./main-content"
-import { SidebarContainer } from "./sidebar-container"
 
-interface ShellProps extends PropsWithChildren {
+type ShellProps = PropsWithChildren & {
   leftSidebar?: ReactNode
   rightSidebar?: ReactNode
 }
 
 /**
- * Shell template component that provides the main application structure
- * Composes the layout using specialized components for each section
+ * Shell layout component that provides a consistent layout across the admin dashboard.
  */
 export const Shell = ({ children, leftSidebar, rightSidebar }: ShellProps) => {
   return (
     <TooltipProvider>
-      <div className="relative flex h-screen flex-col items-start overflow-hidden lg:flex-row w-full">
-        <SidebarContainer side="left">{leftSidebar}</SidebarContainer>
+      <div className="flex h-screen w-screen overflow-hidden">
+        {leftSidebar}
         <MainContent>{children}</MainContent>
-        <SidebarContainer side="right">{rightSidebar}</SidebarContainer>
+        {rightSidebar}
       </div>
     </TooltipProvider>
   )

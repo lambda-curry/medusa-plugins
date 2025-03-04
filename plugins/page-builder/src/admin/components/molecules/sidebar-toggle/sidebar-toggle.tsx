@@ -5,18 +5,18 @@ import { useEditorSidebar } from "../../../providers/sidebar"
 /**
  * Toggle button for showing/hiding sidebars
  */
-export const SidebarToggle = ({ side }: { side: "left" | "right" }) => {
+export const SidebarToggle = ({ side, drawerOnly = false }: { side: "left" | "right", drawerOnly?: boolean }) => {
   const { toggleLeft, toggleRight } = useEditorSidebar()
   const toggle = side === "left" ? toggleLeft : toggleRight
   const Icon = side === "left" ? SidebarLeft : SidebarRight
 
   return (
-    <Tooltip content={side === "left" ? "Toggle page editor" : "Toggle page settings"}>
+    <Tooltip content={side === "left" ? "Toggle editor sidebar" : "Toggle post settings sidebar"}>
     <div>
       <IconButton
         className="hidden lg:flex"
         variant="transparent"
-        onClick={() => toggle("desktop")}
+        onClick={() => toggle(drawerOnly ? "drawer" : "static")}
         size="small"
       >
         <Icon className="text-ui-fg-muted" />
@@ -24,7 +24,7 @@ export const SidebarToggle = ({ side }: { side: "left" | "right" }) => {
       <IconButton
         className="hidden max-lg:flex"
         variant="transparent"
-        onClick={() => toggle("mobile")}
+        onClick={() => toggle("drawer")}
         size="small"
       >
         <Icon className="text-ui-fg-muted" />

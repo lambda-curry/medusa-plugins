@@ -3,11 +3,12 @@ import { PropsWithChildren } from "react"
 import { useEditorSidebar } from "../../../providers/sidebar"
 
 /**
- * Desktop sidebar container component
+ * Static sidebar container component that displays content in a permanent sidebar
+ * Only visible on desktop (lg breakpoint and above)
  */
-export const DesktopSidebarContainer = ({ children, side = "left" }: PropsWithChildren & { side?: "left" | "right" }) => {
+export const StaticSidebarContainer = ({ children, side = "left" }: PropsWithChildren & { side?: "left" | "right" }) => {
   const { left, right } = useEditorSidebar()
-  const isOpen = side === "left" ? left.desktop : right.desktop
+  const isOpen = side === "left" ? left.static : right.static
 
   return (
     <div

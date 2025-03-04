@@ -1,32 +1,33 @@
-import { ReactNode, useState } from "react"
-import { EditorSidebarContext } from "./editor-sidebar-context"
+import { PropsWithChildren, useState } from "react"
+import { EditorSidebarContext, SidebarState, SidebarViewType } from "./editor-sidebar-context"
 
-interface EditorSidebarProviderProps {
-  children: ReactNode
-}
-
-export const EditorSidebarProvider = ({ children }: EditorSidebarProviderProps) => {
-  const [leftSidebar, setLeftSidebar] = useState({
-    desktop: true,
-    mobile: false,
+/**
+ * Provider for the editor sidebar state
+ * Manages the visibility state of left and right sidebars
+ * with separate states for drawer and static views
+ */
+export const EditorSidebarProvider = ({ children }: PropsWithChildren) => {
+  const [leftSidebar, setLeftSidebar] = useState<SidebarState>({
+    drawer: false,
+    static: true
   })
 
-  const [rightSidebar, setRightSidebar] = useState({
-    desktop: false,
-    mobile: false,
+  const [rightSidebar, setRightSidebar] = useState<SidebarState>({
+    drawer: false,
+    static: false
   })
 
-  const toggleLeft = (view: "desktop" | "mobile") => {
+  const toggleLeft = (viewType: SidebarViewType) => {
     setLeftSidebar((prev) => ({
       ...prev,
-      [view]: !prev[view],
+      [viewType]: !prev[viewType],
     }))
   }
 
-  const toggleRight = (view: "desktop" | "mobile") => {
+  const toggleRight = (viewType: SidebarViewType) => {
     setRightSidebar((prev) => ({
       ...prev,
-      [view]: !prev[view],
+      [viewType]: !prev[viewType],
     }))
   }
 

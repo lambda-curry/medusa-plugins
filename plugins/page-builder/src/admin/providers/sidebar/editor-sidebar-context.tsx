@@ -1,15 +1,28 @@
 import { createContext } from "react"
 
-type EditorSidebarState = {
-  desktop: boolean
-  mobile: boolean
+export type SidebarViewType = "drawer" | "static"
+
+export interface SidebarState {
+  drawer: boolean
+  static: boolean
 }
 
-type EditorSidebarContextValue = {
-  left: EditorSidebarState
-  right: EditorSidebarState
-  toggleLeft: (view: "desktop" | "mobile") => void
-  toggleRight: (view: "desktop" | "mobile") => void
+export interface EditorSidebarContextType {
+  left: SidebarState
+  right: SidebarState
+  toggleLeft: (viewType: SidebarViewType) => void
+  toggleRight: (viewType: SidebarViewType) => void
 }
 
-export const EditorSidebarContext = createContext<EditorSidebarContextValue | null>(null)
+export const EditorSidebarContext = createContext<EditorSidebarContextType>({
+  left: {
+    drawer: false,
+    static: true
+  },
+  right: {
+    drawer: false,
+    static: false
+  },
+  toggleLeft: () => {},
+  toggleRight: () => {},
+})

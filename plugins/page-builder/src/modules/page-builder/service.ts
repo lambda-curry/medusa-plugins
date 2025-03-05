@@ -1,18 +1,22 @@
 import { MedusaService } from '@medusajs/framework/utils'
 import {
-  Page,
-  PageTemplate,
-  PageTag,
-  PageSection,
+  PostAuthor,
+  Post,
+  PostTemplate,
+  PostTag,
+  PostSection,
+  Image,
   SiteSettings,
   NavigationItem,
 } from './models'
 
 class PageBuilderService extends MedusaService({
-  Page,
-  PageTag,
-  PageSection,
-  PageTemplate,
+  PostAuthor,
+  Post,
+  PostTemplate,
+  PostTag,
+  PostSection,
+  Image,
   SiteSettings,
   NavigationItem,
 }) {}

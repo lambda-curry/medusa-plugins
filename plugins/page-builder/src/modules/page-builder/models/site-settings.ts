@@ -4,11 +4,6 @@ import { Image } from './image'
 export const SiteSettings = model.define('site_settings', {
   id: model.id({ prefix: 'site_sett' }).primaryKey(),
   description: model.text().nullable(),
-  favicon: model
-    .hasOne(() => Image, {
-      mappedBy: 'favicon_id',
-    })
-    .nullable(),
   header_code: model.text().nullable(),
   footer_code: model.text().nullable(),
   storefront_url: model.text().nullable(),
@@ -17,7 +12,7 @@ export const SiteSettings = model.define('site_settings', {
   highlight_theme_colors: model.json().nullable(),
   display_font: model.json().nullable(),
   body_font: model.json().nullable(),
-  include_site_name_beside_logo: model.boolean().default(false),
+  include_site_name_beside_logo: model.boolean(),
   social_instagram: model.text().nullable(),
   social_youtube: model.text().nullable(),
   social_facebook: model.text().nullable(),
@@ -29,4 +24,9 @@ export const SiteSettings = model.define('site_settings', {
   global_css: model.text().nullable(),
   ga_property_id: model.text().nullable(),
   shipping_sort: model.text().nullable(),
+
+  // relations
+  favicon: model.hasOne(() => Image, {
+    mappedBy: 'site_settings',
+  }),
 })

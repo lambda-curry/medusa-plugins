@@ -1,9 +1,9 @@
 import { model } from '@medusajs/framework/utils'
-import { Page } from './page'
-import { PageTemplate } from './page-template'
+import { Post } from './post'
+import { PostTemplate } from './post-template'
 
-export const PageSection = model.define('page_section', {
-  id: model.id({ prefix: 'pagesec' }).primaryKey(),
+export const PostSection = model.define('post_section', {
+  id: model.id({ prefix: 'postsec' }).primaryKey(),
   type: model.enum([
     'button_list',
     'cta',
@@ -16,22 +16,23 @@ export const PageSection = model.define('page_section', {
     'rich_text',
     'blog_list',
   ]),
-  name: model.text(),
-  content: model.json().nullable(),
   status: model.enum(['draft', 'published', 'archived']).default('draft'),
-  settings: model.json().nullable(),
-  is_reusable: model.boolean().default(false),
+  name: model.text(),
+  content: model.json(),
+  settings: model.json(),
   styles: model.json().nullable(),
+  is_reusable: model.boolean().default(false),
+  usage_count: model.number().default(1),
   sort_order: model.number(),
 
-  // last_updated_by_id: model.text().nullable(),
-  page: model
-    .belongsTo(() => Page, {
+  // relations fields
+  post: model
+    .belongsTo(() => Post, {
       mappedBy: 'sections',
     })
     .nullable(),
-  pageTemplate: model
-    .belongsTo(() => PageTemplate, {
+  post_template: model
+    .belongsTo(() => PostTemplate, {
       mappedBy: 'sections',
     })
     .nullable(),

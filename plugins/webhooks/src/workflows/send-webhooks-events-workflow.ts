@@ -11,10 +11,8 @@ type SendWebhooksEventsInput = {
   eventData: Record<string, unknown>;
 };
 
-export const sendWebhooksEventsWorkflowId = "send-webhooks-events-workflow";
-
 export const sendWebhooksEventsWorkflow = createWorkflow(
-  sendWebhooksEventsWorkflowId,
+  "send-webhooks-events-workflow",
   (input: WorkflowData<SendWebhooksEventsInput>) => {
     const result = processWebhooksStep({
       webhooks: input.webhooks,

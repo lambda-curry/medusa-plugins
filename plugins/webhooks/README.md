@@ -1,4 +1,4 @@
-# Markethaus Webhooks Plugin
+# @lambdacurry/medusa-webhooks
 
 Add webhook functionality to your Medusa e-commerce server, allowing you to send real-time notifications to external services when specific events occur in your system. The plugin seamlessly integrates with Medusa's event system and provides a simple way to manage webhooks for various events.
 
@@ -8,16 +8,15 @@ Add webhook functionality to your Medusa e-commerce server, allowing you to send
 - **Flexible Configuration**: Easy setup and configuration through Medusa's plugin system
 - **Built-in Event Support**: Pre-configured support for common Medusa events
 - **Workflow Integration**: Seamlessly integrates with Medusa's workflow system for reliable webhook processing
-- **Error Handling**: Robust error handling and logging for webhook delivery
 
 ## Installation
 
 1. Install the plugin using your preferred package manager:
 
 ```bash
-npm install @markethaus/webhooks
+npm install @lambdacurry/medusa-webhooks
 # or
-yarn add @markethaus/webhooks
+yarn add @lambdacurry/medusa-webhooks
 ```
 
 2. Add the plugin to your `medusa-config.js`:
@@ -26,7 +25,7 @@ yarn add @markethaus/webhooks
 const plugins = [
   // ... other plugins
   {
-    resolve: "@markethaus/webhooks",
+    resolve: "@lambdacurry/medusa-webhooks",
     options: {
       // Add here the subcribers you will define
       subscriptions: ["product.created", "product.updated"],
@@ -45,14 +44,24 @@ yarn medusa db:migrate
 
 ### Creating a Webhook Subscriber
 
-Here's an example of how to create a webhook subscriber for product events:
+The plugin provides three different workflows for handling webhooks:
+
+1. `getWebhooksSubscriptionsWorkflow`: Retrieves active webhook subscriptions for a specific event
+2. `sendWebhooksEventsWorkflow`: Sends webhook events to the subscribed endpoints
+3. `fullWebhooksSubscriptionsWorkflow`: Combines both workflows to handle the complete webhook process
+
+Here's an example of how to use these workflows in your subscriber:
 
 ```typescript
 import {
   SubscriberArgs,
   SubscriberConfig,
 } from "@medusajs/framework/subscribers";
-import { getWebhooksSubscriptionsWorkflow } from "@markethaus/webhooks/workflows";
+import {
+  getWebhooksSubscriptionsWorkflow,
+  sendWebhooksEventsWorkflow,
+  fullWebhooksSubscriptionsWorkflow,
+} from "@lambdacurry/medusa-webhooks/workflows";
 
 export const config: SubscriberConfig = {
   event: ["product.created", "product.updated"],
@@ -81,15 +90,34 @@ export default async function handleProductAdded({
     return;
   }
 
-  // Process webhooks
-  const webhooksResult = await getWebhooksSubscriptionsWorkflow(container).run({
+  // Option 1: Use the full workflow (recommended for most cases)
+  const fullResult = await fullWebhooksSubscriptionsWorkflow(container).run({
     input: {
       eventName: name,
       eventData: product,
     },
   });
 
-  console.log(webhooksResult);
+  // Option 2: Use separate workflows for more control
+  const { results: webhooks } = await getWebhooksSubscriptionsWorkflow(
+    container
+  ).run({
+    input: {
+      eventName: name,
+      eventData: product,
+    },
+  });
+
+  const sendResult = await sendWebhooksEventsWorkflow(container).run({
+    input: {
+      webhooks,
+      eventData: product,
+    },
+  });
+
+  console.log(fullResult);
+  // or
+  console.log(sendResult);
 }
 ```
 

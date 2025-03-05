@@ -1,5 +1,5 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
-import { TagSolid, Plus } from "@medusajs/icons";
+import { Bolt, Plus } from "@medusajs/icons";
 import { Container, Heading, Toaster } from "@medusajs/ui";
 import { useState } from "react";
 import { WebhooksTable } from "../../components/molecules/WebhooksTable";
@@ -8,22 +8,8 @@ import Actionables from "../../components/molecules/Actionables";
 import { WebhookModal } from "../../modals/webhook-modal";
 import { WebhookDeleteModal } from "../../modals/webhook-delete-modal";
 import { Webhook } from "../../hooks/webhooks/mutations";
-import {
-  QueryClient,
-  QueryClientProvider,
-  QueryObserverResult,
-  RefetchOptions,
-} from "@tanstack/react-query";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { AdminWebhooksResponse } from "../../hooks/webhooks/queries";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
-});
 
 type RefreshTableFn = (
   options?: RefetchOptions
@@ -50,7 +36,7 @@ const WebhooksPage = () => {
   ];
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Toaster />
       <Container>
         <div className="flex flex-col gap-y-3 mb-5">
@@ -97,13 +83,13 @@ const WebhooksPage = () => {
           />
         )}
       </Container>
-    </QueryClientProvider>
+    </>
   );
 };
 
 export const config = defineRouteConfig({
   label: "Webhooks",
-  icon: TagSolid,
+  icon: Bolt,
 });
 
 export default WebhooksPage;

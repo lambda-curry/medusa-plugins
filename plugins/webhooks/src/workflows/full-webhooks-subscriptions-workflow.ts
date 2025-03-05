@@ -6,13 +6,14 @@ import {
   GetWebhooksSubscriptionsInput,
   GetWebhooksSubscriptionsOutput,
 } from "../types/workflow";
+import { processWebhooksStep } from "./steps/process-webhooks-step";
 
-export const getWebhooksSubscriptionsWorkflow = createWorkflow<
+export const fullWebhooksSubscriptionsWorkflow = createWorkflow<
   GetWebhooksSubscriptionsInput,
   GetWebhooksSubscriptionsOutput,
   [{ eventName: string; eventData: Record<string, unknown> }]
 >(
-  "get-webhooks-subscriptions-workflow",
+  "full-webhooks-subscriptions-workflow",
   (
     input
   ): WorkflowResponse<
@@ -28,6 +29,11 @@ export const getWebhooksSubscriptionsWorkflow = createWorkflow<
       fields: ["*"],
     });
 
-    return new WorkflowResponse({ results: subscriptionsResult.data });
+    const processedWebhooks = processWebhooksStep({
+      webhooks: subscriptionsResult.data,
+      eventData: input.eventData,
+    });
+
+    return new WorkflowResponse({ results: processedWebhooks });
   }
 );

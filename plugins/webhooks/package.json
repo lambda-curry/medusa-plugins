@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-webhooks",
-  "version": "1.0.0-rc.1",
+  "version": "1.1.1-rc.3",
   "description": "A Medusa plugin that enables webhook management and integration, allowing you to configure and manage outgoing webhooks for your e-commerce events.",
   "author": "Medusa (https://medusajs.com)",
   "license": "MIT",
@@ -63,6 +63,7 @@
     "@mikro-orm/migrations": "6.4.3",
     "@mikro-orm/postgresql": "6.4.3",
     "@swc/core": "1.5.7",
+    "@tanstack/react-query": "^5.66.9",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.2.25",
@@ -99,7 +100,6 @@
   },
   "dependencies": {
     "@medusajs/js-sdk": "^2.5.0",
-    "@tanstack/react-query": "^5.66.9",
     "@tanstack/react-table": "^8.21.2",
     "clsx": "^2.1.1",
     "react-hook-form": "^7.54.2",

@@ -3,17 +3,30 @@
 A collection of plugins for enhancing your Medusa commerce application with additional features and functionalities.
 
 ## Plugins SDK
-You can use the [Plugins SDK](./packages/plugins-sdk) to interact with the plugins in this collection. The SDK provides a unified way to interact with all plugins through both Store and Admin operations.
 
-## Available Plugins
+You can use the [Plugins SDK](./packages/plugins-sdk) to interact with the plugins in this collection. The SDK provides a unified way to interact with all plugins through both Store and Admin operations.
+Available Plugins
+
+##
 
 ### [Product Reviews](./plugins/product-reviews)
+
 Add product review capabilities to your Medusa store:
+
 - Product reviews with ratings
 - Review statistics and analytics
 - Review moderation workflow (`approved`/`pending`/`flagged`)
 - Admin response management
 - SDK for Store and Admin operations
+
+### [Webhooks](./plugins/webhooks)
+
+Add webhook functionality to your Medusa e-commerce server:
+
+- Event-based webhooks for real-time notifications
+- Flexible configuration through Medusa's plugin system
+- Built-in support for common Medusa events
+- Seamless workflow integration
 
 > See a demo in our [Medusa Starter](https://github.com/lambda-curry/medusa2-starter)
 
@@ -24,6 +37,7 @@ Add product review capabilities to your Medusa store:
 - yarn@4.6.0
 
 ## Development
+
 In order to develop and test the plugins, you need to have a running Medusa instance. You can use our [Medusa Starter](https://github.com/lambda-curry/medusa2-starter) for this purpose.
 
 ```bash

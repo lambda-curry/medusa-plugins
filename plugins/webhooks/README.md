@@ -14,9 +14,9 @@ Add webhook functionality to your Medusa e-commerce server, allowing you to send
 1. Install the plugin using your preferred package manager:
 
 ```bash
-npm install @markethaus/webhooks
+npm install @lambdacurry/medusa-webhooks
 # or
-yarn add @markethaus/webhooks
+yarn add @lambdacurry/medusa-webhooks
 ```
 
 2. Add the plugin to your `medusa-config.js`:
@@ -25,7 +25,7 @@ yarn add @markethaus/webhooks
 const plugins = [
   // ... other plugins
   {
-    resolve: "@markethaus/webhooks",
+    resolve: "@lambdacurry/medusa-webhooks",
     options: {
       // Add here the subcribers you will define
       subscriptions: ["product.created", "product.updated"],
@@ -61,7 +61,7 @@ import {
   getWebhooksSubscriptionsWorkflow,
   sendWebhooksEventsWorkflow,
   fullWebhooksSubscriptionsWorkflow,
-} from "@markethaus/webhooks/workflows";
+} from "@lambdacurry/medusa-webhooks/workflows";
 
 export const config: SubscriberConfig = {
   event: ["product.created", "product.updated"],

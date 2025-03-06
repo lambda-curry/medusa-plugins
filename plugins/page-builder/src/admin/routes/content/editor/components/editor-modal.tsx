@@ -1,7 +1,6 @@
 "use client"
 
-import { XMark } from "@medusajs/icons"
-import { clx, IconButton } from "@medusajs/ui"
+import { clx } from "@medusajs/ui"
 import { Dialog as RadixDialog } from "radix-ui"
 import * as React from "react"
 

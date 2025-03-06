@@ -1,18 +1,14 @@
 import { XMark } from "@medusajs/icons"
 import { Drawer, IconButton, clx } from "@medusajs/ui"
 import { PropsWithChildren } from "react"
-import { useEditorSidebar } from "../../../providers/sidebar"
+import { useEditorSidebar } from "../hooks/use-editor-sidebar"
 
 type DrawerSidebarContainerProps = PropsWithChildren & {
   title?: string
   side?: "left" | "right"
 }
 
-/**
- * Drawer sidebar container component that displays content in a slide-in drawer
- * Used for mobile views and for components that should always be in a drawer
- */
-export const DrawerSidebarContainer = ({ title, children, side = "left" }: DrawerSidebarContainerProps) => {
+const DrawerSidebarContainer = ({ title, children, side = "left" }: DrawerSidebarContainerProps) => {
   const { left, right, toggleLeft, toggleRight } = useEditorSidebar()
   
   const isOpen = side === "left" ? left.drawer : right.drawer
@@ -48,3 +44,25 @@ export const DrawerSidebarContainer = ({ title, children, side = "left" }: Drawe
     </Drawer>
   )
 } 
+
+const StaticSidebarContainer = ({ children, side = "left" }: PropsWithChildren & { side?: "left" | "right" }) => {
+  const { left, right } = useEditorSidebar()
+  const isOpen = side === "left" ? left.static : right.static
+
+  return (
+    <div
+      className={clx("hidden h-screen w-[220px]", {
+        "lg:flex": isOpen,
+        "border-r": side === "left",
+        "border-l": side === "right",
+      })}
+    >
+      {children}
+    </div>
+  )
+} 
+
+export const SidebarContainer = {
+  Drawer: DrawerSidebarContainer,
+  Static: StaticSidebarContainer
+}

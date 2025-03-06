@@ -7,9 +7,6 @@ type Crumb = {
   path?: string
 }
 
-/**
- * Breadcrumbs component for navigation
- */
 export const Breadcrumbs = () => {
   const data = useLoaderData() as any
 

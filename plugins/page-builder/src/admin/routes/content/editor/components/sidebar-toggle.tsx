@@ -1,10 +1,7 @@
 import { SidebarLeft, SidebarRight } from "@medusajs/icons"
 import { IconButton, Tooltip } from "@medusajs/ui"
-import { useEditorSidebar } from "../../../providers/sidebar"
+import { useEditorSidebar } from "../hooks/use-editor-sidebar"
 
-/**
- * Toggle button for showing/hiding sidebars
- */
 export const SidebarToggle = ({ side, drawerOnly = false }: { side: "left" | "right", drawerOnly?: boolean }) => {
   const { toggleLeft, toggleRight } = useEditorSidebar()
   const toggle = side === "left" ? toggleLeft : toggleRight

@@ -1,7 +1,9 @@
 import { LoaderFunctionArgs, useLoaderData, useParams } from "react-router-dom"
-import { EditorModal, Topbar } from "../../../../components/organisms"
-import { EditorSidebarProvider } from "../../../../providers/sidebar"
-import { PostLayout } from "../../../../components/templates/post-layout/post-layout"
+import { EditorTopbar } from "../components/editor-top-bar"
+import { EditorModal } from "../components/editor-modal"
+import { EditorSidebarProvider } from "../providers/editor-sidebar-provider"
+import { PostEditorLayout } from "../components/post-editor-layout"
+
 
 export async function loader({ params }: LoaderFunctionArgs) {
   console.log("🚀 ~ loader ~ content/editor/:id ~ params:", params)
@@ -31,14 +33,14 @@ const PostDetailsPage = () => {
           <EditorModal.Header>
             {/* EditorModal.Title is required by EditorModal.Content */}
             <EditorModal.Title hidden={true}>{pageName}</EditorModal.Title>
-            <Topbar />
+            <EditorTopbar />
           </EditorModal.Header>
           <EditorModal.Body className="flex flex-col items-center">
-            <PostLayout>
+            <PostEditorLayout>
               {/* <h1>{postData.post?.title}</h1>
               <p>{postData.post?.description}</p> */}
               <h1>{pageName}</h1>
-            </PostLayout>
+            </PostEditorLayout>
           </EditorModal.Body>
         </EditorModal.Content>
       </EditorModal>

@@ -1,10 +1,8 @@
 import { Button } from "@medusajs/ui"
-import { Breadcrumbs, SidebarToggle } from "../../molecules"
+import { Breadcrumbs } from "./breadcrumbs"
+import { SidebarToggle } from "./sidebar-toggle"
 
-/**
- * Top navigation bar component for the post editor
- */
-export const Topbar = () => {
+export const EditorTopbar = () => {
   return (
     <div className="flex w-full items-center justify-between p-3">
       <div className="flex items-center gap-x-1.5">

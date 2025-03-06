@@ -1,11 +1,8 @@
 import { clx } from "@medusajs/ui"
 import { PropsWithChildren } from "react"
-import { useLoadingState } from "../../../hooks/use-loading-state"
 
-/**
- * MainContent component that handles the main content area
- * Manages loading state visualization
- */
+import { useLoadingState } from "../hooks/use-loading-state"
+
 export const MainContent = ({ children }: PropsWithChildren) => {
   const { isLoading } = useLoadingState()
 

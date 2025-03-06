@@ -1,13 +1,8 @@
 import { SquareTwoStackSolid } from "@medusajs/icons"
-import { NavItem } from "../../molecules/nav-item/nav-item"
-import { DrawerSidebarContainer } from "../sidebar-container/drawer-sidebar-container"
-import { StaticSidebarContainer } from "../sidebar-container/static-sidebar-container"
 
-/**
- * EditorSidebar is a responsive sidebar for the page builder
- * - Rendered as a static sidebar on desktop screens 
- * - Rendered as a drawer on mobile/smaller screens
- */
+import { SidebarContainer } from "./sidebar-container"
+import { INavItem, NavItem } from "./nav-item"
+
 export const EditorSidebar = () => {
   const sidebarContent = (
     <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
@@ -17,17 +12,17 @@ export const EditorSidebar = () => {
 
   return (
     <>
-      <DrawerSidebarContainer side="left" title="Editor">
+      <SidebarContainer.Drawer side="left" title="Editor">
         {sidebarContent}
-      </DrawerSidebarContainer>
-      <StaticSidebarContainer side="left">
+      </SidebarContainer.Drawer>
+      <SidebarContainer.Static side="left">
         {sidebarContent}
-      </StaticSidebarContainer>
+      </SidebarContainer.Static>
     </>
   )
 }
 
-const sections = [
+const sections: INavItem[] = [
   {
     icon: <SquareTwoStackSolid />,
     label: 'Section 1',

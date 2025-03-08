@@ -1,20 +1,37 @@
-import { Container, Heading, Button } from "@medusajs/ui"
+import { Container } from "@medusajs/ui"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { DocumentText } from "@medusajs/icons"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import { SingleColumnLayout } from "../../layouts/single-column"
+import { Header } from "../../components/header"
+import { CreatePostButton } from "./components/create-post-button"
+import { PostsDataTable } from "./components/posts-data-table"
 
 const ContentPage = () => {
+  const navigate = useNavigate()
+
+  const handleCreatePost = (type: string) => {
+    navigate(`editor/test`) // TODO: change to the correct path
+    // navigate(`/editor/${type}/new`)
+  }
+
   return (
-    <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">Content</Heading>
-      </div>
-      <div className="px-6 py-4">
-        <Link to="editor/test-page-id">
-          <Button>View Test Page</Button>
-        </Link>
-      </div>
-    </Container>
+    <SingleColumnLayout>
+      <Container className="divide-y p-0">
+        <Header
+          title="Content"
+          actions={[
+            {
+              type: "custom",
+              children: <CreatePostButton onSelect={handleCreatePost} />
+            }
+          ]}
+        />
+        <div className="p-6">
+          <PostsDataTable />
+        </div>
+      </Container>
+    </SingleColumnLayout>
   )
 }
 

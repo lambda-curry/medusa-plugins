@@ -1,16 +1,15 @@
-import { Container } from "@medusajs/ui"
+import { Button, Container } from "@medusajs/ui"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { DocumentText } from "@medusajs/icons"
+import { ChevronDown, DocumentText } from "@medusajs/icons"
 import { useNavigate } from "react-router-dom"
 import { SingleColumnLayout } from "../../layouts/single-column"
 import { Header } from "../../components/header"
-import { CreatePostButton } from "./components/create-post-button"
 import { PostsDataTable } from "./components/posts-data-table"
 
 const ContentPage = () => {
   const navigate = useNavigate()
 
-  const handleCreatePost = (type: string) => {
+  const handleCreatePost = () => {
     navigate(`editor/test`) // TODO: change to the correct path
     // navigate(`/editor/${type}/new`)
   }
@@ -23,13 +22,11 @@ const ContentPage = () => {
           actions={[
             {
               type: "custom",
-              children: <CreatePostButton onSelect={handleCreatePost} />
+              children: <Button variant="primary" size="small" onClick={handleCreatePost}>Create</Button>
             }
           ]}
         />
-        <div className="p-6">
           <PostsDataTable />
-        </div>
       </Container>
     </SingleColumnLayout>
   )

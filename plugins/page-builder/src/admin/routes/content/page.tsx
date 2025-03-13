@@ -1,15 +1,24 @@
 import { Button, Container } from "@medusajs/ui"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { ChevronDown, DocumentText } from "@medusajs/icons"
+import { DocumentText } from "@medusajs/icons"
 import { useNavigate } from "react-router-dom"
 import { SingleColumnLayout } from "../../layouts/single-column"
 import { Header } from "../../components/header"
 import { PostsDataTable } from "./components/posts-data-table"
+import { useAdminCreatePost } from "../../hooks/posts-mutations"
 
 const ContentPage = () => {
   const navigate = useNavigate()
 
-  const handleCreatePost = () => {
+  const { mutateAsync: createPost, isPending } = useAdminCreatePost()
+
+  const handleCreatePost = async () => {
+    await createPost({
+      title: 'New Page',
+      content: {},
+      type: 'page'
+    })
+
     navigate(`editor/test`) // TODO: change to the correct path
     // navigate(`/editor/${type}/new`)
   }
@@ -22,7 +31,7 @@ const ContentPage = () => {
           actions={[
             {
               type: "custom",
-              children: <Button variant="primary" size="small" onClick={handleCreatePost}>Create</Button>
+              children: <Button variant="primary" size="small" onClick={handleCreatePost} isLoading={isPending}>Create</Button>
             }
           ]}
         />

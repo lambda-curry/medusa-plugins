@@ -1,29 +1,20 @@
 import React from "react"
 import { 
   createDataTableColumnHelper,
-  Badge,
   Text,
   StatusBadge
 } from "@medusajs/ui"
 import { PencilSquare, SquareTwoStackMini, Trash } from "@medusajs/icons"
+import { Post } from "../../../../../modules/page-builder/types"
 
-export type PostItem = {
-  id: string
-  title: string
-  handle: string
-  status: 'published' | 'draft'
-  type: string
-  created_at: string
-  updated_at: string
-}
 
 export type ColumnActions = {
-  onEdit?: (post: PostItem) => void
-  onDuplicate?: (post: PostItem) => void
-  onDelete?: (post: PostItem) => void
+  onEdit?: (post: Post) => void
+  onDuplicate?: (post: Post) => void
+  onDelete?: (post: Post) => void
 }
 
-const columnHelper = createDataTableColumnHelper<PostItem>()
+const columnHelper = createDataTableColumnHelper<Post>()
 
 /**
  * Hook that returns column definitions for the PostsDataTable

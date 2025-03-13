@@ -31,7 +31,21 @@ export const createPostSchema = z.object({
   is_home_page: z.boolean().optional(),
 })
 
+export const updatePostSchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  handle: z.string().optional(),
+  excerpt: z.string().optional(),
+  content: z.record(z.string(), z.any()).optional(),
+  status: statuses.optional(),
+  type: types.optional(),
+  content_mode: contentModes.optional(),
+  seo: z.record(z.string(), z.any()).optional(),
+  is_home_page: z.boolean().optional(),
+})
+
 export type CreatePostDTO = z.infer<typeof createPostSchema>
+export type UpdatePostDTO = z.infer<typeof updatePostSchema>
 
 export const listAdminPostsQuerySchema = createFindParams({
   offset: 0,
@@ -96,5 +110,10 @@ export const adminPostRoutesMiddlewares: MiddlewareRoute[] = [
     matcher: '/admin/content/posts',
     method: 'POST',
     middlewares: [validateAndTransformBody(createPostSchema)],
+  },
+  {
+    matcher: '/admin/content/posts',
+    method: 'PUT',
+    middlewares: [validateAndTransformBody(updatePostSchema)],
   },
 ]

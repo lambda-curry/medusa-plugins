@@ -1,8 +1,8 @@
 import { model } from '@medusajs/framework/utils'
-import { Post } from './post'
-import { SiteSettings } from './site-settings'
+import { PostModel } from './post'
+import { SiteSettingsModel } from './site-settings'
 
-export const Image = model
+export const ImageModel = model
   .define('image', {
     id: model.id({ prefix: 'img' }).primaryKey(),
     url: model.text(),
@@ -10,12 +10,12 @@ export const Image = model
 
     // relations fields
     post: model
-      .belongsTo(() => Post, {
+      .belongsTo(() => PostModel, {
         mappedBy: 'featured_image',
       })
       .nullable(),
     site_settings: model
-      .belongsTo(() => SiteSettings, {
+      .belongsTo(() => SiteSettingsModel, {
         mappedBy: 'favicon',
       })
       .nullable(),

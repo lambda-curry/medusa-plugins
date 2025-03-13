@@ -1,7 +1,7 @@
 import { model } from '@medusajs/framework/utils'
-import { Image } from './image'
+import { ImageModel } from './image'
 
-export const SiteSettings = model.define('site_settings', {
+export const SiteSettingsModel = model.define('site_settings', {
   id: model.id({ prefix: 'site_sett' }).primaryKey(),
   description: model.text().nullable(),
   header_code: model.text().nullable(),
@@ -26,7 +26,7 @@ export const SiteSettings = model.define('site_settings', {
   shipping_sort: model.text().nullable(),
 
   // relations
-  favicon: model.hasOne(() => Image, {
+  favicon: model.hasOne(() => ImageModel, {
     mappedBy: 'site_settings',
   }),
 })

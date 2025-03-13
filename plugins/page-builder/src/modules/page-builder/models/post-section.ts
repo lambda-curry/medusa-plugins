@@ -1,8 +1,8 @@
 import { model } from '@medusajs/framework/utils'
-import { Post } from './post'
-import { PostTemplate } from './post-template'
+import { PostModel } from './post'
+import { PostTemplateModel } from './post-template'
 
-export const PostSection = model.define('post_section', {
+export const PostSectionModel = model.define('post_section', {
   id: model.id({ prefix: 'postsec' }).primaryKey(),
   type: model.enum([
     'button_list',
@@ -27,12 +27,12 @@ export const PostSection = model.define('post_section', {
 
   // relations fields
   post: model
-    .belongsTo(() => Post, {
+    .belongsTo(() => PostModel, {
       mappedBy: 'sections',
     })
     .nullable(),
   post_template: model
-    .belongsTo(() => PostTemplate, {
+    .belongsTo(() => PostTemplateModel, {
       mappedBy: 'sections',
     })
     .nullable(),

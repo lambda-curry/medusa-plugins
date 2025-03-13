@@ -1,7 +1,7 @@
 import { model } from '@medusajs/framework/utils'
-import { PostSection } from './post-section'
+import { PostSectionModel } from './post-section'
 
-export const PostTemplate = model.define('post_template', {
+export const PostTemplateModel = model.define('post_template', {
   id: model.id({ prefix: 'post_temp' }).primaryKey(),
   title: model.text(),
   status: model.enum(['draft', 'published', 'archived']).default('draft'),
@@ -10,5 +10,5 @@ export const PostTemplate = model.define('post_template', {
   sort_order: model.number().default(0),
 
   // relations fields
-  sections: model.hasMany(() => PostSection),
+  sections: model.hasMany(() => PostSectionModel),
 })

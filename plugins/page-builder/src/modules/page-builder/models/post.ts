@@ -9,7 +9,7 @@ export const PostModel = model.define('post', {
   id: model.id({ prefix: 'post' }).primaryKey(),
   type: model.enum([...postTypes]),
   title: model.text(),
-  handle: model.text().unique(),
+  handle: model.text().unique().nullable(),
   excerpt: model.text().nullable(),
   content: model.json().nullable(),
   status: model.enum([...postStatuses]).default('draft'),

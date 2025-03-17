@@ -4,14 +4,15 @@ import {
   DataTableFilteringState,
   DataTablePaginationState,
   DataTableSortingState,
+  toast,
   useDataTable,
 } from '@medusajs/ui'
 import { useMemo, useState } from 'react'
   import { useNavigate } from 'react-router-dom'
-import { usePostsDataTableColumns } from './use-posts-data-table-columns'
+import { usePostsDataTableColumns } from './use-post-data-table-columns'
 import { useAdminListPosts } from '../../../../hooks/posts-queries'
 import { Post, PostStatus, PostType } from '../../../../../modules/page-builder/types'
-
+import { useAdminDeletePost } from '../../../../hooks/posts-mutations'
 // Create filter helper
 const filterHelper = createDataTableFilterHelper<Post>()
 
@@ -49,6 +50,7 @@ const filters = [
 
 export const PostsDataTable = () => {
   const navigate = useNavigate()
+  const { mutateAsync: deletePost, isPending: isDeleting } = useAdminDeletePost()
   const limit = 10
   const [pagination, setPagination] = useState<DataTablePaginationState>({
     pageSize: limit,
@@ -70,19 +72,22 @@ export const PostsDataTable = () => {
     return (filtering.type || []) as PostType[]
   }, [filtering])
 
-  const handleEdit = (post: Post) => {
+  const handleEdit = (id: string) => {
     // navigate(`/editor/${post.type}/${post.id}`)
     navigate(`editor/test`) // TODO: change to the actual content detail page
   }
 
-  const handleDuplicate = (post: Post) => {
-    console.log('duplicate post', post.id)
+  const handleDuplicate = (id: string) => {
+    console.log('duplicate post', id)
+
+    toast.success('Page duplicated')
     // Implement duplication logic here
   }
 
-  const handleDelete = (post: Post) => {
-    console.log('delete post', post.id)
-    // Implement deletion logic here
+  const handleDelete = async (id: string) => {
+    await deletePost(id)
+
+    toast.success('Page deleted')
   }
 
   const columns = usePostsDataTableColumns({

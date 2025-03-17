@@ -21,7 +21,12 @@ export type CreatePostStepInput = Partial<PostInput> & {
 
 export type UpdatePostStepInput = {
   id: string
+  sections?: string[]
 } & Partial<CreatePostStepInput>
+
+export type DeletePostStepInput = {
+  id: string
+}
 
 export type CreatePostWorkflowInput = {
   post: CreatePostStepInput
@@ -29,4 +34,8 @@ export type CreatePostWorkflowInput = {
 
 export type UpdatePostWorkflowInput = {
   post: UpdatePostStepInput
+}
+
+export type DeletePostWorkflowInput = {
+  id: string
 }

@@ -3,8 +3,7 @@ import {
   MedusaResponse,
 } from '@medusajs/framework/http'
 import { createPostWorkflow } from '../../../../workflows/create-post'
-import { updatePostWorkflow } from '../../../../workflows/update-post'
-import { CreatePostDTO, UpdatePostDTO } from './middlewares'
+import { CreatePostDTO } from '../validations'
 
 export const GET = async (
   req: AuthenticatedMedusaRequest,
@@ -33,19 +32,6 @@ export const POST = async (
   res: MedusaResponse,
 ) => {
   const { result } = await createPostWorkflow(req.scope).run({
-    input: {
-      post: req.validatedBody,
-    },
-  })
-
-  res.status(200).json({ post: result })
-}
-
-export const PUT = async (
-  req: AuthenticatedMedusaRequest<UpdatePostDTO>,
-  res: MedusaResponse,
-) => {
-  const { result } = await updatePostWorkflow(req.scope).run({
     input: {
       post: req.validatedBody,
     },

@@ -20,12 +20,14 @@ export const updatePostStep = createStep(
 
     return new StepResponse(post, {
       ...existingPost,
-      featured_image: existingPost.featured_image?.id,
-      authors: existingPost.authors.map((author) => author.id),
-      sections: existingPost.sections.map((section) => section.id),
-      tags: existingPost.tags.map((tag) => tag.id),
-      root: existingPost.root?.id,
-    })
+
+      // relations
+      root_id: existingPost.root?.root?.id ?? undefined,
+      featured_image_id: existingPost.featured_image?.id,
+      authors: existingPost.authors?.map((author) => author.id),
+      sections: existingPost.sections?.map((section) => section.id),
+      tags: existingPost.tags?.map((tag) => tag.id),
+    } as UpdatePostStepInput)
   },
   async (existingData, { container }) => {
     if (!existingData) return

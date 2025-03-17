@@ -4,6 +4,9 @@ import type {
   AdminPageBuilderCreatePostResponse,
   AdminPageBuilderListPostsQuery,
   AdminPageBuilderListPostsResponse,
+  AdminPageBuilderDeletePostResponse,
+  AdminPageBuilderUpdatePostBody,
+  AdminPageBuilderUpdatePostResponse,
 } from '../types'
 
 export class AdminPageBuilderResource {
@@ -25,6 +28,25 @@ export class AdminPageBuilderResource {
       {
         method: 'POST',
         body: data,
+      },
+    )
+  }
+
+  async updatePost(id: string, data: AdminPageBuilderUpdatePostBody) {
+    return this.client.fetch<AdminPageBuilderUpdatePostResponse>(
+      `/admin/content/posts/${id}`,
+      {
+        method: 'PUT',
+        body: data,
+      },
+    )
+  }
+
+  async deletePost(id: string) {
+    return this.client.fetch<AdminPageBuilderDeletePostResponse>(
+      `/admin/content/posts/${id}`,
+      {
+        method: 'DELETE',
       },
     )
   }

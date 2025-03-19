@@ -1,13 +1,10 @@
 import {
-	type DataTableFilteringState,
-	type DataTablePaginationState,
-	type DataTableSortingState,
 	createDataTableFilterHelper,
 	DataTable,
 	toast,
 	useDataTable,
 } from "@medusajs/ui";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePostsDataTableColumns } from "./use-post-data-table-columns";
 import { useAdminListPosts } from "../../../../hooks/posts-queries";
@@ -20,6 +17,7 @@ import {
 	useAdminDeletePost,
 	useAdminDuplicatePost,
 } from "../../../../hooks/posts-mutations";
+import { usePostTableQuery } from "./use-post-table-query";
 
 // Create filter helper
 const filterHelper = createDataTableFilterHelper<Post>();
@@ -61,17 +59,21 @@ export const PostsDataTable = () => {
 	const { mutateAsync: deletePost } = useAdminDeletePost();
 	const { mutateAsync: duplicatePost } = useAdminDuplicatePost();
 	const limit = 10;
-	const [pagination, setPagination] = useState<DataTablePaginationState>({
-		pageSize: limit,
-		pageIndex: 0,
-	});
-	const [search, setSearch] = useState<string>("");
-	const [filtering, setFiltering] = useState<DataTableFilteringState>({});
-	const [sorting, setSorting] = useState<DataTableSortingState | null>(null);
 
-	const offset = useMemo(() => {
-		return pagination.pageIndex * limit;
-	}, [pagination]);
+	// Get all query state from the hook
+	const {
+		searchParams,
+		pagination,
+		filtering,
+		sorting,
+		search,
+		setPaginationState,
+		setFilteringState,
+		setSortingState,
+		setSearchState,
+	} = usePostTableQuery({
+		pageSize: limit,
+	});
 
 	const statusFilters = useMemo(() => {
 		return (filtering.status || []) as PostStatus[];
@@ -82,19 +84,16 @@ export const PostsDataTable = () => {
 	}, [filtering]);
 
 	const handleEdit = (id: string) => {
-		// navigate(`/editor/${post.type}/${post.id}`)
 		navigate("editor/test"); // TODO: change to the actual content detail page
 	};
 
 	const handleDuplicate = async (id: string) => {
 		await duplicatePost(id);
-
 		toast.success("Page duplicated");
 	};
 
 	const handleDelete = async (id: string) => {
 		await deletePost(id);
-
 		toast.success("Page deleted");
 	};
 
@@ -105,11 +104,9 @@ export const PostsDataTable = () => {
 	});
 
 	const { data, isLoading } = useAdminListPosts({
-		limit,
-		offset,
-		q: search,
-		status: statusFilters,
-		type: typeFilters,
+		...searchParams,
+		status: statusFilters.length > 0 ? statusFilters : undefined,
+		type: typeFilters.length > 0 ? typeFilters : undefined,
 		order: sorting ? `${sorting.desc ? "-" : ""}${sorting.id}` : undefined,
 	});
 
@@ -121,20 +118,20 @@ export const PostsDataTable = () => {
 		isLoading,
 		pagination: {
 			state: pagination,
-			onPaginationChange: setPagination,
+			onPaginationChange: setPaginationState,
 		},
 		search: {
 			state: search,
-			onSearchChange: setSearch,
+			onSearchChange: setSearchState,
 		},
 		filtering: {
 			state: filtering,
-			onFilteringChange: setFiltering,
+			onFilteringChange: setFilteringState,
 		},
 		filters,
 		sorting: {
 			state: sorting,
-			onSortingChange: setSorting,
+			onSortingChange: setSortingState,
 		},
 	});
 

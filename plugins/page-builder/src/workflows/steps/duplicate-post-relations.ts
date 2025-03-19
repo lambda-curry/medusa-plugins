@@ -1,7 +1,6 @@
 import { StepResponse, createStep } from '@medusajs/workflows-sdk'
 import { PAGE_BUILDER_MODULE } from '../../modules/page-builder'
 import type PageBuilderService from '../../modules/page-builder/service'
-import { PostSection } from 'src/modules/page-builder/types'
 
 export const duplicatePostRelationsStepId = 'duplicate-post-relations-step'
 

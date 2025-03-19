@@ -8,9 +8,9 @@ import { postContentModes, postStatuses, postTypes } from '../types/common'
 export const PostModel = model.define('post', {
   id: model.id({ prefix: 'post' }).primaryKey(),
   type: model.enum([...postTypes]),
-  title: model.text(),
-  handle: model.text().unique().nullable(),
-  excerpt: model.text().nullable(),
+  title: model.text().searchable(),
+  handle: model.text().unique().searchable().nullable(),
+  excerpt: model.text().searchable().nullable(),
   content: model.json().nullable(),
   status: model.enum([...postStatuses]).default('draft'),
   content_mode: model.enum([...postContentModes]).default('advanced'),

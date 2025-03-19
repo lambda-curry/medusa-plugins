@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { sdk } from '../sdk'
-import {
+import type {
   AdminPageBuilderCreatePostBody,
   AdminPageBuilderCreatePostResponse,
   AdminPageBuilderDeletePostResponse,
+  AdminPageBuilderDuplicatePostResponse,
   AdminPageBuilderUpdatePostBody,
   AdminPageBuilderUpdatePostResponse,
 } from '../../sdk/types'
@@ -49,6 +50,19 @@ export const useAdminDeletePost = () => {
   return useMutation<AdminPageBuilderDeletePostResponse, Error, string>({
     mutationFn: async (id: string) => {
       return sdk.admin.pageBuilder.deletePost(id)
+    },
+    mutationKey: QUERY_KEY,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+    },
+  })
+}
+
+export const useAdminDuplicatePost = () => {
+  const queryClient = useQueryClient()
+  return useMutation<AdminPageBuilderDuplicatePostResponse, Error, string>({
+    mutationFn: async (id: string) => {
+      return sdk.admin.pageBuilder.duplicatePost(id)
     },
     mutationKey: QUERY_KEY,
     onSuccess: () => {

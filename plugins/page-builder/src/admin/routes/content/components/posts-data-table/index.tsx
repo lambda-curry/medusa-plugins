@@ -1,148 +1,156 @@
 import {
-  createDataTableFilterHelper,
-  DataTable,
-  DataTableFilteringState,
-  DataTablePaginationState,
-  DataTableSortingState,
-  toast,
-  useDataTable,
-} from '@medusajs/ui'
-import { useMemo, useState } from 'react'
-  import { useNavigate } from 'react-router-dom'
-import { usePostsDataTableColumns } from './use-post-data-table-columns'
-import { useAdminListPosts } from '../../../../hooks/posts-queries'
-import { Post, PostStatus, PostType } from '../../../../../modules/page-builder/types'
-import { useAdminDeletePost } from '../../../../hooks/posts-mutations'
+	type DataTableFilteringState,
+	type DataTablePaginationState,
+	type DataTableSortingState,
+	createDataTableFilterHelper,
+	DataTable,
+	toast,
+	useDataTable,
+} from "@medusajs/ui";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { usePostsDataTableColumns } from "./use-post-data-table-columns";
+import { useAdminListPosts } from "../../../../hooks/posts-queries";
+import type {
+	Post,
+	PostStatus,
+	PostType,
+} from "../../../../../modules/page-builder/types";
+import {
+	useAdminDeletePost,
+	useAdminDuplicatePost,
+} from "../../../../hooks/posts-mutations";
+
 // Create filter helper
-const filterHelper = createDataTableFilterHelper<Post>()
+const filterHelper = createDataTableFilterHelper<Post>();
 
 // Define filters
 const filters = [
-  filterHelper.accessor("status", {
-    type: "select",
-    label: "Status",
-    options: [
-      {
-        label: "Published",
-        value: "published",
-      },
-      {
-        label: "Draft",
-        value: "draft",
-      },
-    ],
-  }),
-  filterHelper.accessor("type", {
-    type: "select",
-    label: "Type",
-    options: [
-      {
-        label: "Page",
-        value: "page",
-      },
-      {
-        label: "Post",
-        value: "post",
-      },
-    ],
-  }),
-]
+	filterHelper.accessor("status", {
+		type: "select",
+		label: "Status",
+		options: [
+			{
+				label: "Published",
+				value: "published",
+			},
+			{
+				label: "Draft",
+				value: "draft",
+			},
+		],
+	}),
+	filterHelper.accessor("type", {
+		type: "select",
+		label: "Type",
+		options: [
+			{
+				label: "Page",
+				value: "page",
+			},
+			{
+				label: "Post",
+				value: "post",
+			},
+		],
+	}),
+];
 
 export const PostsDataTable = () => {
-  const navigate = useNavigate()
-  const { mutateAsync: deletePost, isPending: isDeleting } = useAdminDeletePost()
-  const limit = 10
-  const [pagination, setPagination] = useState<DataTablePaginationState>({
-    pageSize: limit,
-    pageIndex: 0,
-  })
-  const [search, setSearch] = useState<string>("")
-  const [filtering, setFiltering] = useState<DataTableFilteringState>({})
-  const [sorting, setSorting] = useState<DataTableSortingState | null>(null)
+	const navigate = useNavigate();
+	const { mutateAsync: deletePost } = useAdminDeletePost();
+	const { mutateAsync: duplicatePost } = useAdminDuplicatePost();
+	const limit = 10;
+	const [pagination, setPagination] = useState<DataTablePaginationState>({
+		pageSize: limit,
+		pageIndex: 0,
+	});
+	const [search, setSearch] = useState<string>("");
+	const [filtering, setFiltering] = useState<DataTableFilteringState>({});
+	const [sorting, setSorting] = useState<DataTableSortingState | null>(null);
 
-  const offset = useMemo(() => {
-    return pagination.pageIndex * limit
-  }, [pagination])
-  
-  const statusFilters = useMemo(() => {
-    return (filtering.status || []) as PostStatus[]
-  }, [filtering])
+	const offset = useMemo(() => {
+		return pagination.pageIndex * limit;
+	}, [pagination]);
 
-  const typeFilters = useMemo(() => {
-    return (filtering.type || []) as PostType[]
-  }, [filtering])
+	const statusFilters = useMemo(() => {
+		return (filtering.status || []) as PostStatus[];
+	}, [filtering]);
 
-  const handleEdit = (id: string) => {
-    // navigate(`/editor/${post.type}/${post.id}`)
-    navigate(`editor/test`) // TODO: change to the actual content detail page
-  }
+	const typeFilters = useMemo(() => {
+		return (filtering.type || []) as PostType[];
+	}, [filtering]);
 
-  const handleDuplicate = (id: string) => {
-    console.log('duplicate post', id)
+	const handleEdit = (id: string) => {
+		// navigate(`/editor/${post.type}/${post.id}`)
+		navigate("editor/test"); // TODO: change to the actual content detail page
+	};
 
-    toast.success('Page duplicated')
-    // Implement duplication logic here
-  }
+	const handleDuplicate = async (id: string) => {
+		await duplicatePost(id);
 
-  const handleDelete = async (id: string) => {
-    await deletePost(id)
+		toast.success("Page duplicated");
+	};
 
-    toast.success('Page deleted')
-  }
+	const handleDelete = async (id: string) => {
+		await deletePost(id);
 
-  const columns = usePostsDataTableColumns({
-    onEdit: handleEdit,
-    onDuplicate: handleDuplicate,
-    onDelete: handleDelete,
-  })
+		toast.success("Page deleted");
+	};
 
-  const { data, isLoading } = useAdminListPosts({
-    limit,
-    offset,
-    q: search,
-    status: statusFilters,
-    type: typeFilters,
-    order: sorting ? `${sorting.desc ? "-" : ""}${sorting.id}` : undefined,
-  })
+	const columns = usePostsDataTableColumns({
+		onEdit: handleEdit,
+		onDuplicate: handleDuplicate,
+		onDelete: handleDelete,
+	});
 
-  const table = useDataTable({
-    columns,
-    data: data?.posts || [],
-    getRowId: (row) => row.id,
-    rowCount: data?.count || 0,
-    isLoading,
-    pagination: {
-      state: pagination,
-      onPaginationChange: setPagination,
-    },
-    search: {
-      state: search,
-      onSearchChange: setSearch,
-    },
-    filtering: {
-      state: filtering,
-      onFilteringChange: setFiltering,
-    },
-    filters,
-    sorting: {
-      state: sorting,
-      onSortingChange: setSorting,
-    },
-  })
+	const { data, isLoading } = useAdminListPosts({
+		limit,
+		offset,
+		q: search,
+		status: statusFilters,
+		type: typeFilters,
+		order: sorting ? `${sorting.desc ? "-" : ""}${sorting.id}` : undefined,
+	});
 
-  return (
-    <DataTable instance={table}>
-      <DataTable.Toolbar className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
-        <div className="flex gap-2 w-full justify-between">
-          <DataTable.FilterMenu tooltip="Filter" />
-          <div className="flex gap-2">
-            <DataTable.Search placeholder="Search" />
-            <DataTable.SortingMenu tooltip="Sort" />
-          </div>
-        </div>
-      </DataTable.Toolbar>
-      <DataTable.Table />
-      <DataTable.Pagination />
-    </DataTable>
-  )
-}
+	const table = useDataTable({
+		columns,
+		data: data?.posts || [],
+		getRowId: (row) => row.id,
+		rowCount: data?.count || 0,
+		isLoading,
+		pagination: {
+			state: pagination,
+			onPaginationChange: setPagination,
+		},
+		search: {
+			state: search,
+			onSearchChange: setSearch,
+		},
+		filtering: {
+			state: filtering,
+			onFilteringChange: setFiltering,
+		},
+		filters,
+		sorting: {
+			state: sorting,
+			onSortingChange: setSorting,
+		},
+	});
+
+	return (
+		<DataTable instance={table}>
+			<DataTable.Toolbar className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+				<div className="flex gap-2 w-full justify-between">
+					<DataTable.FilterMenu tooltip="Filter" />
+					<div className="flex gap-2">
+						<DataTable.Search placeholder="Search" />
+						<DataTable.SortingMenu tooltip="Sort" />
+					</div>
+				</div>
+			</DataTable.Toolbar>
+			<DataTable.Table />
+			<DataTable.Pagination />
+		</DataTable>
+	);
+};

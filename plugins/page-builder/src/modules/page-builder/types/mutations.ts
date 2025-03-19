@@ -39,3 +39,11 @@ export type UpdatePostWorkflowInput = {
 export type DeletePostWorkflowInput = {
   id: string
 }
+
+export type DuplicatePostStepInput = {
+  id: string
+}
+
+export type DuplicatePostWorkflowInput = {
+  id: string
+}

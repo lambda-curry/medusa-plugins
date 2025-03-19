@@ -7,6 +7,7 @@ import type {
   AdminPageBuilderDeletePostResponse,
   AdminPageBuilderUpdatePostBody,
   AdminPageBuilderUpdatePostResponse,
+  AdminPageBuilderDuplicatePostResponse,
 } from '../types'
 
 export class AdminPageBuilderResource {
@@ -14,7 +15,7 @@ export class AdminPageBuilderResource {
 
   async listPosts(query: AdminPageBuilderListPostsQuery) {
     return this.client.fetch<AdminPageBuilderListPostsResponse>(
-      `/admin/content/posts`,
+      '/admin/content/posts',
       {
         method: 'GET',
         query,
@@ -24,7 +25,7 @@ export class AdminPageBuilderResource {
 
   async createPost(data: AdminPageBuilderCreatePostBody) {
     return this.client.fetch<AdminPageBuilderCreatePostResponse>(
-      `/admin/content/posts`,
+      '/admin/content/posts',
       {
         method: 'POST',
         body: data,
@@ -47,6 +48,15 @@ export class AdminPageBuilderResource {
       `/admin/content/posts/${id}`,
       {
         method: 'DELETE',
+      },
+    )
+  }
+
+  async duplicatePost(id: string) {
+    return this.client.fetch<AdminPageBuilderDuplicatePostResponse>(
+      `/admin/content/posts/${id}/duplicate`,
+      {
+        method: 'POST',
       },
     )
   }

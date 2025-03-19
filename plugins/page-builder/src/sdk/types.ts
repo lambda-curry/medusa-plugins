@@ -1,5 +1,5 @@
-import { Post } from '../modules/page-builder/types'
-import {
+import type { Post } from '../modules/page-builder/types'
+import type {
   CreatePostDTO,
   ListAdminPostsQueryDTO,
   UpdatePostDTO,
@@ -33,4 +33,8 @@ export type AdminPageBuilderDeletePostResponse = {
   id: string
   object: string
   deleted: boolean
+}
+
+export type AdminPageBuilderDuplicatePostResponse = {
+  post: Post
 }

@@ -1,9 +1,9 @@
-import {
+import type {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from '@medusajs/framework/http'
 import { createPostWorkflow } from '../../../../workflows/create-post'
-import { CreatePostDTO } from '../validations'
+import type { CreatePostDTO } from '../validations'
 
 export const GET = async (
   req: AuthenticatedMedusaRequest,

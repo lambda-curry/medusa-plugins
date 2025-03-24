@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-
-import { sdk } from '../sdk'
-import {
+import type {
   AdminPageBuilderListPostsQuery,
   AdminPageBuilderListPostsResponse,
-} from '../../sdk/types'
+  Post,
+} from '@lambdacurry/medusa-page-builder-types'
 
-import { Post } from '../../modules/page-builder/types'
+import { sdk } from '../sdk'
 
 const QUERY_KEY = ['posts']
 

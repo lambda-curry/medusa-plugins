@@ -6,7 +6,7 @@ import {
 	usePrompt,
 } from "@medusajs/ui";
 import { PencilSquare, SquareTwoStackMini, Trash } from "@medusajs/icons";
-import type { Post } from "../../../../../modules/page-builder/types";
+import type { Post } from "@lambdacurry/medusa-page-builder-types";
 
 export type ColumnActions = {
 	onEdit?: (id: string) => void;

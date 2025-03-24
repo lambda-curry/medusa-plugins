@@ -12,7 +12,7 @@ import type {
 	Post,
 	PostStatus,
 	PostType,
-} from "../../../../../modules/page-builder/types";
+} from "@lambdacurry/medusa-page-builder-types";
 import {
 	useAdminDeletePost,
 	useAdminDuplicatePost,
@@ -111,6 +111,7 @@ export const PostsDataTable = () => {
 	});
 
 	const table = useDataTable({
+		onRowClick: (_, row) => handleEdit(row.id),
 		columns,
 		data: data?.posts || [],
 		getRowId: (row) => row.id,

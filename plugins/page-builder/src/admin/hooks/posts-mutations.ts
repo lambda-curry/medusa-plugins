@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { sdk } from '../sdk'
 import type {
   AdminPageBuilderCreatePostBody,
   AdminPageBuilderCreatePostResponse,
@@ -7,7 +6,9 @@ import type {
   AdminPageBuilderDuplicatePostResponse,
   AdminPageBuilderUpdatePostBody,
   AdminPageBuilderUpdatePostResponse,
-} from '../../sdk/types'
+} from '@lambdacurry/medusa-page-builder-types'
+
+import { sdk } from '../sdk'
 
 const QUERY_KEY = ['posts']
 

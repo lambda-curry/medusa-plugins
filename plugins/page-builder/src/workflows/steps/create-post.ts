@@ -1,7 +1,8 @@
 import { StepResponse, createStep } from '@medusajs/workflows-sdk'
+
+import type { CreatePostStepInput } from '../types'
 import { PAGE_BUILDER_MODULE } from '../../modules/page-builder'
 import type PageBuilderService from '../../modules/page-builder/service'
-import type { CreatePostStepInput } from '../../modules/page-builder/types'
 
 export const createPostStepId = 'create-post-step'
 

@@ -1,7 +1,8 @@
 import { StepResponse, createStep } from '@medusajs/workflows-sdk'
+
+import type { DuplicatePostStepInput } from '../types'
 import { PAGE_BUILDER_MODULE } from '../../modules/page-builder'
 import type PageBuilderService from '../../modules/page-builder/service'
-import type { DuplicatePostStepInput } from '../../modules/page-builder/types'
 
 export const duplicatePostStepId = 'duplicate-post-step'
 

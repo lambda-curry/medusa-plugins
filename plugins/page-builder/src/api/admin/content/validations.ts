@@ -5,14 +5,14 @@ import {
 } from '@medusajs/medusa/api/utils/validators'
 
 import {
-  postContentModes,
-  postStatuses,
-  postTypes,
-} from '../../../modules/page-builder/types'
+  postStatusValues,
+  postTypeValues,
+  postContentModeValues,
+} from '../../../modules/page-builder/enum-values'
 
-const postStatusesEnum = z.enum([...postStatuses])
-const postTypesEnum = z.enum([...postTypes])
-const postContentModesEnum = z.enum([...postContentModes])
+export const postStatusesEnum = z.enum([...postStatusValues])
+export const postTypesEnum = z.enum([...postTypeValues])
+export const postContentModesEnum = z.enum([...postContentModeValues])
 
 export const createPostSchema = z.object({
   title: z.string(),
@@ -64,8 +64,3 @@ export const listAdminPostsQuerySchema = createFindParams({
     updated_at: createOperatorMap().optional(),
   }),
 )
-
-export type CreatePostDTO = z.infer<typeof createPostSchema>
-export type UpdatePostDTO = z.infer<typeof updatePostSchema>
-export type DeletePostDTO = z.infer<typeof deletePostSchema>
-export type ListAdminPostsQueryDTO = z.infer<typeof listAdminPostsQuerySchema>

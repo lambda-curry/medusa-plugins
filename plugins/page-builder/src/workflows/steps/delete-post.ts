@@ -1,10 +1,8 @@
 import { StepResponse, createStep } from '@medusajs/workflows-sdk'
+
+import type { CreatePostStepInput, DeletePostStepInput } from '../types'
 import { PAGE_BUILDER_MODULE } from '../../modules/page-builder'
 import type PageBuilderService from '../../modules/page-builder/service'
-import type {
-  CreatePostStepInput,
-  DeletePostStepInput,
-} from '../../modules/page-builder/types'
 
 export const deletePostStepId = 'delete-post-step'
 

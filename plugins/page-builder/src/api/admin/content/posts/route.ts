@@ -3,7 +3,7 @@ import type {
   MedusaResponse,
 } from '@medusajs/framework/http'
 import { createPostWorkflow } from '../../../../workflows/create-post'
-import type { CreatePostDTO } from '../validations'
+import type { AdminPageBuilderCreatePostBody } from '@lambdacurry/medusa-page-builder-types'
 
 export const GET = async (
   req: AuthenticatedMedusaRequest,
@@ -28,7 +28,7 @@ export const GET = async (
 }
 
 export const POST = async (
-  req: AuthenticatedMedusaRequest<CreatePostDTO>,
+  req: AuthenticatedMedusaRequest<AdminPageBuilderCreatePostBody>,
   res: MedusaResponse,
 ) => {
   const { result } = await createPostWorkflow(req.scope).run({

@@ -2,8 +2,8 @@ import { transform } from '@medusajs/framework/workflows-sdk'
 import { emitEventStep } from '@medusajs/medusa/core-flows'
 import { WorkflowResponse, createWorkflow } from '@medusajs/workflows-sdk'
 
+import type { UpdatePostWorkflowInput } from './types'
 import { pageBuilderModuleEvents } from '../modules/page-builder'
-import { UpdatePostWorkflowInput } from '../modules/page-builder/types'
 import { updatePostStep } from './steps/update-post'
 
 export const updatePostWorkflow = createWorkflow(

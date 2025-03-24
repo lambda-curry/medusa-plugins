@@ -1,8 +1,9 @@
 import { transform } from '@medusajs/framework/workflows-sdk'
 import { emitEventStep } from '@medusajs/medusa/core-flows'
 import { WorkflowResponse, createWorkflow } from '@medusajs/workflows-sdk'
+
+import type { DuplicatePostWorkflowInput } from './types'
 import { pageBuilderModuleEvents } from '../modules/page-builder'
-import type { DuplicatePostWorkflowInput } from '../modules/page-builder/types'
 import { duplicatePostStep } from './steps/duplicate-post'
 import { duplicatePostRelationsStep } from './steps/duplicate-post-relations'
 

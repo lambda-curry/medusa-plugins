@@ -1,4 +1,4 @@
-import type { Post, Image } from './common'
+import type { Post } from '@lambdacurry/medusa-page-builder-types'
 
 type PostInput = Omit<
   Post,

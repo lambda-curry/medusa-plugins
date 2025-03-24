@@ -2,8 +2,8 @@ import { transform } from '@medusajs/framework/workflows-sdk'
 import { emitEventStep } from '@medusajs/medusa/core-flows'
 import { WorkflowResponse, createWorkflow } from '@medusajs/workflows-sdk'
 
+import type { DeletePostWorkflowInput } from './types'
 import { pageBuilderModuleEvents } from '../modules/page-builder'
-import { DeletePostWorkflowInput } from '../modules/page-builder/types'
 import { deletePostStep } from './steps/delete-post'
 
 // Delete post workflow

@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-plugins-sdk",
-  "version": "0.0.5",
+  "version": "0.0.6-beta.3",
   "description": "SDK for Medusa plugins",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "dev:publish": "yalc publish"
   },
   "devDependencies": {
-    "@medusajs/types": "^2.5.0",
+    "@medusajs/types": "^2.6.1",
     "prettier": "^3.2.5",
     "rimraf": "^6.0.1",
     "tsup": "^8.0.2",
@@ -46,7 +46,8 @@
     "yalc": "^1.0.0-pre.53"
   },
   "dependencies": {
-    "@medusajs/js-sdk": "^2.5.0",
+    "@lambdacurry/medusa-page-builder-types": "0.0.4",
+    "@medusajs/js-sdk": "^2.6.1",
     "@types/express": "^5.0.0",
     "@types/multer": "^1.4.12",
     "form-data": "^4.0.2"

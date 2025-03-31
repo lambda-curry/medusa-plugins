@@ -165,7 +165,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "mappedType": "text"
         },
         "excerpt": {
@@ -208,6 +208,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "'advanced'",
           "enumItems": [
             "basic",
             "advanced"

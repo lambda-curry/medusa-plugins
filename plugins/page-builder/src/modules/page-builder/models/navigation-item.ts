@@ -1,6 +1,6 @@
 import { model } from '@medusajs/framework/utils'
 
-export const NavigationItem = model.define('navigation_item', {
+export const NavigationItemModel = model.define('navigation_item', {
   id: model.id({ prefix: 'nav_item' }).primaryKey(),
   label: model.text(),
   location: model.enum(['header', 'footer']),

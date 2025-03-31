@@ -36,12 +36,13 @@
     "db:generate": "DB_USERNAME=${DB_USERNAME:-postgres} DB_PASSWORD=${DB_PASSWORD:-postgres} medusa plugin:db:generate"
   },
   "devDependencies": {
-    "@medusajs/admin-sdk": "2.6.0",
-    "@medusajs/cli": "2.6.0",
-    "@medusajs/framework": "2.6.0",
-    "@medusajs/icons": "2.6.0",
-    "@medusajs/medusa": "2.6.0",
-    "@medusajs/test-utils": "2.6.0",
+    "@medusajs/admin-sdk": "^2.6.1",
+    "@medusajs/cli": "^2.6.1",
+    "@medusajs/framework": "^2.6.1",
+    "@medusajs/icons": "^2.6.1",
+    "@medusajs/medusa": "^2.6.1",
+    "@medusajs/test-utils": "^2.6.1",
+    "@medusajs/ui": "^4.0.7",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/knex": "6.4.3",
@@ -59,7 +60,8 @@
     "react-dom": "^18.2.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "yalc": "^1.0.0-pre.53"
   },
   "peerDependencies": {
     "@medusajs/admin-sdk": "^2.6.0",
@@ -68,7 +70,7 @@
     "@medusajs/icons": "^2.6.0",
     "@medusajs/medusa": "^2.6.0",
     "@medusajs/test-utils": "^2.6.0",
-    "@medusajs/ui": "^4.0.6",
+    "@medusajs/ui": "^4.0.7",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/knex": "6.4.3",
@@ -84,8 +86,9 @@
     "hoistingLimits": "workspaces"
   },
   "dependencies": {
-    "@lambdacurry/medusa-plugins-sdk": "latest",
-    "@medusajs/js-sdk": "2.6.0",
-    "@medusajs/workflows-sdk": "2.6.0"
+    "@lambdacurry/medusa-page-builder-types": "0.0.4",
+    "@lambdacurry/medusa-plugins-sdk": "0.0.6-beta.3",
+    "@medusajs/js-sdk": "^2.6.1",
+    "@medusajs/workflows-sdk": "^2.6.1"
   }
 }

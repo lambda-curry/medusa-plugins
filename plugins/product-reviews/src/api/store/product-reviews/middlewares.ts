@@ -58,7 +58,8 @@ export const allowedStoreProductReviewFields = [
   'created_at',
   'updated_at',
   'response',
-  'images'
+  'images',
+  'product.*'
 ];
 
 export const defaultStoreReviewsQueryConfig: QueryConfig<ProductReview> = {

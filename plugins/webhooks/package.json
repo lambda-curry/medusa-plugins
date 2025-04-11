@@ -10,25 +10,14 @@
   "types": "./.medusa/server/src/types/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
-    "./workflows": {
-      "types": "./.medusa/server/src/workflows/index.d.ts",
-      "default": "./.medusa/server/src/workflows/index.js"
-    },
-    "./.medusa/server/src/modules/*": {
-      "types": "./.medusa/server/src/modules/*/index.d.ts",
-      "default": "./.medusa/server/src/modules/*/index.js"
-    },
-    "./modules/*": {
-      "types": "./.medusa/server/src/modules/*/index.d.ts",
-      "default": "./.medusa/server/src/modules/*/index.js"
-    },
-    "./providers/*": {
-      "types": "./.medusa/server/src/providers/*/index.d.ts",
-      "default": "./.medusa/server/src/providers/*/index.js"
-    },
-    "./*": {
-      "types": "./.medusa/server/src/*.d.ts",
-      "default": "./.medusa/server/src/*.js"
+    "./workflows": "./.medusa/server/src/workflows/index.js",
+    "./.medusa/server/src/modules/*": "./.medusa/server/src/modules/*/index.js",
+    "./providers/*": "./.medusa/server/src/providers/*/index.js",
+    "./*": "./.medusa/server/src/*.js",
+    "./admin": {
+      "import": "./.medusa/server/src/admin/index.mjs",
+      "require": "./.medusa/server/src/admin/index.js",
+      "default": "./.medusa/server/src/admin/index.js"
     }
   },
   "keywords": [
@@ -43,19 +32,19 @@
     "notifications"
   ],
   "scripts": {
-    "build": "npm run resolve:aliases && medusa build",
+    "build": "medusa plugin:build",
     "dev": "medusa plugin:develop",
     "prepublishOnly": "medusa plugin:build",
     "generate": "medusa plugin:db:generate",
     "resolve:aliases": "tsc --showConfig -p tsconfig.json > tsconfig.resolved.json && tsc-alias -p tsconfig.resolved.json && rimraf tsconfig.resolved.json"
   },
   "devDependencies": {
-    "@medusajs/admin-sdk": "2.4.0",
-    "@medusajs/cli": "2.4.0",
-    "@medusajs/framework": "2.4.0",
-    "@medusajs/icons": "2.4.0",
-    "@medusajs/medusa": "2.4.0",
-    "@medusajs/test-utils": "2.4.0",
+    "@medusajs/admin-sdk": "2.7.0",
+    "@medusajs/cli": "2.7.0",
+    "@medusajs/framework": "2.7.0",
+    "@medusajs/icons": "2.7.0",
+    "@medusajs/medusa": "2.7.0",
+    "@medusajs/test-utils": "2.7.0",
     "@medusajs/ui": "4.0.4",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
@@ -80,12 +69,12 @@
     "yalc": "^1.0.0-pre.53"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "2.4.0",
-    "@medusajs/cli": "2.4.0",
-    "@medusajs/framework": "2.4.0",
-    "@medusajs/icons": "2.4.0",
-    "@medusajs/medusa": "2.4.0",
-    "@medusajs/test-utils": "2.4.0",
+    "@medusajs/admin-sdk": "2.7.0",
+    "@medusajs/cli": "2.7.0",
+    "@medusajs/framework": "2.7.0",
+    "@medusajs/icons": "2.7.0",
+    "@medusajs/medusa": "2.7.0",
+    "@medusajs/test-utils": "2.7.0",
     "@medusajs/ui": "4.0.3",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
@@ -99,7 +88,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@medusajs/js-sdk": "^2.5.0",
+    "@medusajs/js-sdk": "^2.7.0",
     "@tanstack/react-table": "^8.21.2",
     "clsx": "^2.1.1",
     "react-hook-form": "^7.54.2",

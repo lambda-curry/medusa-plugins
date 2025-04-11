@@ -23,6 +23,6 @@ export const deleteProductReviewResponseStep = createStep<string[], { success: b
 
     if (!data) return 
 
-    await productReviewResponseService.createProductReviewResponses(data);
+    await productReviewResponseService.createProductReviewResponses(data as any[]);
   },
 );

@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-product-reviews",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Product Reviews Plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -17,7 +17,12 @@
     "./workflows": "./.medusa/server/src/workflows/index.js",
     "./.medusa/server/src/modules/*": "./.medusa/server/src/modules/*/index.js",
     "./providers/*": "./.medusa/server/src/providers/*/index.js",
-    "./*": "./.medusa/server/src/*.js"
+    "./*": "./.medusa/server/src/*.js",
+    "./admin": {
+      "import": "./.medusa/server/src/admin/index.mjs",
+      "require": "./.medusa/server/src/admin/index.js",
+      "default": "./.medusa/server/src/admin/index.js"
+    }
   },
   "keywords": [
     "medusa",
@@ -37,12 +42,12 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@medusajs/admin-sdk": "2.5.0",
-    "@medusajs/cli": "2.5.0",
-    "@medusajs/framework": "2.5.0",
-    "@medusajs/icons": "2.5.0",
-    "@medusajs/medusa": "2.5.0",
-    "@medusajs/test-utils": "2.5.0",
+    "@medusajs/admin-sdk": "2.7.0",
+    "@medusajs/cli": "2.7.0",
+    "@medusajs/framework": "2.7.0",
+    "@medusajs/icons": "2.7.0",
+    "@medusajs/medusa": "2.7.0",
+    "@medusajs/test-utils": "2.7.0",
     "@medusajs/ui": "^4.0.6",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
@@ -68,12 +73,12 @@
     "yalc": "^1.0.0-pre.53"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "2.5.0",
-    "@medusajs/cli": "2.5.0",
-    "@medusajs/framework": "2.5.0",
-    "@medusajs/icons": "2.5.0",
-    "@medusajs/medusa": "2.5.0",
-    "@medusajs/test-utils": "2.5.0",
+    "@medusajs/admin-sdk": "2.7.0",
+    "@medusajs/cli": "2.7.0",
+    "@medusajs/framework": "2.7.0",
+    "@medusajs/icons": "2.7.0",
+    "@medusajs/medusa": "2.7.0",
+    "@medusajs/test-utils": "2.7.0",
     "@medusajs/ui": "4.0.3",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
@@ -92,8 +97,8 @@
   "dependencies": {
     "@hookform/resolvers": "3.4.2",
     "@lambdacurry/medusa-plugins-sdk": "0.0.5",
-    "@medusajs/js-sdk": "^2.5.0",
-    "@medusajs/workflows-sdk": "^2.5.0",
+    "@medusajs/js-sdk": "^2.7.0",
+    "@medusajs/workflows-sdk": "^2.7.0",
     "luxon": "^3.5.0",
     "zod": "3.22.4"
   }

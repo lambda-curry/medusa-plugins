@@ -32,7 +32,7 @@ export const updateProductReviewsStep = createStep(
       PRODUCT_REVIEW_MODULE
     );
 
-    await productReviewService.updateProductReviews(data);
+    await productReviewService.updateProductReviews(data as any[]);
 
     await productReviewService.refreshProductReviewStats(
       data.map(d => d.product_id).filter(p => p !== null)

@@ -36,7 +36,7 @@ export async function POST(
 ) {
   const webhookService = req.scope.resolve<WebhooksService>("webhooks");
 
-  const subscription = await webhookService.createWebhooks(req.body);
+  const subscription = await webhookService.createWebhooks(req.body as any);
 
   return res.json({ subscription });
 }

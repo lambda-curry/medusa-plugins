@@ -19,11 +19,6 @@ export const updateWebhookDTOSchema = z.object({
 });
 
 export const adminWebhooksRoutesMiddlewares: MiddlewareRoute[] = [
-  // {
-  //   matcher: '/admin/partner',
-  //   method: 'POST',
-  //   middlewares: [validateAndTransformBody(createPartnerDTOSchema)],
-  // },
   {
     matcher: "/admin/webhooks",
     method: "POST",
@@ -34,9 +29,4 @@ export const adminWebhooksRoutesMiddlewares: MiddlewareRoute[] = [
     method: "PUT",
     middlewares: [validateAndTransformBody(updateWebhookDTOSchema)],
   },
-  // {
-  //   matcher: '/admin/partner',
-  //   method: 'GET',
-  //   middlewares: [validateAndTransformQuery(adminGetPartnerParams, defaultPartnerIdQueryConfig)],
-  // },
 ];

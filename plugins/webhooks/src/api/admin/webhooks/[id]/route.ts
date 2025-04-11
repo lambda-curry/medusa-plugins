@@ -8,7 +8,7 @@ export async function PUT(
   res: MedusaResponse
 ) {
   const webhookService = req.scope.resolve<WebhooksService>("webhooks");
-  const subscription = await webhookService.updateWebhooks(req.body);
+  const subscription = await webhookService.updateWebhooks(req.body as any);
 
   res.status(200).json({ subscription });
 }

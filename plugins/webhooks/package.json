@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-webhooks",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A Medusa plugin that enables webhook management and integration, allowing you to configure and manage outgoing webhooks for your e-commerce events.",
   "author": "Medusa (https://medusajs.com)",
   "license": "MIT",
@@ -24,6 +24,7 @@
     "medusa",
     "plugin",
     "webhooks",
+    "medusa-plugin-integration",
     "medusa-plugin-webhooks",
     "medusa-plugin",
     "medusa-v2",

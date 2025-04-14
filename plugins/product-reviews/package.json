@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-product-reviews",
-  "version": "0.0.7",
+  "version": "1.0.0",
   "description": "Product Reviews Plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -28,6 +28,7 @@
     "medusa",
     "plugin",
     "product-reviews",
+    "medusa-plugin-integration",
     "medusa-plugin-product-reviews",
     "medusa-plugin",
     "medusa-v2",

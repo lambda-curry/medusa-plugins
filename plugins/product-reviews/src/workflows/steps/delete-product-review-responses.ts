@@ -21,7 +21,7 @@ export const deleteProductReviewResponseStep = createStep<string[], { success: b
   async (data, { container }) => {
     const productReviewResponseService = container.resolve<ProductReviewResponseService>(PRODUCT_REVIEW_MODULE);
 
-    if (!data) return 
+    if (!data) return;
 
     await productReviewResponseService.createProductReviewResponses(data as any[]);
   },

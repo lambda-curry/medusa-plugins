@@ -1,7 +1,7 @@
 import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
 import { PRODUCT_REVIEW_MODULE } from '../../modules/product-review';
-import ProductReviewService from '../../modules/product-review/service';
-import { ProductReviewStats } from '../../modules/product-review/types/common';
+import type ProductReviewService from '../../modules/product-review/service';
+import type { ProductReviewStats } from '../../modules/product-review/types/common';
 
 export const createMissingProductReviewStatsStepId = 'create-missing-product-review-stats';
 

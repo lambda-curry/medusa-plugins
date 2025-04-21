@@ -2,7 +2,7 @@ import { StepResponse, createStep } from '@medusajs/workflows-sdk';
 import { PRODUCT_REVIEW_MODULE } from '../../modules/product-review';
 import type ProductReviewResponseService from '../../modules/product-review/service';
 import type { CreateProductReviewResponseInput } from '../../modules/product-review/types/mutations';
-import { ProductReviewResponse } from '../../modules/product-review/types/common';
+import type { ProductReviewResponse } from '../../modules/product-review/types/common';
 
 export const createProductReviewResponsesStepId = 'create-product-review-response-step';
 

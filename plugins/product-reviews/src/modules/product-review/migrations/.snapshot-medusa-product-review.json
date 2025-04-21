@@ -157,6 +157,15 @@
           "expression": "CREATE INDEX IF NOT EXISTS \"IDX_product_review_order_id\" ON \"product_review\" (order_id) WHERE deleted_at IS NULL"
         },
         {
+          "keyName": "IDX_product_review_order_line_item_id",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX IF NOT EXISTS \"IDX_product_review_order_line_item_id\" ON \"product_review\" (order_line_item_id) WHERE deleted_at IS NULL"
+        },
+        {
           "keyName": "product_review_pkey",
           "columnNames": [
             "id"
@@ -526,6 +535,15 @@
           "primary": false,
           "unique": false,
           "expression": "CREATE INDEX IF NOT EXISTS \"IDX_product_review_stats_deleted_at\" ON \"product_review_stats\" (deleted_at) WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "IDX_product_review_stats_product_id",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX IF NOT EXISTS \"IDX_product_review_stats_product_id\" ON \"product_review_stats\" (product_id) WHERE deleted_at IS NULL"
         },
         {
           "keyName": "product_review_stats_pkey",

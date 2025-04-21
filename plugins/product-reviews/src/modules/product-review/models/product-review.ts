@@ -23,4 +23,7 @@ export const ProductReviewModel = model
     {
       on: ['order_id'],
     },
+    {
+      on: ['order_line_item_id'],
+    },
   ]);

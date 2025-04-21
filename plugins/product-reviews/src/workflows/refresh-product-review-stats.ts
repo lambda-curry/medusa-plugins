@@ -13,26 +13,7 @@ import { PRODUCT_REVIEW_MODULE } from "../modules/product-review";
 export const refreshProductReviewStatsWorkflow = createWorkflow(
 	"refresh-product-review-stats-workflow",
 	(input: WorkflowData<{ productIds: string[] }>) => {
-		const newStats = createMissingProductReviewStatsStep(input.productIds);
-
-		const linkData = transform({ newStats }, ({ newStats }) => {
-			const productLinks = newStats
-				.filter((stat) => stat.product_id)
-				.map((stat) => {
-					return {
-						[PRODUCT_REVIEW_MODULE]: {
-							product_review_stats_id: stat.id,
-						},
-						[Modules.PRODUCT]: {
-							product_id: stat.product_id,
-						},
-					};
-				});
-
-			return productLinks;
-		});
-
-		createRemoteLinkStep(linkData);
+		createMissingProductReviewStatsStep(input.productIds);
 
 		recalculateProductReviewStatsStep(input.productIds);
 

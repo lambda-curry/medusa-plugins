@@ -6,7 +6,6 @@ export default defineLink(
 	{
 		linkable: ProductReviewModule.linkable.productReview,
 		field: "product_id",
-		isList: false,
 	},
 	ProductModule.linkable.product,
 	{

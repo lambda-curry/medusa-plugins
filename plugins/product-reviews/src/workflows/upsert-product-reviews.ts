@@ -1,11 +1,16 @@
-import { MedusaError } from '@medusajs/framework/utils';
-import { transform } from '@medusajs/framework/workflows-sdk';
-import { useQueryGraphStep } from '@medusajs/medusa/core-flows';
-import type { OrderLineItemDTO, OrderWorkflowDTO } from '@medusajs/types';
-import { type WorkflowData, WorkflowResponse, createWorkflow, when } from '@medusajs/workflows-sdk';
-import type { ProductReview } from '../modules/product-review/types/common';
-import { createProductReviewsWorkflow } from './create-product-reviews';
-import { updateProductReviewsWorkflow } from './update-product-reviews';
+import { MedusaError } from "@medusajs/framework/utils";
+import { transform } from "@medusajs/framework/workflows-sdk";
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
+import type { OrderLineItemDTO, OrderWorkflowDTO } from "@medusajs/types";
+import {
+  type WorkflowData,
+  WorkflowResponse,
+  createWorkflow,
+  when,
+} from "@medusajs/workflows-sdk";
+import type { ProductReview } from "../modules/product-review/types/common";
+import { createProductReviewsWorkflow } from "./create-product-reviews";
+import { updateProductReviewsWorkflow } from "./update-product-reviews";
 
 export type UpsertProductReviewsWorkflowInput = {
   reviews: {
@@ -18,32 +23,37 @@ export type UpsertProductReviewsWorkflowInput = {
 };
 
 export const upsertProductReviewsWorkflow = createWorkflow(
-  'upsert-product-reviews-workflow',
+  "upsert-product-reviews-workflow",
   (input: WorkflowData<UpsertProductReviewsWorkflowInput>) => {
     const orderIds = transform({ input }, ({ input }) => {
       return [...new Set(input.reviews.map((review) => review.order_id))];
     });
 
     const { data: orders } = useQueryGraphStep({
-      entity: 'order',
-      fields: ['*', 'shipping_address.*', 'customer.*', 'items.*', 'items.product_review.*'],
+      entity: "order",
+      fields: ["*", "shipping_address.*", "customer.*", "items.*"],
       filters: {
         id: orderIds,
       },
     }) as { data: OrderWorkflowDTO[] };
 
     const inputs = transform({ orders, reviews: input.reviews }, (values) => {
-      const ordersMap = new Map(values.orders.map((order) => [order.id, order]));
+      const ordersMap = new Map(
+        values.orders.map((order) => [order.id, order])
+      );
 
       const matchedReviews = values.reviews.map((review) => {
-        const { items, ...order } = ordersMap.get(review.order_id) || ({} as OrderWorkflowDTO);
+        const { items, ...order } =
+          ordersMap.get(review.order_id) || ({} as OrderWorkflowDTO);
 
-        const lineItem = items?.find((item) => item?.id === review.order_line_item_id);
+        const lineItem = items?.find(
+          (item) => item?.id === review.order_line_item_id
+        );
 
         if (!lineItem) {
           throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
-            `Order line item ${review.order_line_item_id} not found in order ${review.order_id}`,
+            `Order line item ${review.order_line_item_id} not found in order ${review.order_id}`
           );
         }
 
@@ -56,7 +66,7 @@ export const upsertProductReviewsWorkflow = createWorkflow(
         };
       });
 
-      const getNameFromOrder = (order: Omit<OrderWorkflowDTO, 'items'>) => {
+      const getNameFromOrder = (order: Omit<OrderWorkflowDTO, "items">) => {
         return order.customer?.first_name
           ? `${order.customer.first_name} ${order.customer.last_name}`
           : order.shipping_address?.first_name
@@ -93,28 +103,33 @@ export const upsertProductReviewsWorkflow = createWorkflow(
       return { create, update };
     });
 
-    const createResult = when(inputs, ({ create }) => create.length > 0).then(() =>
-      createProductReviewsWorkflow.runAsStep({
-        input: { productReviews: inputs.create },
-      }),
+    const createResult = when(inputs, ({ create }) => create.length > 0).then(
+      () =>
+        createProductReviewsWorkflow.runAsStep({
+          input: { productReviews: inputs.create },
+        })
     );
 
-    const updateResult = when(inputs, ({ update }) => update.length > 0).then(() =>
-      updateProductReviewsWorkflow.runAsStep({
-        input: { productReviews: inputs.update },
-      }),
+    const updateResult = when(inputs, ({ update }) => update.length > 0).then(
+      () =>
+        updateProductReviewsWorkflow.runAsStep({
+          input: { productReviews: inputs.update },
+        })
     );
 
-    const results = transform({ createResult, updateResult }, ({ createResult, updateResult }) => ({
-      creates: createResult || [],
-      updates: updateResult || [],
-    }));
+    const results = transform(
+      { createResult, updateResult },
+      ({ createResult, updateResult }) => ({
+        creates: createResult || [],
+        updates: updateResult || [],
+      })
+    );
 
     return new WorkflowResponse(
       results as WorkflowData<{
         creates: ProductReview[];
         updates: ProductReview[];
-      }>,
+      }>
     );
-  },
+  }
 );

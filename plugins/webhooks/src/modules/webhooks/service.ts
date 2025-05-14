@@ -25,7 +25,7 @@ type ConstructorParams = {
   logger: Logger;
 };
 
-type WebhookOptions = LoaderOptions & { subscriptions: string[] & { secretKey: string } };
+type WebhookOptions = LoaderOptions & { subscriptions: string[]} & {secretKey: string } ;
 
 
 class WebhooksService extends MedusaService({

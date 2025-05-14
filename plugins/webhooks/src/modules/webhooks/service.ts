@@ -2,6 +2,8 @@ import { MedusaError, MedusaService } from "@medusajs/framework/utils";
 import { Webhook } from "./models/webhooks";
 import { LoaderOptions, Logger } from "@medusajs/framework/types";
 import { WebhookModel } from "../../common";
+import Crypto from "node:crypto";
+
 
 export type WebhookSendResponse = {
   event_type: string;
@@ -23,32 +25,46 @@ type ConstructorParams = {
   logger: Logger;
 };
 
+type WebhookOptions = LoaderOptions & { subscriptions: string[] & { secretKey: string } };
+
+
 class WebhooksService extends MedusaService({
   Webhook,
 }) {
   public subscriptions: string[] = [];
   private logger: Logger;
-
+  private options: WebhookOptions;
   constructor(
     container: ConstructorParams,
-    options: LoaderOptions & { subscriptions: string[] }
+    options: WebhookOptions
   ) {
     super(container, options);
+    this.options = options;
     this.subscriptions = options.subscriptions;
     this.logger = container.logger;
   }
 
+  createHmacSignature(payload: Record<string, unknown>) {
+    return Crypto
+      .createHmac("sha256", this.options.secretKey)
+      .update(JSON.stringify(payload))
+      .digest("hex");
+  }
+
   public async send(
     subscription: WebhookModel,
-    payload: any
+    payload: Record<string, unknown>
   ): Promise<WebhookSendResponse> {
     const { event_type, target_url } = subscription;
+
+
 
     try {
       const response = await fetch(target_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-webhook-signature": this.createHmacSignature(payload),
         },
         body: JSON.stringify(payload),
       });
@@ -69,8 +85,8 @@ class WebhooksService extends MedusaService({
     }
   }
 
-  public async sendWebhooksEvents(webhooks: WebhookModel[], payload: any) {
-    console.log("webhooks", webhooks);
+  public async sendWebhooksEvents(webhooks: WebhookModel[], payload: Record<string, unknown>) {
+    
     const results = (await Promise.allSettled(
       webhooks?.map((webhook) => this.send(webhook, payload))
     )) as PromiseFulfilledResult<WebhookSendResponse>[];
@@ -124,7 +140,7 @@ class WebhooksService extends MedusaService({
   private onSendError(
     err: WebhookSendResponseError,
     subscription: WebhookModel,
-    payload: any
+    payload: Record<string, unknown>
   ): WebhookSendResponse {
     this.logger.error(
       "Error sending webhook",

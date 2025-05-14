@@ -1,7 +1,7 @@
 import { MedusaError, MedusaService } from "@medusajs/framework/utils";
 import { Webhook } from "./models/webhooks";
-import { LoaderOptions, Logger } from "@medusajs/framework/types";
-import { WebhookModel } from "../../common";
+import type { LoaderOptions, Logger } from "@medusajs/framework/types";
+import type{ WebhookModel } from "../../common";
 import Crypto from "node:crypto";
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/event-bus-redis",
-  "version": "1.8.15",
+  "version": "1.8.16",
   "description": "Redis Event Bus Module for Medusa",
   "main": "dist/index.js",
   "files": [

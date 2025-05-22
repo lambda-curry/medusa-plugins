@@ -33,7 +33,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
   constructor(
     { logger, eventBusRedisConnection }: InjectedDependencies,
     moduleOptions: EventBusRedisModuleOptions = {},
-    moduleDeclaration: InternalModuleDeclaration
+    moduleDeclaration: InternalModuleDeclaration,
   ) {
     // @ts-ignore
     // eslint-disable-next-line prefer-rest-params
@@ -53,15 +53,11 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     // Register our worker to handle emit calls
     const shouldStartWorker = moduleDeclaration.worker_mode !== 'server';
     if (shouldStartWorker) {
-      this.bullWorker_ = new Worker(
-        moduleOptions.queueName ?? 'events-queue',
-        this.worker_,
-        {
-          prefix: `${this.constructor.name}`,
-          ...(moduleOptions.workerOptions ?? {}),
-          connection: eventBusRedisConnection,
-        }
-      );
+      this.bullWorker_ = new Worker(moduleOptions.queueName ?? 'events-queue', this.worker_, {
+        prefix: `${this.constructor.name}`,
+        ...(moduleOptions.workerOptions ?? {}),
+        connection: eventBusRedisConnection,
+      });
     }
 
     if (moduleOptions.onSubscriberError) {
@@ -70,10 +66,8 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
   }
 
   __hooks = {
-    onApplicationShutdown: async () => {
-      await this.bullWorker_?.close(true);
-      await this.queue_.close();
-      this.eventBusRedisConnection_.disconnect();
+    onApplicationPrepareShutdown: async () => {
+      await this.bullWorker_?.close(false);
     },
   };
 
@@ -83,11 +77,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
    * @param data - the data to send to the subscriber.
    * @param options - options to add the job with
    */
-  async emit<T>(
-    eventName: string,
-    data: T,
-    options: Record<string, unknown>
-  ): Promise<void>;
+  async emit<T>(eventName: string, data: T, options: Record<string, unknown>): Promise<void>;
 
   /**
    * Emit a number of events
@@ -100,7 +90,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
   async emit<T, TInput extends string | EmitData<T>[] | Message<T>[] = string>(
     eventNameOrData: TInput,
     data?: T,
-    options: BulkJobOptions | JobsOptions = {}
+    options: BulkJobOptions | JobsOptions = {},
   ): Promise<void> {
     const globalJobOptions = this.moduleOptions_.jobOptions ?? {};
 
@@ -114,12 +104,10 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
       ...globalJobOptions,
     } as EmitOptions;
 
-    const dataBody = isString(eventNameOrData)
-      ? data ?? (data as Message<T>).body
-      : undefined;
+    const dataBody = isString(eventNameOrData) ? (data ?? (data as Message<T>).body) : undefined;
 
     const events = isBulkEmit
-      ? eventNameOrData.map(event => ({
+      ? eventNameOrData.map((event) => ({
           name: event.eventName,
           data: {
             eventName: event.eventName,
@@ -163,8 +151,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
 
     // Filter out already completed subscribers from the all subscribers
     const subscribersInCurrentAttempt = allSubscribers.filter(
-      subscriber =>
-        subscriber.id && !completedSubscribers.includes(subscriber.id)
+      (subscriber) => subscriber.id && !completedSubscribers.includes(subscriber.id),
     );
 
     const currentAttempt = job.attemptsMade;
@@ -179,12 +166,10 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
       }
 
       this.logger_.info(
-        `Retrying ${eventName} which has ${eventSubscribers.length} subscribers (${subscribersInCurrentAttempt.length} of them failed)`
+        `Retrying ${eventName} which has ${eventSubscribers.length} subscribers (${subscribersInCurrentAttempt.length} of them failed)`,
       );
     } else {
-      this.logger_.info(
-        `Processing ${eventName} which has ${eventSubscribers.length} subscribers`
-      );
+      this.logger_.info(`Processing ${eventName} which has ${eventSubscribers.length} subscribers`);
     }
 
     const completedSubscribersInCurrentAttempt: string[] = [];
@@ -199,9 +184,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
           return result;
         } catch (err) {
           subscriberErrors.push(err);
-          this.logger_.warn(
-            `An error occurred while processing ${eventName}: ${err}`
-          );
+          this.logger_.warn(`An error occurred while processing ${eventName}: ${err}`);
 
           try {
             this.onSubscriberError_({
@@ -215,25 +198,19 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
 
           return err;
         }
-      })
+      }),
     );
 
     // If the number of completed subscribers is different from the number of subscribers to process in current attempt, some of them failed
-    const didSubscribersFail =
-      completedSubscribersInCurrentAttempt.length !==
-      subscribersInCurrentAttempt.length;
+    const didSubscribersFail = completedSubscribersInCurrentAttempt.length !== subscribersInCurrentAttempt.length;
 
     const isRetriesConfigured = configuredAttempts! > 1;
 
     // Therefore, if retrying is configured, we try again
-    const shouldRetry =
-      didSubscribersFail && isRetriesConfigured && !isFinalAttempt;
+    const shouldRetry = didSubscribersFail && isRetriesConfigured && !isFinalAttempt;
 
     if (shouldRetry) {
-      const updatedCompletedSubscribers = [
-        ...completedSubscribers,
-        ...completedSubscribersInCurrentAttempt,
-      ];
+      const updatedCompletedSubscribers = [...completedSubscribers, ...completedSubscribersInCurrentAttempt];
 
       job.data.completedSubscriberIds = updatedCompletedSubscribers;
 
@@ -243,28 +220,22 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
 
       this.logger_.warn(errorMessage);
 
-      if (subscriberErrors.length === 1)
-        return Promise.reject(subscriberErrors[0]);
+      if (subscriberErrors.length === 1) return Promise.reject(subscriberErrors[0]);
 
       return Promise.reject(Error(errorMessage));
     }
     if (isFinalAttempt && didSubscribersFail) {
-      this.logger_.warn(
-        `One or more subscribers of ${eventName} failed. All retries have been exhausted.`
-      );
+      this.logger_.warn(`One or more subscribers of ${eventName} failed. All retries have been exhausted.`);
 
-      if (subscriberErrors.length === 1)
-        return Promise.reject(subscriberErrors[0]);
+      if (subscriberErrors.length === 1) return Promise.reject(subscriberErrors[0]);
 
-      return Promise.reject(
-        AggregateError(subscriberErrors, '2 or more subscribers failed')
-      );
+      return Promise.reject(AggregateError(subscriberErrors, '2 or more subscribers failed'));
     }
 
     if (didSubscribersFail && !isFinalAttempt) {
       // If retrying is not configured, we log a warning to allow server admins to recover manually
       this.logger_.warn(
-        `One or more subscribers of ${eventName} failed. Retrying is not configured. Use 'attempts' option when emitting events.`
+        `One or more subscribers of ${eventName} failed. Retrying is not configured. Use 'attempts' option when emitting events.`,
       );
     }
 

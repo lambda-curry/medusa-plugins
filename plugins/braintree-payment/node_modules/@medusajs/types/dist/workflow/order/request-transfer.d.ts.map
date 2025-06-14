@@ -1,1 +1,0 @@
-{"version":3,"file":"request-transfer.d.ts","sourceRoot":"","sources":["../../../src/workflow/order/request-transfer.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,iCAAiC;IAChD;;OAEG;IACH,QAAQ,EAAE,MAAM,CAAA;IAChB;;OAEG;IACH,WAAW,EAAE,MAAM,CAAA;IACnB;;;OAGG;IACH,cAAc,EAAE,MAAM,CAAA;IAEtB;;OAEG;IACH,WAAW,CAAC,EAAE,MAAM,CAAA;IACpB;;OAEG;IACH,aAAa,CAAC,EAAE,MAAM,CAAA;CACvB"}

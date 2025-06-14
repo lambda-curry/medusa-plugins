@@ -1,1 +1,0 @@
-{"version":3,"file":"responses.d.ts","sourceRoot":"","sources":["../../../../src/http/tax-provider/admin/responses.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,iBAAiB,EAAE,MAAM,cAAc,CAAA;AAChD,OAAO,EAAE,gBAAgB,EAAE,MAAM,YAAY,CAAA;AAE7C,MAAM,MAAM,4BAA4B,GAAG,iBAAiB,CAAC;IAC3D;;OAEG;IACH,aAAa,EAAE,gBAAgB,EAAE,CAAA;CAClC,CAAC,CAAA"}

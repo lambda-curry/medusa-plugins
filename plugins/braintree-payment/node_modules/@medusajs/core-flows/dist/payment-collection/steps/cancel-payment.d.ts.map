@@ -1,1 +1,0 @@
-{"version":3,"file":"cancel-payment.d.ts","sourceRoot":"","sources":["../../../src/payment-collection/steps/cancel-payment.ts"],"names":[],"mappings":"AAQA;;GAEG;AACH,MAAM,WAAW,sBAAsB;IACrC;;OAEG;IACH,GAAG,EAAE,MAAM,EAAE,CAAA;CACd;AAED,eAAO,MAAM,mBAAmB,mBAAmB,CAAA;AACnD;;GAEG;AACH,eAAO,MAAM,iBAAiB,4FAiC7B,CAAA"}

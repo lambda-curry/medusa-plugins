@@ -1,1 +1,0 @@
-{"version":3,"file":"validate-module-name.js","sourceRoot":"","sources":["../../src/common/validate-module-name.ts"],"names":[],"mappings":";;AAkBA,gDAMC;AAxBD;;;;;;;;;;;;;;;;GAgBG;AACH,MAAM,EAAE,GAAG,0BAA0B,CAAA;AACrC,SAAgB,kBAAkB,CAAC,IAAY;IAC7C,IAAI,CAAC,EAAE,CAAC,IAAI,CAAC,IAAI,CAAC,EAAE,CAAC;QACnB,MAAM,IAAI,KAAK,CACb,wBAAwB,IAAI,qEAAqE,CAClG,CAAA;IACH,CAAC;AACH,CAAC"}

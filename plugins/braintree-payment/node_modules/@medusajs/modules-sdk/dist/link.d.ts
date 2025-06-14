@@ -1,0 +1,54 @@
+import { Context, ILinkModule, LinkDefinition, LoadedModule, ModuleJoinerRelationship } from "@medusajs/types";
+import { Modules } from "@medusajs/utils";
+/**
+ * The details of a data model's record whose linked records should be deleted. Usually used after the
+ * data model's record is deleted.
+ *
+ * The key is the data model's name. Its value is an object that has the ID of the data model's record.
+ */
+export type DeleteEntityInput = {
+    [moduleName: string | Modules]: Record<string, string | string[]>;
+};
+export type RestoreEntityInput = DeleteEntityInput;
+type RemoteRelationship = ModuleJoinerRelationship & {
+    isPrimary: boolean;
+    isForeign: boolean;
+};
+type LoadedLinkModule = LoadedModule & ILinkModule;
+type DeleteEntities = {
+    [key: string]: string[];
+};
+type RemovedIds = {
+    [serviceName: string]: DeleteEntities;
+};
+type RestoredIds = RemovedIds;
+type CascadeError = {
+    serviceName: string;
+    method: String;
+    args: any;
+    error: Error;
+};
+export declare class Link {
+    static __type: symbol;
+    private modulesMap;
+    private relationsPairs;
+    private relations;
+    constructor(modulesLoaded?: LoadedModule[]);
+    addModule(mod: LoadedModule): void;
+    private addRelationship;
+    getLinkModule(moduleA: string, moduleAKey: string, moduleB: string, moduleBKey: string): LoadedLinkModule | undefined;
+    getRelationships(): Map<string, Map<string, RemoteRelationship[]>>;
+    private getLinkableKeys;
+    private executeCascade;
+    private getLinkModuleOrThrow;
+    private getLinkDataConfig;
+    create(link: LinkDefinition | LinkDefinition[], sharedContext?: Context): Promise<unknown[]>;
+    dismiss(link: LinkDefinition | LinkDefinition[], sharedContext?: Context): Promise<unknown[]>;
+    delete(removedServices: DeleteEntityInput, sharedContext?: Context): Promise<[CascadeError[] | null, RemovedIds]>;
+    restore(removedServices: DeleteEntityInput, sharedContext?: Context): Promise<[CascadeError[] | null, RestoredIds]>;
+    list(link: LinkDefinition | LinkDefinition[], options?: {
+        asLinkDefinition?: boolean;
+    }, sharedContext?: Context): Promise<(object | LinkDefinition)[]>;
+}
+export {};
+//# sourceMappingURL=link.d.ts.map

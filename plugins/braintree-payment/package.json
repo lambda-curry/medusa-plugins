@@ -1,0 +1,65 @@
+{
+  "name": "@lambdacurry/medusa-payment-braintree",
+  "version": "0.0.1",
+  "description": "Braintree plugin for Medusa",
+  "author": "Lambda Curry (https://lambdacurry.dev)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lambda-curry/medusa-plugins"
+  },
+  "homepage": "https://github.com/lambda-curry/medusa-plugins/tree/main/plugins/braintree",
+  "files": [
+    ".medusa/server"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./workflows": "./.medusa/server/src/workflows/index.js",
+    "./.medusa/server/src/modules/*": "./.medusa/server/src/modules/*/index.js",
+    "./providers/*": "./.medusa/server/src/providers/*/src/index.js",
+    "./*": "./.medusa/server/src/*.js"
+  },
+  "keywords": [
+    "medusa",
+    "plugin",
+    "braintree",
+    "medusa-plugin-integration",
+    "medusa-plugin-other",
+    "medusa-v2",
+    "medusa-plugin-braintree",
+    "medusa-plugin",
+    "medusa-plugin-payment",
+    "lambdacurry"
+  ],
+  "devDependencies": {
+    "@medusajs/admin-sdk": "2.8.2",
+    "@medusajs/cli": "2.8.2",
+    "@medusajs/framework": "2.8.2",
+    "@medusajs/icons": "2.8.2",
+    "@medusajs/medusa": "2.8.2",
+    "@medusajs/test-utils": "2.8.2",
+    "@medusajs/ui": "4.0.3",
+    "@swc/core": "1.5.7",
+    "@types/braintree": "^3.3.14"
+  },
+  "scripts": {
+    "build": "npx medusa plugin:build",
+    "plugin:dev": "npx medusa plugin:develop",
+    "prepublishOnly": "npx medusa plugin:build"
+  },
+  "peerDependencies": {
+    "@medusajs/admin-sdk": "2.8.2",
+    "@medusajs/cli": "2.8.2",
+    "@medusajs/framework": "2.8.2",
+    "@medusajs/icons": "2.8.2",
+    "@medusajs/medusa": "2.8.2",
+    "@medusajs/test-utils": "2.8.2",
+    "@medusajs/ui": "4.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "braintree": "^3.30.0"
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"responses.d.ts","sourceRoot":"","sources":["../../../../src/http/shipping-option/store/responses.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,uBAAuB,EAAE,MAAM,mBAAmB,CAAA;AAE3D;;GAEG;AACH,MAAM,WAAW,+BAA+B;IAC9C;;OAEG;IACH,gBAAgB,EAAE,uBAAuB,EAAE,CAAA;CAC5C;AAED;;GAEG;AACH,MAAM,WAAW,2BAA2B;IAC1C;;OAEG;IACH,eAAe,EAAE,uBAAuB,CAAA;CACzC"}

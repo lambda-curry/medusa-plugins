@@ -29,3 +29,5 @@ build
 
 .yalc
 yalc.lock
+
+plugins/**/node_modules

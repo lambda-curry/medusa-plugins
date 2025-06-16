@@ -4,7 +4,7 @@ import { StepResponse, createStep } from '@medusajs/framework/workflows-sdk';
 import type { UpdateBraintreeCustomerMetadataInput } from '..';
 
 export const updateCustomerMetadataStep = createStep(
-  'create-customer-step',
+  'update-customer-metadata-step',
   async (input: UpdateBraintreeCustomerMetadataInput, { container }) => {
     const customerService: ICustomerModuleService = container.resolve(Modules.CUSTOMER);
 
@@ -26,6 +26,6 @@ export const updateCustomerMetadataStep = createStep(
       },
     });
 
-    return new StepResponse({ customer: customer, registerResponse }, customer.id);
-  }
+    return new StepResponse({ customer, registerResponse }, customer.id);
+  },
 );

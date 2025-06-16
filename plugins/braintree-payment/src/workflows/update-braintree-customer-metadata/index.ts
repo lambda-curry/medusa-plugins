@@ -17,12 +17,9 @@ export const updateBraintreeCustomerMetadataWorkflow = createWorkflow(
         customer,
         registerResponse,
       });
-    } catch (error) {
-      // Log the error or handle it appropriately
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        `Failed to update Braintree customer metadata: ${error.message}`
-      );
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : JSON.stringify(error);
+      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to update Braintree customer metadata: ${msg}`);
     }
-  }
+  },
 );

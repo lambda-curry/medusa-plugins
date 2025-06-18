@@ -110,31 +110,40 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   static validateOptions(options: BraintreeOptions): void {
-    if (!(isDefined(options.clientId) || isDefined(options.publicKey))) {
-      throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Required option `clientId` is missing in Braintree plugin');
-    }
-    if (!(isDefined(options.clientSecret) || isDefined(options.privateKey))) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        'Required option `clientSecret` is missing in Braintree plugin',
-      );
-    }
-    if (!isDefined(options.merchantId)) {
-      throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Required option `merchantId` is missing in Braintree plugin');
+    // Required string fields
+    const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
+    for (const field of requiredFields) {
+      if (!isDefined(options[field]) || typeof options[field] !== 'string') {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          `Required option "${field}" is missing or invalid in Braintree plugin`,
+        );
+      }
     }
 
-    if (!isDefined(options.webhookSecret)) {
+    // Validate environment value
+    const validEnvironments = ['qa', 'sandbox', 'production', 'development'];
+    if (!validEnvironments.includes(options.environment.toLowerCase())) {
       throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        'Required option `webhookSecret` is missing in Braintree plugin',
+        MedusaError.Types.INVALID_ARGUMENT,
+        `Invalid environment "${options.environment}" in Braintree plugin. Must be one of: ${validEnvironments.join(', ')}`,
       );
     }
 
-    if (!isDefined(options.environment)) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        'Required option `environment` is missing in Braintree plugin',
-      );
+    // Optional boolean fields with defaults
+    options.enable3DSecure = options.enable3DSecure ?? false;
+    options.savePaymentMethod = options.savePaymentMethod ?? false;
+    options.autoCapture = options.autoCapture ?? false;
+
+    // Type check boolean fields
+    const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture'];
+    for (const field of booleanFields) {
+      if (isDefined(options[field]) && typeof options[field] !== 'boolean') {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          `Option "${field}" must be a boolean in Braintree plugin`,
+        );
+      }
     }
   }
 

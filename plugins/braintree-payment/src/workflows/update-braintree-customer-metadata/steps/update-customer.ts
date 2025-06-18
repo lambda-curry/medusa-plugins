@@ -14,9 +14,11 @@ export const updateCustomerMetadataStep = createStep(
     // 2. update customer metadata with Braintree information
     const { medusa_customer_id, ...rest } = input;
     const { braintree } = rest as Record<string, unknown>;
+
     if (!braintree || typeof braintree !== 'object') {
       throw new Error('Missing or invalid Braintree data in the input');
     }
+
     const registerResponse = await customerService.updateCustomers(medusa_customer_id, {
       metadata: {
         ...customer.metadata,

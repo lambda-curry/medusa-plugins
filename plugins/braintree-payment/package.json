@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/lambda-curry/medusa-plugins.git"
   },
-  "homepage": "https://github.com/lambda-curry/medusa-plugins/tree/main/plugins/braintree",
+  "homepage": "https://github.com/lambda-curry/medusa-plugins/tree/main/plugins/braintree-payment",
   "files": [
     ".medusa/server"
   ],

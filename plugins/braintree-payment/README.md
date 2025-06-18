@@ -60,30 +60,30 @@ Add the following configuration to the `payment` section of your `medusa-config.
   id: 'braintree',
   options: {
     environment: process.env.BRAINTREE_ENVIRONMENT || (process.env.NODE_ENV !== 'production' ? 'sandbox' : 'production'),
-    braintree_merchant_id: process.env.BRAINTREE_MERCHANT_ID,
-    public_key: process.env.BRAINTREE_PUBLIC_KEY,
-    private_key: process.env.BRAINTREE_PRIVATE_KEY,
-    webhook_secret: process.env.BRAINTREE_WEBHOOK_SECRET,
-    enable_3d_secure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
-    save_payment_method: true, // Save payment methods for future use
-    auto_capture: true,        // Automatically capture payments
+    merchantId: process.env.BRAINTREE_MERCHANT_ID,
+    publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+    privateKey: process.env.BRAINTREE_PRIVATE_KEY,
+    webhookSecret: process.env.BRAINTREE_WEBHOOK_SECRET,
+    enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
+    savePaymentMethod: true, // Save payment methods for future use
+    autoCapture: true,        // Automatically capture payments
   }
 }
 ```
 
 #### Options
 
-- **braintree_merchant_id**: Your Braintree Merchant ID.
-- **public_key**: Your Braintree Public Key.
-- **private_key**: Your Braintree Private Key.
-- **webhook_secret**: Secret for validating Braintree webhooks.
-- **enable_3d_secure**: Enable 3D Secure authentication (`true` or `false`).
-- **save_payment_method**: Save payment methods for future use (default: `true`).
-- **auto_capture**: Automatically capture payments (default: `true`).
+- **merchantId**: Your Braintree Merchant ID.
+- **publicKey**: Your Braintree Public Key.
+- **privateKey**: Your Braintree Private Key.
+- **webhookSecret**: Secret for validating Braintree webhooks.
+- **enable3DSecure**: Enable 3D Secure authentication (`true` or `false`).
+- **savePaymentMethod**: Save payment methods for future use (default: `true`).
+- **autoCapture**: Automatically capture payments (default: `true`).
 
 > **Note:**
-> - `auto_capture`: If set to `true`, payments are captured automatically after authorization.
-> - `save_payment_method`: If set to `true`, customer payment methods are saved for future use.
+> - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
+> - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 
 ### 3D Secure Setup
 

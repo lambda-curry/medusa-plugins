@@ -103,40 +103,37 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       this.gateway ||
       new Braintree.BraintreeGateway({
         environment: environment,
-        merchantId: this.options_.braintree_merchant_id!,
-        publicKey: this.options_.public_key!,
-        privateKey: this.options_.private_key!,
+        merchantId: this.options_.merchantId!,
+        publicKey: this.options_.publicKey!,
+        privateKey: this.options_.privateKey!,
       });
   }
 
   static validateOptions(options: BraintreeOptions): void {
-    if (!(isDefined(options.clientId) || isDefined(options.public_key))) {
+    if (!(isDefined(options.clientId) || isDefined(options.publicKey))) {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Required option `clientId` is missing in Braintree plugin');
     }
-    if (!(isDefined(options.clientSecret) || isDefined(options.private_key))) {
+    if (!(isDefined(options.clientSecret) || isDefined(options.privateKey))) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        'Required option `clientSecret` is missing in Braintree plugin'
+        'Required option `clientSecret` is missing in Braintree plugin',
       );
     }
-    if (!isDefined(options.braintree_merchant_id)) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        'Required option `braintree_merchant_id` is missing in Braintree plugin'
-      );
+    if (!isDefined(options.merchantId)) {
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Required option `merchantId` is missing in Braintree plugin');
     }
 
-    if (!isDefined(options.webhook_secret)) {
+    if (!isDefined(options.webhookSecret)) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        'Required option `webhook_secret` is missing in Braintree plugin'
+        'Required option `webhookSecret` is missing in Braintree plugin',
       );
     }
 
     if (!isDefined(options.environment)) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        'Required option `environment` is missing in Braintree plugin'
+        'Required option `environment` is missing in Braintree plugin',
       );
     }
   }
@@ -161,9 +158,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const { id, amount } = paymentsResponse;
         const toPay = amount.toString();
 
-        const paymentCaptured = await this.gateway.transaction.submitForSettlement(id, toPay.toString());
+        const captureResult = await this.gateway.transaction.submitForSettlement(id, toPay.toString());
 
-        if (paymentCaptured) {
+        if (captureResult.success) {
           const transaction = await this.retrieveTransaction(braintreeTransaction.id);
 
           const capturePaymentResult: CapturePaymentOutput = {
@@ -173,12 +170,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             },
           };
           return capturePaymentResult;
+        } else {
+          throw new MedusaError(
+            MedusaError.Types.NOT_FOUND,
+            `No payments found for transaction ${braintreeTransaction.id}`,
+          );
         }
-
-        throw new MedusaError(
-          MedusaError.Types.NOT_FOUND,
-          `No payments found for transaction ${braintreeTransaction.id}`
-        );
       }
       case settled:
       case settling:
@@ -234,7 +231,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
       this.logger.warn(`authorizePayment status: ${JSON.stringify(status)}`);
 
-      if (status.status === 'authorized' && this.options_.auto_capture) {
+      if (status.status === 'authorized' && this.options_.autoCapture) {
         status.status = 'captured';
       }
 
@@ -276,7 +273,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       }
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `No payments found for transaction ${braintreeTransaction.id}`
+        `No payments found for transaction ${braintreeTransaction.id}`,
       );
     }
 
@@ -311,12 +308,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       },
       customerId: (accountHolder?.data?.braintree_customer_id as string) ?? undefined,
       options: {
-        submitForSettlement: this.options_.auto_capture,
-        storeInVaultOnSuccess: this.options_.save_payment_method,
-        storeInVault: this.options_.save_payment_method,
-        threeDSecure: this.options_.enable_3d_secure
+        submitForSettlement: this.options_.autoCapture,
+        storeInVaultOnSuccess: this.options_.savePaymentMethod,
+        storeInVault: this.options_.savePaymentMethod,
+        threeDSecure: this.options_.enable3DSecure
           ? {
-              required: this.options_.enable_3d_secure,
+              required: this.options_.enable3DSecure,
             }
           : undefined,
       },
@@ -380,7 +377,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       if (!braintreeTransaction.success) {
         throw new MedusaError(
           MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-          `Failed to create Braintree transaction: ${JSON.stringify(braintreeTransaction)}`
+          `Failed to create Braintree transaction: ${JSON.stringify(braintreeTransaction)}`,
         );
       }
 
@@ -568,13 +565,20 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Payment method nonce is required');
     }
 
-    const savedPaymentMethod = await this.gateway.paymentMethod.create({
+    const paymentMethodResult = await this.gateway.paymentMethod.create({
       customerId: braintreeCustomerId,
       paymentMethodNonce: paymentMethodNonce,
     });
 
+    if (!paymentMethodResult.success) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Failed to save payment method: ${JSON.stringify(paymentMethodResult.errors)}`,
+      );
+    }
+
     return {
-      id: savedPaymentMethod.clientToken,
+      id: paymentMethodResult.paymentMethod.token,
       data: {
         ...input.data,
       },
@@ -608,7 +612,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (braintreeTransaction.status !== 'settled' && braintreeTransaction.status !== 'settling') {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Braintree transaction with ID ${braintreeTransaction.id} cannot be refunded`
+        `Braintree transaction with ID ${braintreeTransaction.id} cannot be refunded`,
       );
     }
 
@@ -619,7 +623,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       try {
         const { transaction: refundTransaction } = await this.gateway.transaction.refund(
           braintreeTransaction.id,
-          refundRequest.amount.toString()
+          refundRequest.amount.toString(),
         );
 
         const result = await this.retrieveTransaction(braintreeTransaction.id);
@@ -685,7 +689,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     try {
       notification = (await this.gateway.webhookNotification.parse(
         decodedPayload.get('bt_signature') ?? '',
-        decodedPayload.get('bt_payload') ?? ''
+        decodedPayload.get('bt_payload') ?? '',
       )) as TransactionNotification;
 
       if (!notification) {

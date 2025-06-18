@@ -24,12 +24,17 @@ export default async function orderPlacedCaptureHandler({
   // orders[0].payment_collections
   logger.info(`Order placed with ID: ${data.id}`);
 
+  if (!orders.length) {
+    logger.warn(`Order ${data.id} not found - skipping capture`);
+    return;
+  }
+
   const paymentSessionsRaw = orders[0].payment_collections?.flatMap((collection) => {
     return collection.payment_sessions;
   });
 
   const paymentSessionAuthorized = paymentSessionsRaw?.filter(
-    (session) => session.provider_id === 'pp_braintree_braintree' && session.status === 'authorized'
+    (session) => session.provider_id === 'pp_braintree_braintree' && session.status === 'authorized',
   );
 
   if (paymentSessionAuthorized && paymentSessionAuthorized?.length > 0) {
@@ -50,7 +55,7 @@ export default async function orderPlacedCaptureHandler({
         } catch (error) {
           logger.error(`Failed to capture payment for order ${data.id}: ${error.message}`);
         }
-      })
+      }),
     );
   } else {
     logger.warn(`No payment found for order ${data.id}`);

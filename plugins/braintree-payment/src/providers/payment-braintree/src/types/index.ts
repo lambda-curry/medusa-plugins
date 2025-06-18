@@ -1,18 +1,14 @@
-import type braintree from 'braintree';
+import type Braintree from 'braintree';
 
-export interface BraintreeOptions extends braintree.ClientGatewayConfig {
-  private_key: string;
-  public_key: string;
+export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   environment: 'production' | 'sandbox' | 'development' | 'qa';
-  enable_3d_secure: boolean;
-  save_payment_method: boolean;
-  braintree_merchant_id: string;
-  webhook_secret: string;
-  auto_capture: boolean;
-  // maybe removed later
-  // automatic_expiry_period: number;
-  // manual_expiry_period: number;
-  // refund_speed: "normal" | "optimum";
+  merchantId: string;
+  publicKey: string;
+  privateKey: string;
+  enable3DSecure: boolean;
+  savePaymentMethod: boolean;
+  webhookSecret: string;
+  autoCapture: boolean;
 }
 
 export const PaymentProviderKeys = {

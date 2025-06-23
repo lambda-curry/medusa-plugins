@@ -69,9 +69,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   private parsePaymentSessionData(data: Record<string, unknown>): BraintreePaymentSessionData {
-    const clientToken = (data.clientToken as unknown as { clientToken: string; success: boolean })?.clientToken;
     return {
-      clientToken,
+      clientToken: data.clientToken as string,
       amount: data.amount as number,
       currency_code: data.currency_code as string,
       paymentMethodNonce: data.paymentMethodNonce as string | undefined,
@@ -408,14 +407,21 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   private async createBraintreeCustomer(customer: PaymentCustomerDTO): Promise<Braintree.Customer> {
-    const braintreeResponse = await this.gateway.customer.create({
+    const customerResult = await this.gateway.customer.create({
       email: customer.email,
       firstName: customer.first_name ?? undefined,
       lastName: customer.last_name ?? undefined,
       phone: customer.phone ?? undefined,
     });
 
-    return braintreeResponse.customer;
+    if (!customerResult.success) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Failed to create Braintree customer: ${JSON.stringify(customerResult.errors)}`,
+      );
+    }
+
+    return customerResult.customer;
   }
 
   async createAccountHolder(input: CreateAccountHolderInput): Promise<CreateAccountHolderOutput> {
@@ -447,9 +453,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         phone: input.context.customer?.phone ?? accountHolder.phone,
       };
 
-      const customer = await this.gateway.customer.update(accountHolder.id, customerUpdateRequest);
+      const updateResult = await this.gateway.customer.update(accountHolder.id, customerUpdateRequest);
+
+      if (!updateResult.success) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Failed to update account holder: ${JSON.stringify(updateResult.errors)}`,
+        );
+      }
+
       return {
-        data: { ...customer },
+        data: { ...updateResult.customer },
       };
     } catch (e) {
       this.logger.error(`Error updating account holder: ${e.message}`, e);

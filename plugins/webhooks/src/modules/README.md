@@ -63,7 +63,7 @@ export default Module(BLOG_MODULE, {
 To generate migrations for your module, run the following command in the plugin's directory:
 
 ```bash
-npx medusa plugin:db:genreate
+npx medusa plugin:db:generate
 ```
 
 ## Use Module

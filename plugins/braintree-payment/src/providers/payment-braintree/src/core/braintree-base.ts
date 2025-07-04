@@ -43,6 +43,7 @@ import type {
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
 import type { BraintreeOptions, CustomFields } from '../types';
+import { getSmallestUnit } from '../utils/get-smallest-unit';
 
 export interface BraintreePaymentSessionData {
   clientToken: string;
@@ -346,11 +347,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const { data } = input;
     const tokenData = await this.gateway.clientToken.generate({});
+
     const dataToSave: BraintreePaymentSessionData & { medusaPaymentSessionId: string } = {
       clientToken: tokenData.clientToken,
       medusaPaymentSessionId: paymentSessionId as string,
       paymentMethodNonce: data?.paymentMethodNonce as string,
-      amount: input.amount as number,
+      amount: getSmallestUnit(input.amount, input.currency_code),
       currency_code: input.currency_code,
     };
 
@@ -615,7 +617,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Braintree transaction not found');
     }
 
-    const refundAmount = Number.parseFloat(input.amount.toString());
+    const refundAmount = getSmallestUnit(input.amount, sessionData.currency_code);
 
     if (braintreeTransaction.status === 'submitted_for_settlement' || braintreeTransaction.status === 'authorized') {
       const cancelledTransaction = await this.gateway.transaction.void(braintreeTransaction.id);

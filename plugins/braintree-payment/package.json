@@ -30,13 +30,13 @@
     "lambdacurry"
   ],
   "devDependencies": {
-    "@medusajs/admin-sdk": "2.8.2",
-    "@medusajs/cli": "2.8.2",
-    "@medusajs/framework": "2.8.2",
-    "@medusajs/icons": "2.8.2",
-    "@medusajs/medusa": "2.8.2",
-    "@medusajs/test-utils": "2.8.2",
-    "@medusajs/ui": "4.0.3",
+    "@medusajs/admin-sdk": "^2.8.2",
+    "@medusajs/cli": "^2.8.2",
+    "@medusajs/framework": "^2.8.2",
+    "@medusajs/icons": "^2.8.2",
+    "@medusajs/medusa": "^2.8.2",
+    "@medusajs/test-utils": "^2.8.2",
+    "@medusajs/ui": "^4.0.3",
     "@swc/core": "1.5.7",
     "@types/braintree": "^3.3.14"
   },
@@ -46,13 +46,13 @@
     "prepublishOnly": "npx medusa plugin:build"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "2.8.2",
-    "@medusajs/cli": "2.8.2",
-    "@medusajs/framework": "2.8.2",
-    "@medusajs/icons": "2.8.2",
+    "@medusajs/admin-sdk": "^2.8.2",
+    "@medusajs/cli": "^2.8.2",
+    "@medusajs/framework": "^2.8.2",
+    "@medusajs/icons": "^2.8.2",
     "@medusajs/medusa": "2.8.2",
-    "@medusajs/test-utils": "2.8.2",
-    "@medusajs/ui": "4.0.3"
+    "@medusajs/test-utils": "^2.8.2",
+    "@medusajs/ui": "^4.0.3"
   },
   "engines": {
     "node": ">=20"

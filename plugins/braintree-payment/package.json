@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-payment-braintree",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Braintree plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -12,10 +12,18 @@
   "files": [
     ".medusa/server"
   ],
+  "main": "./.medusa/server/src/index.js",
+  "types": "./.medusa/server/src/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     "./.medusa/server/src/modules/*": "./.medusa/server/src/modules/*/index.js",
     "./providers/*": "./.medusa/server/src/providers/*/src/index.js",
+    "./types": {
+      "types": "./.medusa/server/src/types/index.d.ts",
+      "import": "./.medusa/server/src/types/index.js",
+      "require": "./.medusa/server/src/types/index.js",
+      "default": "./.medusa/server/src/types/index.js"
+    },
     "./*": "./.medusa/server/src/*.js"
   },
   "keywords": [

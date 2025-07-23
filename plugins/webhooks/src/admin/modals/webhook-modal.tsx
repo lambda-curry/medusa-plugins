@@ -10,6 +10,7 @@ import {
   Heading,
   Label,
 } from "@medusajs/ui";
+import { TextField } from "@lambdacurry/medusa-plugins-sdk";
 
 import {
   useAdminCreateWebhook,
@@ -55,7 +56,7 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({
     mode: "onChange",
   });
 
-  const { register, handleSubmit, control, formState } = form;
+  const { register, handleSubmit, control, formState, formState: { errors } } = form;
 
   const [openTestModal, setTestModalState] = useState<boolean>(false);
 
@@ -172,24 +173,21 @@ export const WebhookModal: React.FC<WebhookModalProps> = ({
                         />
                       </div>
 
-                      <div className="flex flex-col gap-y-3">
-                        <Label className="text-gray-400">
-                          Target URL<span className="text-rose-500">*</span>
-                        </Label>
-                        <Input
-                          placeholder="https://example.com/webhook"
-                          type="url"
-                          required
-                          {...register("target_url", {
-                            required: "Please enter the target url.",
-                            pattern: {
-                              value:
-                                /^https?:\/\/(?:localhost|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}))(?::(\d+))?(\/[\w .-]*)*\/?(\?[=&\w.-]*)?$/,
-                              message: "Please enter a valid URL.",
-                            },
-                          })}
-                        />
-                      </div>
+                      <TextField
+                        label="Target URL"
+                        placeholder="https://example.com/webhook"
+                        type="url"
+                        required
+                        error={errors.target_url?.message}
+                        {...register("target_url", {
+                          required: "Please enter the target url.",
+                          pattern: {
+                            value:
+                              /^https?:\/\/(?:localhost|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}))(?::(\d+))?(\/[\w .-]*)*\/?(\?[=&\w.-]*)?$/,
+                            message: "Please enter a valid URL.",
+                          },
+                        })}
+                      />
                     </div>
 
                     <div>

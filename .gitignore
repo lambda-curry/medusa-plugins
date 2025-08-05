@@ -31,3 +31,4 @@ build
 yalc.lock
 
 plugins/**/node_modules
+*.tgz

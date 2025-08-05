@@ -16,9 +16,10 @@ declare class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     protected gateway: Braintree.BraintreeGateway;
     logger: Logger;
     container_: MedusaContainer;
+    clientToken: string;
     protected constructor(container: MedusaContainer, options: BraintreeOptions);
     private parsePaymentSessionData;
-    protected init(): void;
+    init(): Promise<void>;
     static validateOptions(options: BraintreeOptions): void;
     capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput>;
     authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput>;

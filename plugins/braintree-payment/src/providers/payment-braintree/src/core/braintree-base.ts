@@ -59,6 +59,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
   container_: MedusaContainer;
+  clientToken: string;
   protected constructor(container: MedusaContainer, options: BraintreeOptions) {
     super(container, options);
 
@@ -79,7 +80,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     };
   }
 
-  protected init(): void {
+  async init(): Promise<void> {
     let environment: Braintree.Environment;
     switch (this.options_.environment) {
       case 'qa':
@@ -107,6 +108,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         publicKey: this.options_.publicKey!,
         privateKey: this.options_.privateKey!,
       });
+      const tokenData = await this.gateway.clientToken.generate({});
+      this.clientToken =  tokenData.clientToken;
   }
 
   static validateOptions(options: BraintreeOptions): void {
@@ -179,12 +182,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             },
           };
           return capturePaymentResult;
-        } else {
+        } 
           throw new MedusaError(
             MedusaError.Types.NOT_FOUND,
             `No payments found for transaction ${braintreeTransaction.id}`,
           );
-        }
+        
       }
       case settled:
       case settling:
@@ -341,15 +344,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       braintreeTransaction: transactionData as Transaction,
     };
   }
-
+  //biome-ignore lint/suspicious/useAwait: <explanation>
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     const paymentSessionId = input.context?.idempotency_key;
 
     const { data } = input;
-    const tokenData = await this.gateway.clientToken.generate({});
+   
 
     const dataToSave: BraintreePaymentSessionData & { medusaPaymentSessionId: string } = {
-      clientToken: tokenData.clientToken,
+      clientToken: this.clientToken,
       medusaPaymentSessionId: paymentSessionId as string,
       paymentMethodNonce: data?.paymentMethodNonce as string,
       amount: getSmallestUnit(input.amount, input.currency_code),

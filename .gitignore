@@ -6,10 +6,11 @@
 yarn-error.log
 
 .idea
-
+*.tgz
 coverage
-
+launch.json
 !src/**
+.medusa/
 
 ./tsconfig.tsbuildinfo
 medusa-db.sql

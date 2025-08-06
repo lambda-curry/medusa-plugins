@@ -105,7 +105,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return token;
     }
     const generatedToken = await this.gateway.clientToken.generate({});
-    const expiryTime = this.getTokenExpiryTime(generatedToken);
+    const expiryTime = this.getTokenExpiryTime(generatedToken)-1000;
     await this.saveClientTokenToCache(generatedToken.clientToken, customerId, expiryTime);
     return generatedToken.clientToken;
   }

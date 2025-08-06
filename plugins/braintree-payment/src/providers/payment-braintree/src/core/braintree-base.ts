@@ -105,7 +105,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return token;
     }
     const generatedToken = await this.gateway.clientToken.generate({});
-    const expiryTime = this.getTokenExpiryTime(generatedToken) - Date.now() - 1000;
+    const expiryTime = this.getTokenExpiryTime(generatedToken);
     await this.saveClientTokenToCache(generatedToken.clientToken, customerId, expiryTime);
     return generatedToken.clientToken;
   }
@@ -113,12 +113,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     try {
       // Split the token into parts
       const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
+      let payload = '';
+      if (parts.length === 1) {
+        // only payload without header
+        payload = parts[0];
+      } else if (parts.length === 3 || parts.length === 2) {
+        payload = parts[1];
+      } else {
+        throw new Error('Non decodeable JWT');
       }
-
-      // Decode the payload (second part)
-      const payload = parts[1];
       const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
       return decodedPayload;
     } catch (error) {
@@ -128,7 +131,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   getTokenExpiryTime(generatedToken: Braintree.ValidatedResponse<Braintree.ClientToken>): number {
-    const defaultExpiryTime = Date.now() + 24 * 3600 * 1000; // 24 hours default
+    const defaultExpiryTime = 24 * 3600 * 1000; // 24 hours default
     try {
       let decodedToken = jsonwebtoken.decode(generatedToken.clientToken) as DecodedClientToken;
 

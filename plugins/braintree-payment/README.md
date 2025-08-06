@@ -55,6 +55,7 @@ BRAINTREE_ENABLE_3D_SECURE=true|false
 Add the following configuration to the `payment` section of your `medusa-config.js` or `config.ts` file:
 
 ```javascript
+dependencies:[Modules.CACHE]
 {
   resolve: '@lambdacurry/medusa-payment-braintree/providers/payment-braintree',
   id: 'braintree',

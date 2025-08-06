@@ -74,16 +74,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.init();
   }
 
-  async saveClientTokenToCache(clientToken: string, customerId: string, expiryTime: number): Promise<void> {
+  async saveClientTokenToCache(clientToken: string, customerId: string, expiresOn: number): Promise<void> {
     if (!customerId) {
       return;
     }
-    if (expiryTime < 0) {
+    if (expiresOn < 0) {
       return;
     }
     if (!clientToken) {
       return;
     }
+    const expiryTime = expiresOn - Date.now()-1000;
     await this.cache.set(`braintree:clientToken:${customerId}`, clientToken, Math.floor(expiryTime / 1000));
   }
 
@@ -105,8 +106,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return token;
     }
     const generatedToken = await this.gateway.clientToken.generate({});
-    const expiryTime = this.getTokenExpiryTime(generatedToken)-1000;
-    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, expiryTime);
+    const expiresOn = this.getTokenExpiryTime(generatedToken);
+    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, expiresOn);
     return generatedToken.clientToken;
   }
   private decodeJWT(token: string): any {
@@ -131,7 +132,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   getTokenExpiryTime(generatedToken: Braintree.ValidatedResponse<Braintree.ClientToken>): number {
-    const defaultExpiryTime = 24 * 3600 * 1000; // 24 hours default
+    const defaultExpiryTime = Date.now()+24 * 3600 * 1000; // 24 hours default
     try {
       let decodedToken = jsonwebtoken.decode(generatedToken.clientToken) as DecodedClientToken;
 
@@ -155,7 +156,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         ) as DecodedClientTokenAuthorization;
       }
 
-      return (decodedAuthorizationToken?.exp as number) || Date.now() + 24 * 3600 * 1000;
+      return (decodedAuthorizationToken?.exp as number) || defaultExpiryTime;
     } catch (error) {
       this.logger.warn(`Error in getTokenExpiryTime: ${error.message}, using default expiry time`);
       return defaultExpiryTime;

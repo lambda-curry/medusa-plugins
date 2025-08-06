@@ -81,10 +81,16 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (expiresOn < 0) {
       return;
     }
+    if(expiresOn*1000 < Date.now()){
+      return;
+    }
     if (!clientToken) {
       return;
     }
-    const expiryTime = expiresOn - Date.now()-1000;
+    const expiryTime = expiresOn*1000 - Math.floor(Date.now())-1000;
+    if(expiryTime < 0){
+      return;
+    }
     await this.cache.set(`braintree:clientToken:${customerId}`, clientToken, Math.floor(expiryTime / 1000));
   }
 
@@ -132,7 +138,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   getTokenExpiryTime(generatedToken: Braintree.ValidatedResponse<Braintree.ClientToken>): number {
-    const defaultExpiryTime = Date.now()+24 * 3600 * 1000; // 24 hours default
+    const defaultExpiryTime = Date.now()/1000 + 24 * 3600 * 1000; // 24 hours default
     try {
       let decodedToken = jsonwebtoken.decode(generatedToken.clientToken) as DecodedClientToken;
 

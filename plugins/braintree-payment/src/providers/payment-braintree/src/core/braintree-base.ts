@@ -102,7 +102,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return token;
     }
     const generatedToken = await this.gateway.clientToken.generate({});
-    const defaultExpiryTime = Date.now()/1000 + 24 * 3600 * 1000; // 24 hours default
+    const defaultExpiryTime = Math.floor(Date.now()/1000) + 24 * 3600 * 1000; // 24 hours default
     await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryTime);
     return generatedToken.clientToken;
   }

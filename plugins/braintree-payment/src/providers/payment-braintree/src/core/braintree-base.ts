@@ -62,7 +62,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
   container_: MedusaContainer;
-  clientToken: string | null;
   cache: ICacheService;
   protected constructor(container: MedusaContainer, options: BraintreeOptions) {
     super(container, options);
@@ -78,12 +77,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (!customerId) {
       return;
     }
-    if (expiresOn < 0) {
-      return;
-    }
-    if(expiresOn*1000 < Date.now()){
-      return;
-    }
     if (!clientToken) {
       return;
     }
@@ -96,9 +89,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async getClientTokenFromCache(customerId: string): Promise<string | null> {
     const token = (await this.cache.get(`braintree:clientToken:${customerId}`)) as string | null;
-    if (token) {
-      this.clientToken = token;
-    }
     return token;
   }
 
@@ -112,62 +102,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return token;
     }
     const generatedToken = await this.gateway.clientToken.generate({});
-    const expiresOn = this.getTokenExpiryTime(generatedToken);
-    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, expiresOn);
+    const defaultExpiryTime = Date.now()/1000 + 24 * 3600 * 1000; // 24 hours default
+    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryTime);
     return generatedToken.clientToken;
   }
-  private decodeJWT(token: string): any {
-    try {
-      // Split the token into parts
-      const parts = token.split('.');
-      let payload = '';
-      if (parts.length === 1) {
-        // only payload without header
-        payload = parts[0];
-      } else if (parts.length === 3 || parts.length === 2) {
-        payload = parts[1];
-      } else {
-        throw new Error('Non decodeable JWT');
-      }
-      const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
-      return decodedPayload;
-    } catch (error) {
-      this.logger.warn(`Error manually decoding JWT: ${error.message}`);
-      return null;
-    }
-  }
-
-  getTokenExpiryTime(generatedToken: Braintree.ValidatedResponse<Braintree.ClientToken>): number {
-    const defaultExpiryTime = Date.now()/1000 + 24 * 3600 * 1000; // 24 hours default
-    try {
-      let decodedToken = jsonwebtoken.decode(generatedToken.clientToken) as DecodedClientToken;
-
-      if (!decodedToken) {
-        decodedToken = this.decodeJWT(generatedToken.clientToken) as DecodedClientToken;
-      }
-
-      if (!decodedToken) {
-        this.logger.warn('Failed to decode client token, using default expiry time');
-        return defaultExpiryTime;
-      }
-
-      let decodedAuthorizationToken = jsonwebtoken.decode(
-        decodedToken.authorizationFingerprint,
-      ) as DecodedClientTokenAuthorization;
-
-      // Fallback to manual decoding for authorization token
-      if (!decodedAuthorizationToken) {
-        decodedAuthorizationToken = this.decodeJWT(
-          decodedToken.authorizationFingerprint,
-        ) as DecodedClientTokenAuthorization;
-      }
-
-      return (decodedAuthorizationToken?.exp as number) || defaultExpiryTime;
-    } catch (error) {
-      this.logger.warn(`Error in getTokenExpiryTime: ${error.message}, using default expiry time`);
-      return defaultExpiryTime;
-    }
-  }
+  
 
   private async parsePaymentSessionData(data: Record<string, unknown>): Promise<BraintreePaymentSessionData> {
     return {

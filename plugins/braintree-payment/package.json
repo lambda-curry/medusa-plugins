@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-payment-braintree",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Braintree plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -70,6 +70,5 @@
   },
   "dependencies": {
     "braintree": "^3.30.0"
-    
   }
 }

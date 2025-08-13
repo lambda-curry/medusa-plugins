@@ -62,13 +62,14 @@
     "@medusajs/icons": "^2.8.2",
     "@medusajs/medusa": "2.8.2",
     "@medusajs/test-utils": "^2.8.2",
-    "@medusajs/ui": "^4.0.3"
+    "@medusajs/ui": "^4.0.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "braintree": "^3.30.0",
-    "jsonwebtoken": "^9.0.2"
+    "braintree": "^3.30.0"
+    
   }
 }

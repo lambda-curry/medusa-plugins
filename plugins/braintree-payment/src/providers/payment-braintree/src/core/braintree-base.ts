@@ -56,6 +56,8 @@ export interface BraintreePaymentSessionData {
   braintreeTransaction?: Transaction;
 }
 
+const buildTokenCacheKey = (customerId: string) => `braintree:clientToken:${customerId}`;
+
 class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   identifier = 'braintree';
   protected readonly options_: BraintreeOptions;
@@ -74,21 +76,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async saveClientTokenToCache(clientToken: string, customerId: string, expiresOn: number): Promise<void> {
-    if (!customerId) {
-      return;
-    }
-    if (!clientToken) {
-      return;
-    }
-    const expiryTime = expiresOn*1000 - Math.floor(Date.now())-1000;
-    if(expiryTime < 0){
-      return;
-    }
-    await this.cache.set(`braintree:clientToken:${customerId}`, clientToken, Math.floor(expiryTime / 1000));
+    const expiryTime = expiresOn * 1000 - Math.floor(Date.now()) - 1000;
+
+    if (!customerId || !clientToken || expiryTime < 0) return;
+
+    await this.cache.set(buildTokenCacheKey(customerId), clientToken, Math.floor(expiryTime / 1000));
   }
 
   async getClientTokenFromCache(customerId: string): Promise<string | null> {
-    const token = (await this.cache.get(`braintree:clientToken:${customerId}`)) as string | null;
+    const token = (await this.cache.get(buildTokenCacheKey(customerId))) as string | null;
     return token;
   }
 
@@ -97,16 +93,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       const generatedToken = await this.gateway.clientToken.generate({});
       return generatedToken.clientToken;
     }
+
     const token = await this.getClientTokenFromCache(customerId);
-    if (token) {
-      return token;
-    }
+
+    if (token) return token;
+
     const generatedToken = await this.gateway.clientToken.generate({});
-    const defaultExpiryTime = Math.floor(Date.now()/1000) + 24 * 3600 * 1000; // 24 hours default
+    const defaultExpiryTime = Math.floor(Date.now() / 1000) + 24 * 3600 * 1000; // 24 hours default
+
     await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryTime);
     return generatedToken.clientToken;
   }
-  
 
   private async parsePaymentSessionData(data: Record<string, unknown>): Promise<BraintreePaymentSessionData> {
     return {

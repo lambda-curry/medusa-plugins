@@ -2,10 +2,12 @@ import {
   AbstractPaymentProvider,
   ContainerRegistrationKeys,
   MedusaError,
+  Modules,
   PaymentActions,
   PaymentSessionStatus,
   isDefined,
 } from '@medusajs/framework/utils';
+import jsonwebtoken from 'jsonwebtoken';
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -21,6 +23,7 @@ import type {
   DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
+  ICacheService,
   InitiatePaymentInput,
   InitiatePaymentOutput,
   Logger,
@@ -42,7 +45,7 @@ import type {
 } from '@medusajs/types';
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
-import type { BraintreeOptions, CustomFields } from '../types';
+import type { BraintreeOptions, CustomFields, DecodedClientToken, DecodedClientTokenAuthorization } from '../types';
 import { getSmallestUnit } from '../utils/get-smallest-unit';
 
 export interface BraintreePaymentSessionData {
@@ -53,23 +56,56 @@ export interface BraintreePaymentSessionData {
   braintreeTransaction?: Transaction;
 }
 
+const buildTokenCacheKey = (customerId: string) => `braintree:clientToken:${customerId}`;
+
 class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   identifier = 'braintree';
   protected readonly options_: BraintreeOptions;
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
   container_: MedusaContainer;
+  cache: ICacheService;
   protected constructor(container: MedusaContainer, options: BraintreeOptions) {
     super(container, options);
 
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
     this.container_ = container;
-
+    this.cache = container[Modules.CACHE] as unknown as ICacheService;
     this.init();
   }
 
-  private parsePaymentSessionData(data: Record<string, unknown>): BraintreePaymentSessionData {
+  async saveClientTokenToCache(clientToken: string, customerId: string, expiresOn: number): Promise<void> {
+    const expiryTime = expiresOn * 1000 - Math.floor(Date.now()) - 1000;
+
+    if (!customerId || !clientToken || expiryTime < 0) return;
+
+    await this.cache.set(buildTokenCacheKey(customerId), clientToken, Math.floor(expiryTime / 1000));
+  }
+
+  async getClientTokenFromCache(customerId: string): Promise<string | null> {
+    const token = (await this.cache.get(buildTokenCacheKey(customerId))) as string | null;
+    return token;
+  }
+
+  async getValidClientToken(customerId: string): Promise<string | null> {
+    if (!customerId) {
+      const generatedToken = await this.gateway.clientToken.generate({});
+      return generatedToken.clientToken;
+    }
+
+    const token = await this.getClientTokenFromCache(customerId);
+
+    if (token) return token;
+
+    const generatedToken = await this.gateway.clientToken.generate({});
+    const defaultExpiryTime = Math.floor(Date.now() / 1000) + 24 * 3600 * 1000; // 24 hours default
+
+    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryTime);
+    return generatedToken.clientToken;
+  }
+
+  private async parsePaymentSessionData(data: Record<string, unknown>): Promise<BraintreePaymentSessionData> {
     return {
       clientToken: data.clientToken as string,
       amount: data.amount as number,
@@ -79,7 +115,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     };
   }
 
-  protected init(): void {
+  init(): void {
     let environment: Braintree.Environment;
     switch (this.options_.environment) {
       case 'qa':
@@ -148,7 +184,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
-    const sessionData = this.parsePaymentSessionData(input.data ?? {});
+    const sessionData = await this.parsePaymentSessionData(input.data ?? {});
     const braintreeTransaction = sessionData.braintreeTransaction;
 
     if (!braintreeTransaction) {
@@ -179,12 +215,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             },
           };
           return capturePaymentResult;
-        } else {
-          throw new MedusaError(
-            MedusaError.Types.NOT_FOUND,
-            `No payments found for transaction ${braintreeTransaction.id}`,
-          );
         }
+        throw new MedusaError(
+          MedusaError.Types.NOT_FOUND,
+          `No payments found for transaction ${braintreeTransaction.id}`,
+        );
       }
       case settled:
       case settling:
@@ -209,7 +244,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     try {
-      const sessionData = this.parsePaymentSessionData(input.data ?? {});
+      const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
       this.logger.warn(`authorizePayment: ${JSON.stringify(sessionData)}`);
 
@@ -258,7 +293,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
-    const sessionData = this.parsePaymentSessionData(input.data ?? {});
+    const sessionData = await this.parsePaymentSessionData(input.data ?? {});
     const { braintreeTransaction } = await this.retrieveTransaction(sessionData.braintreeTransaction?.id as string);
 
     if (!braintreeTransaction) {
@@ -343,13 +378,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
+    const token = await this.getValidClientToken(input.context?.customer?.id as string);
     const paymentSessionId = input.context?.idempotency_key;
-
+    if (!token) {
+      throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Failed to generate client token');
+    }
     const { data } = input;
-    const tokenData = await this.gateway.clientToken.generate({});
 
     const dataToSave: BraintreePaymentSessionData & { medusaPaymentSessionId: string } = {
-      clientToken: tokenData.clientToken,
+      clientToken: token,
       medusaPaymentSessionId: paymentSessionId as string,
       paymentMethodNonce: data?.paymentMethodNonce as string,
       amount: getSmallestUnit(input.amount, input.currency_code),
@@ -367,7 +404,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }: {
     input: AuthorizePaymentInput;
   }): Promise<Transaction> {
-    const sessionData = this.parsePaymentSessionData(input.data ?? {});
+    const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
     const toPay = sessionData.amount.toString();
 
@@ -399,7 +436,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         if (braintreeTransaction.transaction?.id) {
           await this.gateway.transaction.void(braintreeTransaction.transaction.id);
         }
-
         throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to sync payment session: ${error.message}`);
       }
     } catch (error) {
@@ -497,7 +533,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
-    const sessionData = this.parsePaymentSessionData(input.data ?? {});
+    const sessionData = await this.parsePaymentSessionData(input.data ?? {});
     const braintreeTransaction = sessionData.braintreeTransaction;
 
     if (braintreeTransaction) {
@@ -564,12 +600,16 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       case 'submitted_for_settlement':
         status = PaymentSessionStatus.AUTHORIZED;
         break;
-      case 'voided':
+      case 'voided': {
         status = PaymentSessionStatus.CANCELED;
+
         break;
-      case 'failed':
+      }
+      case 'failed': {
         status = PaymentSessionStatus.ERROR;
+
         break;
+      }
       default:
         status = PaymentSessionStatus.PENDING;
     }
@@ -577,7 +617,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async savePaymentMethod(input: SavePaymentMethodInput): Promise<SavePaymentMethodOutput> {
-    const sessionData = this.parsePaymentSessionData(input.data ?? {});
+    const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
     const braintreeCustomerId = input.context?.account_holder?.data?.id as string;
     if (!braintreeCustomerId) {
@@ -611,7 +651,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
-    const sessionData = this.parsePaymentSessionData(input.data ?? {});
+    const sessionData = await this.parsePaymentSessionData(input.data ?? {});
     const { braintreeTransaction } = await this.retrieveTransaction(sessionData.braintreeTransaction?.id as string);
     if (!braintreeTransaction) {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Braintree transaction not found');
@@ -662,7 +702,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         };
         return refundResult;
       } catch (e) {
-        this.logger.error(`Error creating Braintree refund: ${e.message}`, e);
+        this.logger.error(`Error creating Braintree refund: ${e.message} ${JSON.stringify(e)}`, e);
         throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to create Braintree refund: ${e.message}`);
       }
     } else {
@@ -676,7 +716,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
-    const paymentSessionData = this.parsePaymentSessionData(input.data ?? {});
+    const paymentSessionData = await this.parsePaymentSessionData(input.data ?? {});
 
     if (!paymentSessionData.braintreeTransaction?.id) {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Braintree transaction not found');

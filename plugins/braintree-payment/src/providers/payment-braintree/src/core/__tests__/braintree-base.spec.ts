@@ -1,9 +1,5 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-// Minimal fallbacks to avoid depending on framework type packages in tests
-const ContainerRegistrationKeys = { LOGGER: 'logger' } as const;
-const Modules = { CACHE: 'cache' } as const;
 import BraintreeProviderService from '../../services/braintree-provider';
-import { MedusaContainer } from '@medusajs/framework/types';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 
 const buildService = () => {
@@ -159,6 +155,100 @@ describe('BraintreeProviderService core behaviors', () => {
 
     expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
     expect((result.data as any)?.braintreeRefund?.success).toBe(true);
+  });
+
+  it('refundPayment voids when transaction is submitted_for_settlement', async () => {
+    const { service, gateway } = buildService();
+
+    const input = {
+      amount: 10, // standard unit
+      data: {
+        clientToken: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+      },
+    } as any;
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'submitted_for_settlement' });
+    gateway.transaction.void.mockResolvedValueOnce({ success: true });
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'voided' });
+
+    const result = await service.refundPayment(input);
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
+    expect((result.data as any)?.braintreeRefund?.success).toBe(true);
+  });
+
+  it('refundPayment refunds when transaction is settling', async () => {
+    const { service, gateway } = buildService();
+
+    const input = {
+      amount: 7.5, // standard unit => 750 smallest => "7.50" decimal
+      data: {
+        clientToken: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't2' },
+      },
+    } as any;
+
+    gateway.transaction.find
+      .mockResolvedValueOnce({ id: 't2', status: 'settling' })
+      .mockResolvedValueOnce({ id: 't2', status: 'settling' });
+    gateway.transaction.refund.mockResolvedValueOnce({ transaction: { id: 'r2' } });
+
+    const result = await service.refundPayment(input);
+
+    expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '7.50');
+    expect((result.data as any)?.braintreeRefund?.id).toBe('r2');
+  });
+
+  it('refundPayment throws for non-refundable statuses', async () => {
+    const { service, gateway } = buildService();
+
+    const input = {
+      amount: 5,
+      data: {
+        clientToken: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't3' },
+      },
+    } as any;
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't3', status: 'failed' });
+
+    await expect(service.refundPayment(input)).rejects.toThrow();
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
+  it('refundPayment importRefundedAmount hack skips provider refund and updates refundedTotal', async () => {
+    const { service, gateway } = buildService();
+
+    const input = {
+      amount: 5, // standard unit => refundAmount = 500 (USD)
+      data: {
+        clientToken: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't4' },
+        importRefundedAmount: 500,
+        refundedTotal: 200,
+      },
+    } as any;
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't4', status: 'settled' });
+
+    const result = await service.refundPayment(input);
+
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+
+    const data = result.data as any;
+    expect(data.refundedTotal).toBe(200 + 500);
+    expect(data.braintreeTransaction?.id).toBe('t4');
   });
 
   it('refundPayment refunds with decimal string when transaction is settled', async () => {

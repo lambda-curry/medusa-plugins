@@ -47,11 +47,15 @@
     "@medusajs/ui": "^4.0.3",
     "@swc/core": "1.5.7",
     "@types/braintree": "^3.3.14",
+    "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.10",
-    "jsonwebtoken": "^9.0.2"
+    "jest": "^29.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "ts-jest": "^29.2.5"
   },
   "scripts": {
     "build": "npx medusa plugin:build",
+    "test": "jest --config jest.config.cjs --runInBand",
     "plugin:dev": "npx medusa plugin:develop",
     "prepublishOnly": "npx medusa plugin:build"
   },

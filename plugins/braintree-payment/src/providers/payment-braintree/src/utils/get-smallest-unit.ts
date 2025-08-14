@@ -60,3 +60,32 @@ export function getAmountFromSmallestUnit(amount: BigNumberInput, currency: stri
   const standardAmount = new BigNumber(MathBN.div(amount, multiplier));
   return standardAmount.numeric;
 }
+
+/**
+ * Formats an amount provided in the smallest currency unit into a decimal string
+ * suitable for providers (e.g., Braintree) that expect standard unit decimal strings.
+ *
+ * Examples:
+ * - USD: 1234 -> "12.34"
+ * - JPY: 1234 -> "1234"
+ * - JOD (3 decimals): 12340 -> "12.340"
+ */
+export function formatSmallestUnitToDecimalString(amount: BigNumberInput, currency: string): string {
+  const multiplier = getCurrencyMultiplier(currency);
+
+  // Determine number of fraction digits based on multiplier (10^digits)
+  let fractionDigits = 0;
+  if (multiplier === 1000) {
+    fractionDigits = 3;
+  } else if (multiplier === 100) {
+    fractionDigits = 2;
+  } else if (multiplier === 1) {
+    fractionDigits = 0;
+  } else {
+    // Fallback: infer by counting zeros in multiplier
+    fractionDigits = Math.max(0, Math.round(Math.log10(multiplier)));
+  }
+
+  const standardAmount = getAmountFromSmallestUnit(amount, currency);
+  return standardAmount.toFixed(fractionDigits);
+}

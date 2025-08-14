@@ -45,8 +45,13 @@ import type {
 } from '@medusajs/types';
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
-import type { BraintreeOptions, CustomFields, DecodedClientToken, DecodedClientTokenAuthorization } from '../types';
-import { getSmallestUnit } from '../utils/get-smallest-unit';
+import type { BraintreeOptions, CustomFields } from '../types';
+import { getSmallestUnit, formatSmallestUnitToDecimalString } from '../utils/get-smallest-unit';
+
+export type BraintreeConstructorArgs = Record<string, unknown> & {
+  logger: Logger;
+  cache: ICacheService;
+};
 
 export interface BraintreePaymentSessionData {
   clientToken: string;
@@ -71,24 +76,22 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   protected readonly options_: BraintreeOptions;
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
-  container_: MedusaContainer;
   cache: ICacheService;
-  protected constructor(container: MedusaContainer, options: BraintreeOptions) {
+
+  protected constructor(container: BraintreeConstructorArgs, options: BraintreeOptions) {
     super(container, options);
 
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
-    this.container_ = container;
     this.cache = container[Modules.CACHE] as unknown as ICacheService;
     this.init();
   }
 
-  async saveClientTokenToCache(clientToken: string, customerId: string, expiresOn: number): Promise<void> {
-    const expiryTime = expiresOn * 1000 - Math.floor(Date.now()) - 1000;
-
-    if (!customerId || !clientToken || expiryTime < 0) return;
-
-    await this.cache.set(buildTokenCacheKey(customerId), clientToken, Math.floor(expiryTime / 1000));
+  async saveClientTokenToCache(clientToken: string, customerId: string, expiresOnEpochSeconds: number): Promise<void> {
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const ttlSeconds = expiresOnEpochSeconds - nowSeconds - 1;
+    if (!customerId || !clientToken || ttlSeconds <= 0) return;
+    await this.cache.set(buildTokenCacheKey(customerId), clientToken, ttlSeconds);
   }
 
   async getClientTokenFromCache(customerId: string): Promise<string | null> {
@@ -107,46 +110,45 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (token) return token;
 
     const generatedToken = await this.gateway.clientToken.generate({});
-    const defaultExpiryTime = Math.floor(Date.now() / 1000) + 24 * 3600 * 1000; // 24 hours default
+    const defaultExpiryEpochSeconds = Math.floor(Date.now() / 1000) + 24 * 3600; // 24 hours default
 
-    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryTime);
+    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryEpochSeconds);
     return generatedToken.clientToken;
   }
 
   private async parsePaymentSessionData(data: Record<string, unknown>): Promise<BraintreePaymentSessionData> {
-    return {
-      clientToken: data.clientToken as string,
-      amount: data.amount as number,
-      currency_code: data.currency_code as string,
-      paymentMethodNonce: data.paymentMethodNonce as string | undefined,
-      braintreeTransaction: data.braintreeTransaction as Transaction | undefined,
-    };
+    const schema = z.object({
+      clientToken: z.string(),
+      amount: z.number(),
+      currency_code: z.string(),
+      paymentMethodNonce: z.string().optional(),
+      braintreeTransaction: z.any().optional(),
+      refundedTotal: z.number().optional(),
+      importRefundedAmount: z.number().optional(),
+    });
+
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, result.error.message);
+    }
+
+    return result.data as BraintreePaymentSessionData;
   }
 
   init(): void {
-    let environment: Braintree.Environment;
-    switch (this.options_.environment) {
-      case 'qa':
-        environment = Braintree.Environment.Qa;
-        break;
-      case 'sandbox':
-        environment = Braintree.Environment.Sandbox;
-        break;
-      case 'production':
-        environment = Braintree.Environment.Production;
-        break;
-      case 'development':
-        environment = Braintree.Environment.Development;
-        break;
-      default:
-        environment = Braintree.Environment.Sandbox;
-        break;
-    }
+    const envKey = (this.options_.environment || 'sandbox').toLowerCase();
+    const envMap: Record<string, Braintree.Environment> = {
+      qa: Braintree.Environment.Qa,
+      sandbox: Braintree.Environment.Sandbox,
+      production: Braintree.Environment.Production,
+      development: Braintree.Environment.Development,
+    };
+    const environment = envMap[envKey] ?? Braintree.Environment.Sandbox;
 
     this.gateway =
       this.gateway ||
       new Braintree.BraintreeGateway({
-        environment: environment,
+        environment,
         merchantId: this.options_.merchantId!,
         publicKey: this.options_.publicKey!,
         privateKey: this.options_.privateKey!,
@@ -201,17 +203,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const paymentsResponse = await this.gateway.transaction.find(transaction.id);
 
-    const authorized: TransactionStatus = 'authorized';
-    const submitted_for_settlement: TransactionStatus = 'submitted_for_settlement';
-    const settled: TransactionStatus = 'settled';
-    const settling: TransactionStatus = 'settling';
-
     switch (paymentsResponse.status) {
-      case authorized: {
+      case 'authorized': {
         const { id, amount } = paymentsResponse;
         const toPay = amount.toString();
 
-        const captureResult = await this.gateway.transaction.submitForSettlement(id, toPay.toString());
+        const captureResult = await this.gateway.transaction.submitForSettlement(id, toPay);
 
         if (captureResult.success) {
           const braintreeTransaction = await this.retrieveTransaction(transaction.id);
@@ -226,9 +223,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         }
         throw new MedusaError(MedusaError.Types.NOT_FOUND, `No payments found for transaction ${transaction.id}`);
       }
-      case settled:
-      case settling:
-      case submitted_for_settlement: {
+      case 'settled':
+      case 'settling':
+      case 'submitted_for_settlement': {
         const braintreeTransaction = await this.retrieveTransaction(transaction.id);
 
         const result: CapturePaymentOutput = {
@@ -270,17 +267,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       };
 
       const status = await this.getPaymentStatus(paymentStatusRequest);
-
-      if (status.status === 'authorized' && this.options_.autoCapture) {
-        status.status = 'captured';
-      }
+      const finalStatus = status.status === 'authorized' && this.options_.autoCapture ? 'captured' : status.status;
 
       return {
         data: {
           ...input.data,
           braintreeTransaction,
         },
-        status: status.status,
+        status: finalStatus,
       };
     } catch (error) {
       this.logger.error(`Error authorizing payment: ${error.message}`, error);
@@ -375,6 +369,30 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return transactionData;
   }
 
+  private mapTransactionStatusToPaymentStatus(status: TransactionStatus): PaymentSessionStatus {
+    switch (status) {
+      case 'authorization_expired':
+        return PaymentSessionStatus.CANCELED;
+      case 'authorizing':
+        return PaymentSessionStatus.REQUIRES_MORE;
+      case 'authorized':
+        return PaymentSessionStatus.AUTHORIZED;
+      case 'settled':
+      case 'settlement_confirmed':
+        return PaymentSessionStatus.CAPTURED;
+      case 'settling':
+      case 'settlement_pending':
+      case 'submitted_for_settlement':
+        return PaymentSessionStatus.AUTHORIZED;
+      case 'voided':
+        return PaymentSessionStatus.CANCELED;
+      case 'failed':
+        return PaymentSessionStatus.ERROR;
+      default:
+        return PaymentSessionStatus.PENDING;
+    }
+  }
+
   private validateInitiatePaymentData(data: Record<string, unknown>): BraintreeInitiatePaymentData {
     const schema = z.object({
       transactionId: z.string().optional(),
@@ -430,10 +448,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }): Promise<Transaction> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-    const toPay = sessionData.amount.toString();
+    const toPayDecimal = formatSmallestUnitToDecimalString(sessionData.amount, sessionData.currency_code);
 
     const braintreeTransactionCreateRequest = this.getBraintreeTransactionCreateRequestBody({
-      amount: toPay,
+      amount: toPayDecimal,
       nonce: sessionData.paymentMethodNonce as string,
       customFields: {
         medusa_payment_session_id: input.context?.idempotency_key,
@@ -509,45 +527,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       this.logger.warn('received payment data from session not transaction data');
       throw e;
     }
-    let status: PaymentSessionStatus = PaymentSessionStatus.PENDING;
-    switch (transaction.status) {
-      case 'authorization_expired':
-        status = PaymentSessionStatus.CANCELED;
-        break;
-      case 'authorizing':
-        status = PaymentSessionStatus.REQUIRES_MORE;
-        break;
-      case 'authorized':
-        status = PaymentSessionStatus.AUTHORIZED;
-        break;
-      case 'settled':
-        status = PaymentSessionStatus.CAPTURED;
-        break;
-      case 'settling':
-        status = PaymentSessionStatus.AUTHORIZED;
-        break;
-      case 'settlement_confirmed':
-        status = PaymentSessionStatus.CAPTURED;
-        break;
-      case 'settlement_pending':
-        status = PaymentSessionStatus.AUTHORIZED;
-        break;
-      case 'submitted_for_settlement':
-        status = PaymentSessionStatus.AUTHORIZED;
-        break;
-      case 'voided': {
-        status = PaymentSessionStatus.CANCELED;
-
-        break;
-      }
-      case 'failed': {
-        status = PaymentSessionStatus.ERROR;
-
-        break;
-      }
-      default:
-        status = PaymentSessionStatus.PENDING;
-    }
+    const status = this.mapTransactionStatusToPaymentStatus(transaction.status);
     return { status };
   }
 
@@ -608,7 +588,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const braintreeTransaction = await this.retrieveTransaction(sessionData.braintreeTransaction?.id as string);
 
-    if (braintreeTransaction.status === 'submitted_for_settlement' || braintreeTransaction.status === 'authorized') {
+    const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(braintreeTransaction.status);
+    if (shouldVoid) {
       const cancelledTransaction = await this.gateway.transaction.void(braintreeTransaction.id);
 
       const result = await this.retrieveTransaction(braintreeTransaction.id);
@@ -624,7 +605,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return refundResult;
     }
 
-    if (braintreeTransaction.status !== 'settled' && braintreeTransaction.status !== 'settling') {
+    const shouldRefund = ['settled', 'settling'].includes(braintreeTransaction.status);
+    if (!shouldRefund) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
         `Braintree transaction with ID ${braintreeTransaction.id} cannot be refunded`,
@@ -632,13 +614,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     if (braintreeTransaction.id) {
-      const refundRequest = {
-        amount: refundAmount,
-      };
+      const refundAmountDecimal = formatSmallestUnitToDecimalString(refundAmount, sessionData.currency_code);
       try {
         const { transaction: refundTransaction } = await this.gateway.transaction.refund(
           braintreeTransaction.id,
-          refundRequest.amount.toString(),
+          refundAmountDecimal,
         );
 
         const updatedTransaction = await this.retrieveTransaction(braintreeTransaction.id);
@@ -684,14 +664,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   // biome-ignore lint/suspicious/useAwait: <explanation>
-  async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
-    return {
+  updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+    return Promise.resolve({
       data: {
         ...input.data,
         amount: input.amount,
         currency_code: input.currency_code,
       },
-    };
+    });
   }
 
   async createAccountHolder(input: CreateAccountHolderInput): Promise<CreateAccountHolderOutput> {

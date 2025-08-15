@@ -82,13 +82,13 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(setArgs[2]).toBe(24 * 3600 - 1);
   });
 
-  it('authorizePayment creates a sale with decimal string amount and returns captured when autoCapture=true', async () => {
+  it('authorizePayment creates a sale with decimal string amount (2dp) and returns captured when autoCapture=true', async () => {
     const { service, gateway } = buildService();
 
     const input = {
       data: {
         clientToken: 'ct',
-        amount: 1000, // smallest unit
+        amount: 10, // standard unit -> "10.00"
         currency_code: 'USD',
         paymentMethodNonce: 'fake-nonce',
       },
@@ -180,11 +180,11 @@ describe('BraintreeProviderService core behaviors', () => {
     expect((result.data as any)?.braintreeRefund?.success).toBe(true);
   });
 
-  it('refundPayment refunds when transaction is settling', async () => {
+  it('refundPayment refunds with 2dp when transaction is settling', async () => {
     const { service, gateway } = buildService();
 
     const input = {
-      amount: 7.5, // standard unit => 750 smallest => "7.50" decimal
+      amount: 7.5, // -> "7.50"
       data: {
         clientToken: 'ct',
         amount: 1000,
@@ -224,38 +224,13 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });
 
-  it('refundPayment importRefundedAmount hack skips provider refund and updates refundedTotal', async () => {
+  // NOTE: Import/refund simulation moved to the dedicated import provider tests
+
+  it('refundPayment refunds with 2dp decimal string when transaction is settled', async () => {
     const { service, gateway } = buildService();
 
     const input = {
-      amount: 5, // standard unit => refundAmount = 500 (USD)
-      data: {
-        clientToken: 'ct',
-        amount: 1000,
-        currency_code: 'USD',
-        braintreeTransaction: { id: 't4' },
-        importRefundedAmount: 500,
-        refundedTotal: 200,
-      },
-    } as any;
-
-    gateway.transaction.find.mockResolvedValueOnce({ id: 't4', status: 'settled' });
-
-    const result = await service.refundPayment(input);
-
-    expect(gateway.transaction.void).not.toHaveBeenCalled();
-    expect(gateway.transaction.refund).not.toHaveBeenCalled();
-
-    const data = result.data as any;
-    expect(data.refundedTotal).toBe(200 + 500);
-    expect(data.braintreeTransaction?.id).toBe('t4');
-  });
-
-  it('refundPayment refunds with decimal string when transaction is settled', async () => {
-    const { service, gateway } = buildService();
-
-    const input = {
-      amount: 5, // standard unit => 500 smallest => "5.00" decimal
+      amount: 5.001, // -> "5.00"
       data: {
         clientToken: 'ct',
         amount: 1000,

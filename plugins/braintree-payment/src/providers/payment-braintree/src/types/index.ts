@@ -13,6 +13,7 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
 
 export const PaymentProviderKeys = {
   BRAINTREE: 'braintree',
+  IMPORTED: 'imported',
 };
 
 export interface CustomFields {

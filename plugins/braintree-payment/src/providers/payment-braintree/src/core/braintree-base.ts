@@ -46,7 +46,6 @@ import type {
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
 import type { BraintreeOptions, CustomFields } from '../types';
-import { getSmallestUnit, formatSmallestUnitToDecimalString } from '../utils/get-smallest-unit';
 
 export type BraintreeConstructorArgs = Record<string, unknown> & {
   logger: Logger;
@@ -65,7 +64,6 @@ export interface BraintreePaymentSessionData {
 
 export interface BraintreeInitiatePaymentData {
   transactionId?: string;
-  previouslyRefundedAmount?: number;
   paymentMethodNonce?: string;
 }
 
@@ -88,6 +86,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async saveClientTokenToCache(clientToken: string, customerId: string, expiresOnEpochSeconds: number): Promise<void> {
+    if (!customerId) throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Customer ID is required');
     const nowSeconds = Math.floor(Date.now() / 1000);
     const ttlSeconds = expiresOnEpochSeconds - nowSeconds - 1;
     if (!customerId || !clientToken || ttlSeconds <= 0) return;
@@ -124,7 +123,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       paymentMethodNonce: z.string().optional(),
       braintreeTransaction: z.any().optional(),
       refundedTotal: z.number().optional(),
-      importRefundedAmount: z.number().optional(),
     });
 
     const result = schema.safeParse(data);
@@ -155,8 +153,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       });
   }
 
+  private formatToTwoDecimalString(amount: number): string {
+    const rounded = Math.round(Number(amount) * 100) / 100;
+    return rounded.toFixed(2);
+  }
+
   static validateOptions(options: BraintreeOptions): void {
-    // Required string fields
     const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
 
     for (const field of requiredFields) {
@@ -176,12 +178,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       );
     }
 
-    // Optional boolean fields with defaults
     options.enable3DSecure = options.enable3DSecure ?? false;
     options.savePaymentMethod = options.savePaymentMethod ?? false;
     options.autoCapture = options.autoCapture ?? false;
 
-    // Type check boolean fields
     const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture'];
     for (const field of booleanFields) {
       if (isDefined(options[field]) && typeof options[field] !== 'boolean') {
@@ -429,9 +429,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       clientToken: token,
       medusaPaymentSessionId: paymentSessionId as string,
       paymentMethodNonce: data?.paymentMethodNonce as string,
-      amount: getSmallestUnit(input.amount, input.currency_code),
+      amount: Number(input.amount),
       currency_code: input.currency_code,
-      importRefundedAmount: data.previouslyRefundedAmount,
+
       refundedTotal: 0,
     };
 
@@ -448,7 +448,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }): Promise<Transaction> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-    const toPayDecimal = formatSmallestUnitToDecimalString(sessionData.amount, sessionData.currency_code);
+    const toPayDecimal = this.formatToTwoDecimalString(Number(sessionData.amount));
 
     const braintreeTransactionCreateRequest = this.getBraintreeTransactionCreateRequestBody({
       amount: toPayDecimal,
@@ -567,24 +567,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const refundAmount = getSmallestUnit(input.amount, sessionData.currency_code);
+    const refundAmount = Number(input.amount);
+    const refundAmountRounded = Number(this.formatToTwoDecimalString(refundAmount));
 
-    const previouslyRefundedAmount = sessionData.refundedTotal ?? 0;
-
-    if (sessionData.importRefundedAmount && refundAmount === sessionData.importRefundedAmount) {
-      // This is a hack so that we can import braintree transactions that have already been refunded.
-      // We basically skip the refund process here and just pretend that we refunded the amount.
-      const updatedTransaction = await this.retrieveTransaction(sessionData.braintreeTransaction!.id);
-
-      const refundResult: RefundPaymentOutput = {
-        data: {
-          ...input.data,
-          braintreeTransaction: updatedTransaction,
-          refundedTotal: previouslyRefundedAmount + refundAmount,
-        },
-      };
-      return refundResult;
-    }
+    const previouslyRefundedAmount = Number(this.formatToTwoDecimalString(sessionData.refundedTotal ?? 0));
 
     const braintreeTransaction = await this.retrieveTransaction(sessionData.braintreeTransaction?.id as string);
 
@@ -614,7 +600,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     if (braintreeTransaction.id) {
-      const refundAmountDecimal = formatSmallestUnitToDecimalString(refundAmount, sessionData.currency_code);
+      const refundAmountDecimal = this.formatToTwoDecimalString(refundAmountRounded);
       try {
         const { transaction: refundTransaction } = await this.gateway.transaction.refund(
           braintreeTransaction.id,
@@ -628,7 +614,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             ...input.data,
             braintreeTransaction: updatedTransaction,
             braintreeRefund: refundTransaction,
-            refundedTotal: previouslyRefundedAmount + refundAmount,
+            refundedTotal: Number(this.formatToTwoDecimalString(previouslyRefundedAmount + refundAmountRounded)),
           },
         };
         return refundResult;

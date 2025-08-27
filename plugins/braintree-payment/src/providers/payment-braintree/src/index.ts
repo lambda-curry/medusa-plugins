@@ -1,7 +1,7 @@
 import { ModuleProvider, Modules } from '@medusajs/framework/utils';
-import { BraintreeProviderService } from './services';
+import { BraintreeProviderService, BraintreeImportService } from './services';
 
-const services = [BraintreeProviderService];
+const services = [BraintreeProviderService, BraintreeImportService];
 
 export default ModuleProvider(Modules.PAYMENT, {
   services,

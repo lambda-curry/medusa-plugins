@@ -1,9 +1,10 @@
-import BraintreeBase, { BraintreeConstructorArgs } from '../core/braintree-base';
 import type { BraintreeOptions } from '../types';
 import { PaymentProviderKeys } from '../types';
+import { BraintreeConstructorArgs } from '../core/braintree-base';
+import BraintreeImport from '../core/braintree-import';
 
-class BraintreeProviderService extends BraintreeBase {
-  static identifier = PaymentProviderKeys.BRAINTREE;
+class BraintreeImportService extends BraintreeImport {
+  static identifier = PaymentProviderKeys.IMPORTED;
   options: BraintreeOptions;
 
   constructor(container: BraintreeConstructorArgs, options: BraintreeOptions) {
@@ -12,4 +13,4 @@ class BraintreeProviderService extends BraintreeBase {
   }
 }
 
-export default BraintreeProviderService;
+export default BraintreeImportService;

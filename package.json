@@ -6,10 +6,9 @@
     "url": "https://github.com/lambda-curry/medusa-plugins"
   },
   "homepage": "https://github.com/lambda-curry/medusa-plugins",
-  "main": "plugins/product-reviews/dist/index.js",
-  "files": ["plugins/product-reviews/dist"],
   "scripts": {
-    "prepare": "npm run build --prefix ./plugins/product-reviews"
+    "build": "turbo build",
+    "dev": "turbo dev"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

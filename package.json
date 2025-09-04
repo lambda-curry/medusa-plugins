@@ -9,9 +9,7 @@
   "main": "dist/index.js",
   "files": ["dist"],
   "scripts": {
-    "prepare": "npm run build",
-    "build": "turbo build",
-    "dev": "turbo dev"
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

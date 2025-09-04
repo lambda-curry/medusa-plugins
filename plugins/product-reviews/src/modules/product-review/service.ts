@@ -77,7 +77,7 @@ class ProductReviewService extends MedusaService({
     SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) AS rating_count_3,
     SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) AS rating_count_4,
     SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) AS rating_count_5
-    FROM product_review WHERE product_id IN (${productIds.map((id) => `'${id}'`).join(', ')}) GROUP BY product_id`;
+    FROM product_review WHERE product_id IN (${productIds.map((id) => `'${id}'`).join(', ')}) AND status = 'approved' GROUP BY product_id`;
 
     const productReviewStats =
       await sharedContext.manager.execute<

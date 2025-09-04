@@ -6,7 +6,10 @@
     "url": "https://github.com/lambda-curry/medusa-plugins"
   },
   "homepage": "https://github.com/lambda-curry/medusa-plugins",
+  "main": "dist/index.js",
+  "files": ["dist"],
   "scripts": {
+    "prepare": "npm run build",
     "build": "turbo build",
     "dev": "turbo dev"
   },

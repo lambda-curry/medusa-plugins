@@ -53,13 +53,13 @@ export type BraintreeConstructorArgs = Record<string, unknown> & {
 };
 
 export interface BraintreePaymentSessionData {
-  clientToken: string;
+  client_token: string;
+  transaction: Transaction;
   amount: number;
   currency_code: string;
-  paymentMethodNonce?: string;
+  payment_method_nonce?: string;
   braintreeTransaction?: Transaction;
   refundedTotal?: number;
-  importRefundedAmount?: number;
   custom_fields?: Record<string, string>;
   order_id?: string;
 }
@@ -120,11 +120,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   private async parsePaymentSessionData(data: Record<string, unknown>): Promise<BraintreePaymentSessionData> {
     const schema = z.object({
-      clientToken: z.string(),
+      clientToken: z.string().optional(),
+      client_token: z.string().optional(),
       amount: z.number(),
       currency_code: z.string(),
       paymentMethodNonce: z.string().optional(),
+      payment_method_nonce: z.string().optional(),
       braintreeTransaction: z.any().optional(),
+      transaction: z.any().optional(),
       refundedTotal: z.number().optional(),
       custom_fields: z
         .record(z.string(), z.any())
@@ -144,6 +147,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (!result.success) {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, result.error.message);
     }
+
+    result.data.transaction = result.data.transaction ?? result.data.braintreeTransaction;
+    result.data.client_token = result.data.client_token ?? result.data.clientToken;
+    result.data.payment_method_nonce = result.data.payment_method_nonce ?? result.data.paymentMethodNonce;
 
     return result.data as BraintreePaymentSessionData;
   }
@@ -279,7 +286,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
       let braintreeTransaction = sessionData.braintreeTransaction;
 
-      if (!sessionData.paymentMethodNonce)
+      if (!sessionData.payment_method_nonce)
         throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Payment method nonce is required');
 
       if (!braintreeTransaction)
@@ -467,11 +474,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Failed to generate client token');
     }
 
-    const dataToSave: BraintreePaymentSessionData & { medusaPaymentSessionId: string } = {
+    const dataToSave: BraintreePaymentSessionData = {
       braintreeTransaction,
-      clientToken: token,
-      medusaPaymentSessionId: paymentSessionId as string,
-      paymentMethodNonce: data?.payment_method_nonce as string,
+      transaction: braintreeTransaction as Transaction,
+      client_token: token,
+      payment_method_nonce: data?.payment_method_nonce as string,
       amount: Number(input.amount),
       currency_code: input.currency_code,
       custom_fields: data?.custom_fields,
@@ -498,7 +505,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const braintreeTransactionCreateRequest = this.getBraintreeTransactionCreateRequestBody({
       amount: toPayDecimal,
-      nonce: sessionData.paymentMethodNonce as string,
+      nonce: sessionData.payment_method_nonce as string,
       customFields: filteredCustomFields,
       orderId: sessionData.order_id,
       accountHolder: input.context?.account_holder,
@@ -583,7 +590,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Braintree customer id is required');
     }
 
-    const paymentMethodNonce = sessionData?.paymentMethodNonce;
+    const paymentMethodNonce = sessionData?.payment_method_nonce;
 
     if (!paymentMethodNonce) {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Payment method nonce is required');
@@ -828,7 +835,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     const paymentData = await this.gateway.transaction.find(notification.transaction.id);
+
     const customFields = paymentData.customFields as CustomFields;
+
     switch (notification.kind) {
       case 'transaction_settled':
         return {

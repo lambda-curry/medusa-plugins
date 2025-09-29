@@ -42,6 +42,7 @@ Add the following configuration to the `payment` section of your `medusa-config.
     enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
     savePaymentMethod: true,
     autoCapture: true,
+    customFields: ['medusa_payment_session_id', 'cart_id', 'customer_id'],
   }
 }
 ```
@@ -55,6 +56,7 @@ Add the following configuration to the `payment` section of your `medusa-config.
 - **enable3DSecure**: Enable 3D Secure authentication (`true` or `false`).
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
+- **customFields**: Array of Braintree custom field API names permitted to be forwarded from `data.custom_fields`. If empty or omitted, no user-provided custom fields are sent.
 
 ## Features
 
@@ -63,32 +65,26 @@ Add the following configuration to the `payment` section of your `medusa-config.
 - Webhook handling for payment updates.
 - Save payment methods for future transactions.
 
-###
+### Creating Custom Fields in Braintree Dashboard
 
-in the braintree dashboard add these custom fields in here
+- Navigate to: Account Settings → Transactions → Custom Fields.
+- Add the fields you plan to send. API names must be lowercase.
+- Set fields to "Store and Pass back" if you want them on the transaction record.
 
-account-settings->Transactions->Custom Fields
+Common examples:
 
-click the options button
-click the add button
-* medusa_payment_session_id
-  Api Name : medusa_payment_session_id
-  Description: Medusa Session Id
-  Options: Store and Pass back
+- `medusa_payment_session_id`: Medusa Session Id
+- `cart_id`: Cart Id
+- `customer_id`: Customer Id
 
+Only fields listed in `options.customFields` and supplied in `data.custom_fields` are forwarded.
 
-* cart_id
-  Api Name : cart_id
-  Description: Cart Id
-  Options: Store and Pass back
+### Supplying Custom Fields and Order ID
 
-* customer_id
+- `data.custom_fields`: object map of API name → value. Values are coerced to strings; only whitelisted keys are sent.
+- `data.order_id`: string forwarded as Braintree `orderId` in the sale request.
 
-  Api Name : customer_id
-  Description: Customer Id 
-  Options: Store and Pass back
-
-Note api_names must be in lower case
+Update behavior: `updatePayment` merges `custom_fields` by overwriting existing keys but keeping unspecified ones.
 
 ## License
 

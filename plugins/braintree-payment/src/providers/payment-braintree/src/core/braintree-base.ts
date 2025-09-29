@@ -7,7 +7,6 @@ import {
   PaymentSessionStatus,
   isDefined,
 } from '@medusajs/framework/utils';
-import { z } from 'zod';
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -45,6 +44,7 @@ import type {
 } from '@medusajs/types';
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
+import { z } from 'zod';
 import type { BraintreeOptions, CustomFields } from '../types';
 
 export type BraintreeConstructorArgs = Record<string, unknown> & {
@@ -60,11 +60,14 @@ export interface BraintreePaymentSessionData {
   braintreeTransaction?: Transaction;
   refundedTotal?: number;
   importRefundedAmount?: number;
+  custom_fields?: Record<string, string>;
+  order_id?: string;
 }
 
 export interface BraintreeInitiatePaymentData {
-  transactionId?: string;
-  paymentMethodNonce?: string;
+  payment_method_nonce?: string;
+  custom_fields?: Record<string, string>;
+  order_id?: string;
 }
 
 const buildTokenCacheKey = (customerId: string) => `braintree:clientToken:${customerId}`;
@@ -123,6 +126,18 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       paymentMethodNonce: z.string().optional(),
       braintreeTransaction: z.any().optional(),
       refundedTotal: z.number().optional(),
+      custom_fields: z
+        .record(z.string(), z.any())
+        .optional()
+        .transform((obj) => {
+          if (!obj) return undefined;
+          const out: Record<string, string> = {};
+          for (const [k, v] of Object.entries(obj)) {
+            out[k] = String(v);
+          }
+          return out;
+        }),
+      order_id: z.string().optional(),
     });
 
     const result = schema.safeParse(data);
@@ -181,6 +196,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     options.enable3DSecure = options.enable3DSecure ?? false;
     options.savePaymentMethod = options.savePaymentMethod ?? false;
     options.autoCapture = options.autoCapture ?? false;
+    options.customFields = Array.isArray(options.customFields) ? options.customFields : [];
 
     const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture'];
     for (const field of booleanFields) {
@@ -189,6 +205,19 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           MedusaError.Types.INVALID_ARGUMENT,
           `Option "${field}" must be a boolean in Braintree plugin`,
         );
+      }
+    }
+
+    if (isDefined(options.customFields) && !Array.isArray(options.customFields)) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_ARGUMENT,
+        `Option "customFields" must be an array of strings in Braintree plugin`,
+      );
+    }
+    if (Array.isArray(options.customFields)) {
+      const invalid = options.customFields.some((v) => typeof v !== 'string');
+      if (invalid) {
+        throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, `Option "customFields" must contain only strings`);
       }
     }
   }
@@ -321,12 +350,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     amount,
     customFields,
     nonce,
+    orderId,
   }: {
     accountHolder?: PaymentAccountHolderDTO;
     customer?: PaymentCustomerDTO;
     amount: string;
     customFields?: CustomFields;
     nonce: string;
+    orderId?: string;
   }): Braintree.TransactionRequest {
     const billingAddress = customer?.billing_address;
     const transactionRequest: Braintree.TransactionRequest = {
@@ -353,6 +384,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       },
       paymentMethodNonce: nonce,
       customFields: customFields,
+      orderId: orderId || undefined,
     };
     return transactionRequest;
   }
@@ -395,9 +427,20 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   private validateInitiatePaymentData(data: Record<string, unknown>): BraintreeInitiatePaymentData {
     const schema = z.object({
-      transactionId: z.string().optional(),
-      previouslyRefundedAmount: z.number().optional(),
       paymentMethodNonce: z.string().optional(),
+      payment_method_nonce: z.string().optional(),
+      custom_fields: z
+        .record(z.string(), z.any())
+        .optional()
+        .transform((obj) => {
+          if (!obj) return undefined;
+          const out: Record<string, string> = {};
+          for (const [k, v] of Object.entries(obj)) {
+            out[k] = String(v);
+          }
+          return out;
+        }),
+      order_id: z.string().optional(),
     });
 
     const result = schema.safeParse(data);
@@ -406,6 +449,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, result.error.message);
     }
 
+    result.data.payment_method_nonce = result.data.payment_method_nonce ?? result.data.paymentMethodNonce;
+
     return result.data;
   }
 
@@ -413,8 +458,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const data = this.validateInitiatePaymentData(input.data ?? {});
 
     let braintreeTransaction: Transaction | undefined;
-
-    if (data.transactionId) braintreeTransaction = await this.retrieveTransaction(data.transactionId);
 
     const token = await this.getValidClientToken(input.context?.customer?.id as string);
 
@@ -428,10 +471,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       braintreeTransaction,
       clientToken: token,
       medusaPaymentSessionId: paymentSessionId as string,
-      paymentMethodNonce: data?.paymentMethodNonce as string,
+      paymentMethodNonce: data?.payment_method_nonce as string,
       amount: Number(input.amount),
       currency_code: input.currency_code,
-
+      custom_fields: data?.custom_fields,
+      order_id: data?.order_id,
       refundedTotal: 0,
     };
 
@@ -450,13 +494,13 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const toPayDecimal = this.formatToTwoDecimalString(Number(sessionData.amount));
 
+    const filteredCustomFields = this.filterAndStringifyCustomFields(sessionData.custom_fields);
+
     const braintreeTransactionCreateRequest = this.getBraintreeTransactionCreateRequestBody({
       amount: toPayDecimal,
       nonce: sessionData.paymentMethodNonce as string,
-      customFields: {
-        medusa_payment_session_id: input.context?.idempotency_key,
-        customer_id: input.context?.customer?.id ?? '',
-      },
+      customFields: filteredCustomFields,
+      orderId: sessionData.order_id,
       accountHolder: input.context?.account_holder,
       customer: input.context?.customer,
     });
@@ -649,13 +693,43 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     };
   }
 
-  // biome-ignore lint/suspicious/useAwait: <explanation>
-  updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+  async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+    const updateSchema = z.object({
+      custom_fields: z
+        .record(z.string(), z.any())
+        .optional()
+        .transform((obj) => {
+          if (!obj) return undefined;
+          const out: Record<string, string> = {};
+          for (const [k, v] of Object.entries(obj)) {
+            out[k] = String(v);
+          }
+          return out;
+        }),
+      order_id: z.string().optional(),
+    });
+
+    const currentData = await this.parsePaymentSessionData(input.data ?? {});
+
+    const currentCustom = currentData.custom_fields ?? {};
+    const currentOrderId = currentData.order_id ?? undefined;
+
+    const parsed = updateSchema.safeParse(input.data ?? {});
+
+    const incomingCustom: Record<string, string> =
+      parsed.success && parsed.data.custom_fields ? { ...parsed.data.custom_fields } : {};
+    const incomingOrderId = parsed.success ? parsed.data.order_id : undefined;
+
+    const mergedCustom = { ...currentCustom, ...incomingCustom } as Record<string, string>;
+    const hasMergedCustom = Object.keys(mergedCustom).length > 0;
+
     return Promise.resolve({
       data: {
         ...input.data,
         amount: input.amount,
         currency_code: input.currency_code,
+        custom_fields: hasMergedCustom ? mergedCustom : undefined,
+        order_id: incomingOrderId ?? currentOrderId ?? undefined,
       },
     });
   }
@@ -795,6 +869,23 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     return customerResult.customer;
+  }
+
+  private filterAndStringifyCustomFields(fields?: Record<string, string>): CustomFields | undefined {
+    if (!fields) return undefined;
+    const allowed = Array.isArray(this.options_.customFields) ? this.options_.customFields : [];
+    if (!allowed.length) return undefined;
+
+    const out: Record<string, string> = {};
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(fields, key)) {
+        const value = fields[key];
+        if (typeof value !== 'undefined' && value !== null) {
+          out[key] = String(value);
+        }
+      }
+    }
+    return Object.keys(out).length ? (out as CustomFields) : undefined;
   }
 }
 

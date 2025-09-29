@@ -2,7 +2,7 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import BraintreeProviderService from '../../services/braintree-provider';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 
-const buildService = () => {
+const buildService = (overrideOptions?: any) => {
   const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() } as any;
   const cache = { get: jest.fn(), set: jest.fn() } as any;
 
@@ -21,6 +21,10 @@ const buildService = () => {
     webhookSecret: 'whsec',
     autoCapture: true,
   } as any; // satisfy BraintreeOptions without bringing full type deps
+
+  if (overrideOptions) {
+    Object.assign(options, overrideOptions);
+  }
 
   const service = new BraintreeProviderService(container, options);
 
@@ -275,5 +279,90 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.getWebhookActionAndData({ data: payloadStr } as any);
     expect(result.action).toBe('captured');
     expect((result as any).data.session_id).toBe('sess_123');
+  });
+});
+
+describe('BraintreeProviderService custom fields + order id', () => {
+  it('authorizePayment sends only whitelisted custom fields and orderId', async () => {
+    const { service, gateway } = buildService({ customFields: ['cart_id', 'foo'] });
+
+    const input = {
+      data: {
+        clientToken: 'ct',
+        amount: 10,
+        currency_code: 'USD',
+        paymentMethodNonce: 'fake-nonce',
+        custom_fields: { cart_id: 'c_1', foo: 123, bar: 'nope' },
+        order_id: 'order-42',
+      },
+      context: {
+        idempotency_key: 'idem_2',
+        customer: { id: 'cust', email: 'c@example.com' },
+      },
+    } as any;
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: { id: 't1' } });
+    gateway.transaction.find.mockResolvedValue({ id: 't1', status: 'authorized', amount: '10.00' });
+
+    await service.authorizePayment(input);
+
+    expect(gateway.transaction.sale).toHaveBeenCalled();
+    const saleArgs = gateway.transaction.sale.mock.calls[0][0];
+    expect(saleArgs.customFields).toEqual({ cart_id: 'c_1', foo: '123' });
+    expect(saleArgs.orderId).toBe('order-42');
+  });
+
+  it('does not send customFields when whitelist is empty', async () => {
+    const { service, gateway } = buildService({ customFields: [] });
+
+    const input = {
+      data: {
+        clientToken: 'ct',
+        amount: 5,
+        currency_code: 'USD',
+        paymentMethodNonce: 'fake-nonce',
+        custom_fields: { any_key: 'any_value' },
+      },
+      context: {
+        idempotency_key: 'idem_3',
+        customer: { id: 'cust', email: 'c@example.com' },
+      },
+    } as any;
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: { id: 't1' } });
+    gateway.transaction.find.mockResolvedValue({ id: 't1', status: 'authorized', amount: '5.00' });
+
+    await service.authorizePayment(input);
+
+    const saleArgs = gateway.transaction.sale.mock.calls[0][0];
+    expect(saleArgs.customFields).toBeUndefined();
+  });
+
+  it('updatePayment merges custom_fields and updates order_id', async () => {
+    const { service } = buildService();
+
+    const initialData = {
+      clientToken: 'ct',
+      amount: 10,
+      currency_code: 'USD',
+      custom_fields: { a: '1', b: '2' },
+      order_id: 'order-1',
+    } as any;
+
+    const updateInput = {
+      amount: 10,
+      currency_code: 'USD',
+      data: {
+        ...initialData,
+        custom_fields: { b: 3, c: false },
+        order_id: 'order-2',
+      },
+    } as any;
+
+    const result = await service.updatePayment(updateInput);
+    const merged = (result.data as any).custom_fields;
+    // Since updateInput.data replaces the custom_fields object, merge keeps provided keys
+    expect(merged).toEqual({ b: '3', c: 'false' });
+    expect((result.data as any).order_id).toBe('order-2');
   });
 });

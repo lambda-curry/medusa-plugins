@@ -9,6 +9,12 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   savePaymentMethod: boolean;
   webhookSecret: string;
   autoCapture: boolean;
+  /**
+   * Whitelist of Braintree custom field API names allowed to be forwarded
+   * from `data.custom_fields` to the Braintree transaction request.
+   * If empty or omitted, no user-supplied custom fields are sent.
+   */
+  customFields?: string[];
 }
 
 export const PaymentProviderKeys = {
@@ -16,11 +22,9 @@ export const PaymentProviderKeys = {
   IMPORTED: 'imported',
 };
 
-export interface CustomFields {
-  medusa_payment_session_id?: string;
-  cart_id?: string;
-  customer_id: string;
-}
+// Flexible map of custom fields returned by Braintree.
+// Values are represented as strings by the API.
+export type CustomFields = Record<string, string>;
 
 export interface DecodedClientToken {
   version: number;

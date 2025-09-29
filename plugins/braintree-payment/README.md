@@ -68,6 +68,7 @@ dependencies:[Modules.CACHE]
     enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
     savePaymentMethod: true, // Save payment methods for future use
     autoCapture: true,        // Automatically capture payments
+    customFields: ['medusa_payment_session_id', 'cart_id', 'customer_id'],
   }
 }
 ```
@@ -81,6 +82,7 @@ dependencies:[Modules.CACHE]
 - **enable3DSecure**: Enable 3D Secure authentication (`true` or `false`).
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
+- **customFields**: Array of Braintree custom field API names permitted to be forwarded from `data.custom_fields`. If empty or omitted, no user-provided custom fields are sent.
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
@@ -103,7 +105,7 @@ For more information, see the [Braintree Webhooks documentation](https://develop
 
 ### Adding Custom Fields in the Braintree Dashboard
 
-To ensure proper integration with Medusa, you need to add the following custom fields in your Braintree dashboard:
+To use custom fields, create them in your Braintree dashboard (API names must be lowercase). Add the fields you intend to allow via `options.customFields`.
 
 1. **Navigate to:**  
    `Account Settings` → `Transactions` → `Custom Fields`
@@ -113,15 +115,25 @@ To ensure proper integration with Medusa, you need to add the following custom f
    - Click the **Add** button.
    - Enter the details for each field as shown below:
 
-| Field Name                | API Name                    | Description         | Options             |
+| Field Name (example)     | API Name (example)          | Description         | Options             |
 |--------------------------|-----------------------------|---------------------|---------------------|
 | Medusa Payment Session Id | `medusa_payment_session_id` | Medusa Session Id   | Store and Pass back |
 | Cart Id                   | `cart_id`                   | Cart Id             | Store and Pass back |
 | Customer Id               | `customer_id`               | Customer Id         | Store and Pass back |
 
-> **Note:**  
-> - The **API Name** must be in lowercase.  
-> - Set the **Options** to "Store and Pass back" for each field.
+> Note
+> - Only fields present in `options.customFields` and supplied in `data.custom_fields` are sent to Braintree.
+> - If you rely on webhooks that read `medusa_payment_session_id`, include that field in `options.customFields` and provide it in `data.custom_fields` during initiate/update.
+
+### Supplying Custom Fields and Order ID
+
+- In `initiatePayment` or `updatePayment`, provide:
+  - `data.custom_fields`: object of API name to value; values are coerced to strings; only whitelisted keys are sent.
+  - `data.order_id`: string passed as Braintree `orderId` on the transaction.
+
+Merge behavior on `updatePayment`:
+- New `custom_fields` overwrite keys but preserve any previously saved keys.
+- If no `custom_fields` are present after merging or the whitelist is empty, no `customFields` are sent.
 
 ## License
 

@@ -3,17 +3,20 @@ import {
   ContainerRegistrationKeys,
   MedusaError,
   Modules,
+  Order,
   PaymentActions,
   PaymentSessionStatus,
   isDefined,
 } from '@medusajs/framework/utils';
 import type {
+  AddressDTO,
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
   CancelPaymentInput,
   CancelPaymentOutput,
   CapturePaymentInput,
   CapturePaymentOutput,
+  CartLineItemDTO,
   CreateAccountHolderInput,
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
@@ -27,8 +30,10 @@ import type {
   InitiatePaymentOutput,
   Logger,
   MedusaContainer,
+  OrderDTO,
   PaymentAccountHolderDTO,
   PaymentCustomerDTO,
+  PaymentProviderContext,
   ProviderWebhookPayload,
   RefundPaymentInput,
   RefundPaymentOutput,
@@ -52,22 +57,36 @@ export type BraintreeConstructorArgs = Record<string, unknown> & {
   cache: ICacheService;
 };
 
+export interface ExtendedPaymentProviderContext extends PaymentProviderContext {
+  custom_fields?: Record<string, string>;
+  order_id?: string;
+  shipping_address?: AddressDTO;
+  billing_address?: AddressDTO;
+  order_display_id?: string;
+  totals?: {
+    tax_total: number;
+    shipping_total: number;
+    shipping_tax_total: number;
+    discount_total: number;
+    discount_tax_total: number;
+    item_total: number;
+    item_tax_total: number;
+    item_subtotal: number;
+  };
+  items?: Array<CartLineItemDTO>;
+}
+
 export interface BraintreePaymentSessionData {
   client_token: string;
   transaction: Transaction;
   amount: number;
   currency_code: string;
   payment_method_nonce?: string;
-  braintreeTransaction?: Transaction;
-  refundedTotal?: number;
-  custom_fields?: Record<string, string>;
-  order_id?: string;
+  account_holder?: PaymentAccountHolderDTO;
 }
 
 export interface BraintreeInitiatePaymentData {
   payment_method_nonce?: string;
-  custom_fields?: Record<string, string>;
-  order_id?: string;
 }
 
 const buildTokenCacheKey = (customerId: string) => `braintree:clientToken:${customerId}`;
@@ -101,20 +120,26 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return token;
   }
 
-  async getValidClientToken(customerId: string): Promise<string | null> {
-    if (!customerId) {
+  async getValidClientToken(
+    medusaCustomerId: string | undefined,
+    accountHolder: PaymentAccountHolderDTO | undefined,
+  ): Promise<string | null> {
+    if (!medusaCustomerId) {
       const generatedToken = await this.gateway.clientToken.generate({});
       return generatedToken.clientToken;
     }
 
-    const token = await this.getClientTokenFromCache(customerId);
+    const token = await this.getClientTokenFromCache(medusaCustomerId);
 
     if (token) return token;
 
-    const generatedToken = await this.gateway.clientToken.generate({});
+    const generatedToken = await this.gateway.clientToken.generate({
+      customerId: accountHolder?.data?.id as string,
+    });
+
     const defaultExpiryEpochSeconds = Math.floor(Date.now() / 1000) + 24 * 3600; // 24 hours default
 
-    await this.saveClientTokenToCache(generatedToken.clientToken, customerId, defaultExpiryEpochSeconds);
+    await this.saveClientTokenToCache(generatedToken.clientToken, medusaCustomerId, defaultExpiryEpochSeconds);
     return generatedToken.clientToken;
   }
 
@@ -128,7 +153,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       payment_method_nonce: z.string().optional(),
       braintreeTransaction: z.any().optional(),
       transaction: z.any().optional(),
-      refundedTotal: z.number().optional(),
+      account_holder: z.any().optional(),
       custom_fields: z
         .record(z.string(), z.any())
         .optional()
@@ -140,7 +165,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           }
           return out;
         }),
-      order_id: z.string().optional(),
     });
 
     const result = schema.safeParse(data);
@@ -203,7 +227,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     options.enable3DSecure = options.enable3DSecure ?? false;
     options.savePaymentMethod = options.savePaymentMethod ?? false;
     options.autoCapture = options.autoCapture ?? false;
-    options.customFields = Array.isArray(options.customFields) ? options.customFields : [];
 
     const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture'];
     for (const field of booleanFields) {
@@ -214,24 +237,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         );
       }
     }
-
-    if (isDefined(options.customFields) && !Array.isArray(options.customFields)) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_ARGUMENT,
-        `Option "customFields" must be an array of strings in Braintree plugin`,
-      );
-    }
-    if (Array.isArray(options.customFields)) {
-      const invalid = options.customFields.some((v) => typeof v !== 'string');
-      if (invalid) {
-        throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, `Option "customFields" must contain only strings`);
-      }
-    }
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const transaction = sessionData.braintreeTransaction;
+    const transaction = sessionData.transaction;
 
     if (!transaction) {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Braintree transaction not found');
@@ -252,7 +262,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           const capturePaymentResult: CapturePaymentOutput = {
             data: {
               ...input.data,
-              braintreeTransaction,
+              transaction: braintreeTransaction,
             },
           };
           return capturePaymentResult;
@@ -267,7 +277,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const result: CapturePaymentOutput = {
           data: {
             ...input.data,
-            braintreeTransaction,
+            transaction: braintreeTransaction,
           },
         };
 
@@ -284,7 +294,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     try {
       const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-      let braintreeTransaction = sessionData.braintreeTransaction;
+      let braintreeTransaction = sessionData.transaction;
 
       if (!sessionData.payment_method_nonce)
         throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Payment method nonce is required');
@@ -298,7 +308,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         ...input,
         data: {
           ...input.data,
-          braintreeTransaction,
+          transaction: braintreeTransaction,
         },
       };
 
@@ -308,7 +318,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return {
         data: {
           ...input.data,
-          braintreeTransaction,
+          transaction: braintreeTransaction,
         },
         status: finalStatus,
       };
@@ -320,7 +330,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const braintreeTransaction = await this.retrieveTransaction(sessionData.braintreeTransaction?.id as string);
+    const braintreeTransaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
 
     if (!braintreeTransaction) {
       return {};
@@ -337,7 +347,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         return {
           data: {
             ...input.data,
-            braintreeTransaction: updated,
+            transaction: updated,
           },
         };
       }
@@ -354,31 +364,32 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   private getBraintreeTransactionCreateRequestBody({
     accountHolder,
     customer,
+    context,
     amount,
-    customFields,
     nonce,
     orderId,
   }: {
     accountHolder?: PaymentAccountHolderDTO;
     customer?: PaymentCustomerDTO;
     amount: string;
-    customFields?: CustomFields;
     nonce: string;
+    context: ExtendedPaymentProviderContext;
     orderId?: string;
   }): Braintree.TransactionRequest {
-    const billingAddress = customer?.billing_address;
     const transactionRequest: Braintree.TransactionRequest = {
       amount: amount.toString(),
-      billing: {
-        company: billingAddress?.company ?? '',
-        streetAddress: billingAddress?.address_1 ?? '',
-        extendedAddress: billingAddress?.address_2 ?? '',
-        locality: billingAddress?.city ?? '',
-        region: billingAddress?.province ?? '',
-        postalCode: billingAddress?.postal_code ?? '',
-        countryCodeAlpha2: billingAddress?.country_code ?? '',
-      },
-      customerId: (accountHolder?.data?.braintree_customer_id as string) ?? undefined,
+      billing: context.billing_address
+        ? {
+            company: context.billing_address?.company ?? '',
+            streetAddress: context.billing_address?.address_1 ?? '',
+            extendedAddress: context.billing_address?.address_2 ?? '',
+            locality: context.billing_address?.city ?? '',
+            region: context.billing_address?.province ?? '',
+            postalCode: context.billing_address?.postal_code ?? '',
+            countryCodeAlpha2: context.billing_address?.country_code ?? '',
+          }
+        : undefined,
+      customerId: (accountHolder?.data?.id as string) ?? undefined,
       options: {
         submitForSettlement: this.options_.autoCapture,
         storeInVaultOnSuccess: this.options_.savePaymentMethod,
@@ -389,9 +400,40 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             }
           : undefined,
       },
+      shipping: context.shipping_address
+        ? {
+            company: context.shipping_address?.company ?? '',
+            streetAddress: context.shipping_address?.address_1 ?? '',
+            extendedAddress: context.shipping_address?.address_2 ?? '',
+            locality: context.shipping_address?.city ?? '',
+            region: context.shipping_address?.province ?? '',
+            postalCode: context.shipping_address?.postal_code ?? '',
+            countryCodeAlpha2: context.shipping_address?.country_code ?? '',
+          }
+        : undefined,
       paymentMethodNonce: nonce,
-      customFields: customFields,
+      customFields: context.custom_fields,
       orderId: orderId || undefined,
+      discountAmount: context.totals?.discount_total
+        ? this.formatToTwoDecimalString(Number(context.totals.discount_total))
+        : undefined,
+      taxAmount: context.totals?.tax_total
+        ? this.formatToTwoDecimalString(Number(context.totals.tax_total))
+        : undefined,
+      shippingAmount: context.totals?.shipping_total
+        ? this.formatToTwoDecimalString(Number(context.totals.shipping_total))
+        : undefined,
+      shippingTaxAmount: context.totals?.shipping_tax_total
+        ? this.formatToTwoDecimalString(Number(context.totals.shipping_tax_total))
+        : undefined,
+      lineItems: context.items?.map((item) => ({
+        kind: 'debit',
+        name: item.title,
+        quantity: item.quantity.toString(),
+        unitAmount: this.formatToTwoDecimalString(Number(item.unit_price)),
+        totalAmount: this.formatToTwoDecimalString(Number(item.total)),
+        discountAmount: this.formatToTwoDecimalString(Number(item.discount_total)),
+      })),
     };
     return transactionRequest;
   }
@@ -436,18 +478,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const schema = z.object({
       paymentMethodNonce: z.string().optional(),
       payment_method_nonce: z.string().optional(),
-      custom_fields: z
-        .record(z.string(), z.any())
-        .optional()
-        .transform((obj) => {
-          if (!obj) return undefined;
-          const out: Record<string, string> = {};
-          for (const [k, v] of Object.entries(obj)) {
-            out[k] = String(v);
-          }
-          return out;
-        }),
-      order_id: z.string().optional(),
     });
 
     const result = schema.safeParse(data);
@@ -466,7 +496,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     let braintreeTransaction: Transaction | undefined;
 
-    const token = await this.getValidClientToken(input.context?.customer?.id as string);
+    const token = await this.getValidClientToken(input.context?.customer?.id);
 
     const paymentSessionId = input.context?.idempotency_key as string;
 
@@ -475,15 +505,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     const dataToSave: BraintreePaymentSessionData = {
-      braintreeTransaction,
       transaction: braintreeTransaction as Transaction,
       client_token: token,
       payment_method_nonce: data?.payment_method_nonce as string,
       amount: Number(input.amount),
       currency_code: input.currency_code,
-      custom_fields: data?.custom_fields,
-      order_id: data?.order_id,
-      refundedTotal: 0,
+      account_holder: input.context?.account_holder,
     };
 
     return {
@@ -499,16 +526,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }): Promise<Transaction> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-    const toPayDecimal = this.formatToTwoDecimalString(Number(sessionData.amount));
+    const _context = input.context as ExtendedPaymentProviderContext;
 
-    const filteredCustomFields = this.filterAndStringifyCustomFields(sessionData.custom_fields);
+    const toPayDecimal = this.formatToTwoDecimalString(Number(sessionData.amount));
 
     const braintreeTransactionCreateRequest = this.getBraintreeTransactionCreateRequestBody({
       amount: toPayDecimal,
       nonce: sessionData.payment_method_nonce as string,
-      customFields: filteredCustomFields,
-      orderId: sessionData.order_id,
-      accountHolder: input.context?.account_holder,
+      context: _context,
+      accountHolder: sessionData.account_holder,
       customer: input.context?.customer,
     });
     try {
@@ -538,7 +564,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const braintreeTransaction = sessionData.braintreeTransaction;
+    const braintreeTransaction = sessionData.transaction;
 
     if (braintreeTransaction) {
       try {
@@ -564,8 +590,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
-    const braintreeTransaction = input.data?.braintreeTransaction as Transaction;
-    const id = braintreeTransaction.id as string;
+    // Support both `data.transaction` and `data.braintreeTransaction` without requiring full session parsing
+    const tx = (input.data?.transaction ?? input.data?.braintreeTransaction) as Transaction | undefined;
+    const id = tx?.id as string | undefined;
 
     if (!id) {
       return { status: PaymentSessionStatus.PENDING };
@@ -621,9 +648,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const refundAmount = Number(input.amount);
     const refundAmountRounded = Number(this.formatToTwoDecimalString(refundAmount));
 
-    const previouslyRefundedAmount = Number(this.formatToTwoDecimalString(sessionData.refundedTotal ?? 0));
-
-    const braintreeTransaction = await this.retrieveTransaction(sessionData.braintreeTransaction?.id as string);
+    const braintreeTransaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
 
     const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(braintreeTransaction.status);
     if (shouldVoid) {
@@ -634,7 +659,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       const refundResult: RefundPaymentOutput = {
         data: {
           ...input.data,
-          braintreeTransaction,
+          transaction: braintreeTransaction,
           braintreeRefund: cancelledTransaction,
         },
       };
@@ -643,6 +668,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     const shouldRefund = ['settled', 'settling'].includes(braintreeTransaction.status);
+
     if (!shouldRefund) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
@@ -665,7 +691,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             ...input.data,
             braintreeTransaction: updatedTransaction,
             braintreeRefund: refundTransaction,
-            refundedTotal: Number(this.formatToTwoDecimalString(previouslyRefundedAmount + refundAmountRounded)),
           },
         };
         return refundResult;
@@ -686,11 +711,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
     const paymentSessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-    if (!paymentSessionData.braintreeTransaction?.id) {
+    if (!paymentSessionData.transaction?.id) {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Braintree transaction not found');
     }
 
-    const retrieved = await this.retrieveTransaction(paymentSessionData.braintreeTransaction?.id);
+    const retrieved = await this.retrieveTransaction(paymentSessionData.transaction?.id);
 
     return {
       data: {
@@ -718,25 +743,13 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const currentData = await this.parsePaymentSessionData(input.data ?? {});
 
-    const currentCustom = currentData.custom_fields ?? {};
-    const currentOrderId = currentData.order_id ?? undefined;
-
     const parsed = updateSchema.safeParse(input.data ?? {});
-
-    const incomingCustom: Record<string, string> =
-      parsed.success && parsed.data.custom_fields ? { ...parsed.data.custom_fields } : {};
-    const incomingOrderId = parsed.success ? parsed.data.order_id : undefined;
-
-    const mergedCustom = { ...currentCustom, ...incomingCustom } as Record<string, string>;
-    const hasMergedCustom = Object.keys(mergedCustom).length > 0;
 
     return Promise.resolve({
       data: {
         ...input.data,
         amount: input.amount,
         currency_code: input.currency_code,
-        custom_fields: hasMergedCustom ? mergedCustom : undefined,
-        order_id: incomingOrderId ?? currentOrderId ?? undefined,
       },
     });
   }
@@ -790,15 +803,16 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async deleteAccountHolder(input: DeleteAccountHolderInput): Promise<DeleteAccountHolderOutput> {
     const { context } = input;
+
     const accountHolderId = context.account_holder?.data?.id as string;
-    if (!accountHolderId) {
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Account holder id is required`);
-    }
+
+    if (!accountHolderId) throw new MedusaError(MedusaError.Types.INVALID_DATA, `Account holder id is required`);
+
     try {
       const accountHolder = await this.gateway.customer.find(accountHolderId);
-      if (!accountHolder) {
+
+      if (!accountHolder)
         throw new MedusaError(MedusaError.Types.NOT_FOUND, `Account holder with id ${accountHolderId} not found`);
-      }
 
       await this.gateway.customer.delete(accountHolder.id);
 
@@ -878,23 +892,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     return customerResult.customer;
-  }
-
-  private filterAndStringifyCustomFields(fields?: Record<string, string>): CustomFields | undefined {
-    if (!fields) return undefined;
-    const allowed = Array.isArray(this.options_.customFields) ? this.options_.customFields : [];
-    if (!allowed.length) return undefined;
-
-    const out: Record<string, string> = {};
-    for (const key of allowed) {
-      if (Object.prototype.hasOwnProperty.call(fields, key)) {
-        const value = fields[key];
-        if (typeof value !== 'undefined' && value !== null) {
-          out[key] = String(value);
-        }
-      }
-    }
-    return Object.keys(out).length ? (out as CustomFields) : undefined;
   }
 }
 

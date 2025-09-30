@@ -134,7 +134,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (token) return token;
 
     const generatedToken = await this.gateway.clientToken.generate({
-      customerId: accountHolder?.data?.id as string,
+      customerId: (accountHolder?.data?.id as string) ?? undefined,
     });
 
     const defaultExpiryEpochSeconds = Math.floor(Date.now() / 1000) + 24 * 3600; // 24 hours default

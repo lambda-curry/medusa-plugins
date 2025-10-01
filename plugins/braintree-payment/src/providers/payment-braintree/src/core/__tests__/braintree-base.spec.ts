@@ -22,10 +22,6 @@ const buildService = (overrideOptions?: any) => {
     autoCapture: true,
   } as any; // satisfy BraintreeOptions without bringing full type deps
 
-  if (overrideOptions) {
-    Object.assign(options, overrideOptions);
-  }
-
   const service = new BraintreeProviderService(container, options);
 
   // Replace gateway with a mock implementation

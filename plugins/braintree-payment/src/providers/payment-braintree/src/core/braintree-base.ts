@@ -152,17 +152,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       braintreeTransaction: z.any().optional(),
       transaction: z.any().optional(),
       account_holder: z.any().optional(),
-      custom_fields: z
-        .record(z.string(), z.any())
-        .optional()
-        .transform((obj) => {
-          if (!obj) return undefined;
-          const out: Record<string, string> = {};
-          for (const [k, v] of Object.entries(obj)) {
-            out[k] = String(v);
-          }
-          return out;
-        }),
     });
 
     const result = schema.safeParse(data);
@@ -724,25 +713,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
-    const updateSchema = z.object({
-      custom_fields: z
-        .record(z.string(), z.any())
-        .optional()
-        .transform((obj) => {
-          if (!obj) return undefined;
-          const out: Record<string, string> = {};
-          for (const [k, v] of Object.entries(obj)) {
-            out[k] = String(v);
-          }
-          return out;
-        }),
-      order_id: z.string().optional(),
-    });
-
-    const currentData = await this.parsePaymentSessionData(input.data ?? {});
-
-    const parsed = updateSchema.safeParse(input.data ?? {});
-
     return Promise.resolve({
       data: {
         ...input.data,

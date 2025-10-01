@@ -9,12 +9,6 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   savePaymentMethod: boolean;
   webhookSecret: string;
   autoCapture: boolean;
-  /**
-   * Whitelist of Braintree custom field API names allowed to be forwarded
-   * from `data.custom_fields` to the Braintree transaction request.
-   * If empty or omitted, no user-supplied custom fields are sent.
-   */
-  customFields?: string[];
 }
 
 export const PaymentProviderKeys = {

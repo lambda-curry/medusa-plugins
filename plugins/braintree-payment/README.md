@@ -68,7 +68,6 @@ dependencies:[Modules.CACHE]
     enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
     savePaymentMethod: true, // Save payment methods for future use
     autoCapture: true,        // Automatically capture payments
-    customFields: ['medusa_payment_session_id', 'cart_id', 'customer_id'],
   }
 }
 ```
@@ -82,7 +81,6 @@ dependencies:[Modules.CACHE]
 - **enable3DSecure**: Enable 3D Secure authentication (`true` or `false`).
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
-- **customFields**: Array of Braintree custom field API names permitted to be forwarded from `data.custom_fields`. If empty or omitted, no user-provided custom fields are sent.
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.

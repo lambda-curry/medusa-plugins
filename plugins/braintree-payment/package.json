@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-payment-braintree",
-  "version": "0.0.10-beta.8",
+  "version": "0.0.11",
   "description": "Braintree plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -51,13 +51,15 @@
     "@types/jsonwebtoken": "^9.0.10",
     "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.2",
-    "ts-jest": "^29.2.5"
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.2"
   },
   "scripts": {
     "build": "npx medusa plugin:build",
     "test": "jest --config jest.config.cjs --runInBand",
     "plugin:dev": "npx medusa plugin:develop",
-    "prepublishOnly": "npx medusa plugin:build"
+    "prepublishOnly": "npx medusa plugin:build",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@medusajs/admin-sdk": "^2.8.2",

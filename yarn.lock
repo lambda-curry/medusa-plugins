@@ -2541,6 +2541,7 @@ __metadata:
     jest: "npm:^29.7.0"
     jsonwebtoken: "npm:^9.0.2"
     ts-jest: "npm:^29.2.5"
+    typescript: "npm:^5.7.2"
   peerDependencies:
     "@medusajs/admin-sdk": ^2.8.2
     "@medusajs/cli": ^2.8.2

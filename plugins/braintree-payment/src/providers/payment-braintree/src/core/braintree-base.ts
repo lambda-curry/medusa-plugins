@@ -103,7 +103,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
-    this.cache = container[Modules.CACHE] as unknown as ICacheService;
+    this.cache = container[Modules.CACHE];
     this.init();
   }
 
@@ -189,6 +189,34 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   private formatToTwoDecimalString(amount: number): string {
     const rounded = Math.round(Number(amount) * 100) / 100;
     return rounded.toFixed(2);
+  }
+
+  private formatToTwoDecimalStringIfFinite(amount: unknown): string | undefined {
+    const n = Number(amount);
+    if (!Number.isFinite(n)) return undefined;
+    return this.formatToTwoDecimalString(n);
+  }
+
+  private truncate(value: unknown, max: number): string | undefined {
+    if (value === null || value === undefined) return undefined;
+    const str = String(value);
+    if (!str.length) return undefined;
+    return str.length > max ? str.slice(0, max) : str;
+  }
+
+  private sanitizeCountryCodeAlpha2(value: unknown): string | undefined {
+    const v = typeof value === 'string' ? value.trim().toUpperCase() : undefined;
+    return v ? this.truncate(v, 2) : undefined;
+  }
+
+  private sanitizeCustomFields(fields?: Record<string, unknown>): Record<string, string> | undefined {
+    if (!fields) return undefined;
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(fields)) {
+      const val = this.truncate(v, 255);
+      if (val !== undefined) out[k] = val;
+    }
+    return Object.keys(out).length ? out : undefined;
   }
 
   static validateOptions(options: BraintreeOptions): void {
@@ -363,19 +391,63 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     context: ExtendedPaymentProviderContext;
     orderId?: string;
   }): Braintree.TransactionRequest {
+    // Enforce Braintree field limits to avoid validation errors.
+    // - lineItems.name ≤ 35 chars (127 for PayPal; use 35 to be safe)
+    // - orderId ≤ 255 (127 for PayPal; use 127 to be safe)
+    // - address components ≤ 255 chars
+    // - custom field values ≤ 255 chars
+
+    const safeOrderId = this.truncate(orderId ?? context.order_display_id ?? context.order_id, 127);
+
+    const billing = context.billing_address
+      ? {
+          company: this.truncate(context.billing_address?.company, 255),
+          streetAddress: this.truncate(context.billing_address?.address_1, 255),
+          extendedAddress: this.truncate(context.billing_address?.address_2, 255),
+          locality: this.truncate(context.billing_address?.city, 255),
+          region: this.truncate(context.billing_address?.province, 255),
+          postalCode: context.billing_address?.postal_code ?? '',
+          countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.billing_address?.country_code),
+        }
+      : undefined;
+
+    const shipping = context.shipping_address
+      ? {
+          company: this.truncate(context.shipping_address?.company, 255),
+          streetAddress: this.truncate(context.shipping_address?.address_1, 255),
+          extendedAddress: this.truncate(context.shipping_address?.address_2, 255),
+          locality: this.truncate(context.shipping_address?.city, 255),
+          region: this.truncate(context.shipping_address?.province, 255),
+          postalCode: context.shipping_address?.postal_code ?? '',
+          countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.shipping_address?.country_code),
+        }
+      : undefined;
+
+    const lineItems = context.items
+      ?.slice(0, 249)
+      .map((item) => {
+        const name = this.truncate(item.title, 35) || 'Item';
+        const unitAmount = this.formatToTwoDecimalStringIfFinite(Number(item.unit_price));
+        const totalAmount = this.formatToTwoDecimalStringIfFinite(Number(item.total));
+        const discount = Number(item.discount_total);
+        const discountAmount =
+          Number.isFinite(discount) && discount > 0 ? this.formatToTwoDecimalString(discount) : undefined;
+
+        const li: Braintree.TransactionLineItem = {
+          kind: 'debit',
+          name,
+          quantity: (item.quantity ?? 1).toString(),
+          unitAmount: unitAmount as string,
+          totalAmount: totalAmount as string,
+        };
+        if (discountAmount) li.discountAmount = discountAmount;
+        return li;
+      })
+      .filter((li) => !!li.unitAmount && !!li.totalAmount);
+
     const transactionRequest: Braintree.TransactionRequest = {
       amount: amount.toString(),
-      billing: context.billing_address
-        ? {
-            company: context.billing_address?.company ?? '',
-            streetAddress: context.billing_address?.address_1 ?? '',
-            extendedAddress: context.billing_address?.address_2 ?? '',
-            locality: context.billing_address?.city ?? '',
-            region: context.billing_address?.province ?? '',
-            postalCode: context.billing_address?.postal_code ?? '',
-            countryCodeAlpha2: context.billing_address?.country_code ?? '',
-          }
-        : undefined,
+      billing,
       customerId: (accountHolder?.data?.id as string) ?? undefined,
       options: {
         submitForSettlement: this.options_.autoCapture,
@@ -387,40 +459,23 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             }
           : undefined,
       },
-      shipping: context.shipping_address
-        ? {
-            company: context.shipping_address?.company ?? '',
-            streetAddress: context.shipping_address?.address_1 ?? '',
-            extendedAddress: context.shipping_address?.address_2 ?? '',
-            locality: context.shipping_address?.city ?? '',
-            region: context.shipping_address?.province ?? '',
-            postalCode: context.shipping_address?.postal_code ?? '',
-            countryCodeAlpha2: context.shipping_address?.country_code ?? '',
-          }
-        : undefined,
+      shipping,
       paymentMethodNonce: nonce,
-      customFields: context.custom_fields,
-      orderId: orderId || undefined,
+      customFields: this.sanitizeCustomFields(context.custom_fields),
+      orderId: safeOrderId || undefined,
       discountAmount: context.totals?.discount_total
-        ? this.formatToTwoDecimalString(Number(context.totals.discount_total))
+        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.discount_total))
         : undefined,
       taxAmount: context.totals?.tax_total
-        ? this.formatToTwoDecimalString(Number(context.totals.tax_total))
+        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.tax_total))
         : undefined,
       shippingAmount: context.totals?.shipping_total
-        ? this.formatToTwoDecimalString(Number(context.totals.shipping_total))
+        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.shipping_total))
         : undefined,
       shippingTaxAmount: context.totals?.shipping_tax_total
-        ? this.formatToTwoDecimalString(Number(context.totals.shipping_tax_total))
+        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.shipping_tax_total))
         : undefined,
-      lineItems: context.items?.map((item) => ({
-        kind: 'debit',
-        name: item.title,
-        quantity: item.quantity.toString(),
-        unitAmount: this.formatToTwoDecimalString(Number(item.unit_price)),
-        totalAmount: this.formatToTwoDecimalString(Number(item.total)),
-        discountAmount: this.formatToTwoDecimalString(Number(item.discount_total)),
-      })),
+      lineItems: lineItems && lineItems.length ? lineItems : undefined,
     };
     return transactionRequest;
   }
@@ -523,6 +578,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       context: _context,
       accountHolder: sessionData.account_holder,
       customer: input.context?.customer,
+      orderId: _context?.order_display_id ?? _context?.order_id,
     });
     try {
       const braintreeTransaction = await this.gateway.transaction.sale(braintreeTransactionCreateRequest);

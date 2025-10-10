@@ -1,6 +1,7 @@
 import {
   AbstractPaymentProvider,
   ContainerRegistrationKeys,
+  MathBN,
   MedusaError,
   Modules,
   Order,
@@ -51,6 +52,7 @@ import type { Transaction, TransactionNotification, TransactionStatus } from 'br
 import Braintree from 'braintree';
 import { z } from 'zod';
 import type { BraintreeOptions, CustomFields } from '../types';
+import { TransactionOrchestrator } from '@medusajs/framework/orchestration';
 
 export type BraintreeConstructorArgs = Record<string, unknown> & {
   logger: Logger;
@@ -272,31 +274,29 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const captureResult = await this.gateway.transaction.submitForSettlement(id, toPay);
 
         if (captureResult.success) {
-          const braintreeTransaction = await this.retrieveTransaction(transaction.id);
+          const _transaction = await this.retrieveTransaction(transaction.id);
 
-          const capturePaymentResult: CapturePaymentOutput = {
+          return {
             data: {
               ...input.data,
-              transaction: braintreeTransaction,
+              transaction: _transaction,
             },
           };
-          return capturePaymentResult;
         }
+
         throw new MedusaError(MedusaError.Types.NOT_FOUND, `No payments found for transaction ${transaction.id}`);
       }
       case 'settled':
       case 'settling':
       case 'submitted_for_settlement': {
-        const braintreeTransaction = await this.retrieveTransaction(transaction.id);
+        const _transaction = await this.retrieveTransaction(transaction.id);
 
-        const result: CapturePaymentOutput = {
+        return {
           data: {
             ...input.data,
-            transaction: braintreeTransaction,
+            transaction: _transaction,
           },
         };
-
-        return result;
       }
 
       default: {
@@ -309,13 +309,13 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     try {
       const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-      let braintreeTransaction = sessionData.transaction;
+      let transaction = sessionData.transaction;
 
       if (!sessionData.payment_method_nonce)
         throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Payment method nonce is required');
 
-      if (!braintreeTransaction)
-        braintreeTransaction = await this.createTransaction({
+      if (!transaction)
+        transaction = await this.createTransaction({
           input,
         });
 
@@ -323,42 +323,42 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         ...input,
         data: {
           ...input.data,
-          transaction: braintreeTransaction,
+          transaction,
         },
       };
 
       const status = await this.getPaymentStatus(paymentStatusRequest);
+
       const finalStatus = status.status === 'authorized' && this.options_.autoCapture ? 'captured' : status.status;
 
       return {
         data: {
           ...input.data,
-          transaction: braintreeTransaction,
+          transaction,
         },
         status: finalStatus,
       };
     } catch (error) {
-      this.logger.error(`Error authorizing payment: ${error.message}`, error);
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to authorize payment: ${error.message}`);
+      this.logger.error(`Error refunding transaction: ${error.message}`, error);
+      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to refund transaction`);
     }
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const braintreeTransaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
+    const transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
 
-    if (!braintreeTransaction) {
-      return {};
-    }
+    if (!transaction) return {};
 
     if (
-      braintreeTransaction.status === 'authorized' ||
-      braintreeTransaction.status === 'submitted_for_settlement' ||
-      (braintreeTransaction.status === 'settling' && braintreeTransaction.paymentInstrumentType === 'paypal_account')
+      transaction.status === 'authorized' ||
+      transaction.status === 'submitted_for_settlement' ||
+      (transaction.status === 'settling' && transaction.paymentInstrumentType === 'paypal_account')
     ) {
-      const updatedTransaction = await this.gateway.transaction.void(braintreeTransaction.id as string);
+      const updatedTransaction = await this.gateway.transaction.void(transaction.id as string);
+
       if (updatedTransaction) {
-        const updated = await this.retrieveTransaction(braintreeTransaction.id);
+        const updated = await this.retrieveTransaction(transaction.id);
         return {
           data: {
             ...input.data,
@@ -367,16 +367,13 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         };
       }
 
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `No payments found for transaction ${braintreeTransaction.id}`,
-      );
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, `No payments found for transaction ${transaction.id}`);
     }
 
-    throw new MedusaError(MedusaError.Types.NOT_FOUND, `Payment cannot be cancelled ${braintreeTransaction.id}`);
+    throw new MedusaError(MedusaError.Types.NOT_FOUND, `Payment cannot be cancelled ${transaction.id}`);
   }
 
-  private getBraintreeTransactionCreateRequestBody({
+  private getTransactionCreateRequestBody({
     accountHolder,
     customer,
     context,
@@ -480,14 +477,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return transactionRequest;
   }
 
-  private async retrieveTransaction(
-    braintreeTransactionId: string,
-    throwOnMissing: boolean = true,
-  ): Promise<Transaction> {
-    const transactionData = await this.gateway.transaction.find(braintreeTransactionId);
+  private async retrieveTransaction(id: string, throwOnMissing: boolean = true): Promise<Transaction> {
+    const transactionData = await this.gateway.transaction.find(id);
 
     if (!transactionData && throwOnMissing)
-      throw new MedusaError(MedusaError.Types.NOT_FOUND, `Braintree transaction not found: ${braintreeTransactionId}`);
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, `Braintree transaction not found: ${id}`);
 
     return transactionData;
   }
@@ -534,9 +528,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
+    this.logger.info(`Initiating payment for input: ${JSON.stringify(input)}`);
     const data = this.validateInitiatePaymentData(input.data ?? {});
 
-    let braintreeTransaction: Transaction | undefined;
+    let transaction: Transaction | undefined;
 
     const token = await this.getValidClientToken(input.context?.customer?.id, input.context?.account_holder);
 
@@ -547,7 +542,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     const dataToSave: BraintreePaymentSessionData = {
-      transaction: braintreeTransaction as Transaction,
+      transaction: transaction as Transaction,
       client_token: token,
       payment_method_nonce: data?.payment_method_nonce as string,
       amount: Number(input.amount),
@@ -572,7 +567,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const toPayDecimal = this.formatToTwoDecimalString(Number(sessionData.amount));
 
-    const braintreeTransactionCreateRequest = this.getBraintreeTransactionCreateRequestBody({
+    const transactionCreateRequest = this.getTransactionCreateRequestBody({
       amount: toPayDecimal,
       nonce: sessionData.payment_method_nonce as string,
       context: _context,
@@ -581,21 +576,21 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       orderId: _context?.order_display_id ?? _context?.order_id,
     });
     try {
-      const braintreeTransaction = await this.gateway.transaction.sale(braintreeTransactionCreateRequest);
+      const saleResponse = await this.gateway.transaction.sale(transactionCreateRequest);
 
-      if (!braintreeTransaction.success) {
+      if (!saleResponse.success) {
         throw new MedusaError(
           MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-          `Failed to create Braintree transaction: ${JSON.stringify(braintreeTransaction)}`,
+          `Failed to create Braintree transaction: ${JSON.stringify(saleResponse)}`,
         );
       }
 
       try {
-        return await this.retrieveTransaction(braintreeTransaction.transaction.id);
+        return await this.retrieveTransaction(saleResponse.transaction.id);
       } catch (error) {
         this.logger.error(`Error syncing payment session: ${error.message}`, error);
-        if (braintreeTransaction.transaction?.id) {
-          await this.gateway.transaction.void(braintreeTransaction.transaction.id);
+        if (saleResponse.transaction?.id) {
+          await this.gateway.transaction.void(saleResponse.transaction.id);
         }
         throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to sync payment session: ${error.message}`);
       }
@@ -607,15 +602,16 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const braintreeTransaction = sessionData.transaction;
+    const transaction = sessionData.transaction;
 
-    if (braintreeTransaction) {
+    if (transaction) {
       try {
         const result = await this.cancelPayment(input);
+
         return {
           data: {
             ...input.data,
-            braintreeTransaction: result.data?.braintreeTransaction,
+            transaction: result.data?.transaction,
           },
         };
       } catch (e) {
@@ -626,7 +622,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return {
         data: {
           ...input.data,
-          braintreeTransaction: braintreeTransaction,
+          transaction,
         },
       };
     }
@@ -688,52 +684,72 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
-    const refundAmount = Number(input.amount);
-    const refundAmountRounded = Number(this.formatToTwoDecimalString(refundAmount));
 
-    const braintreeTransaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
+    const refundAmountBN = MathBN.convert(input.amount, 2);
+    const refundAmount = refundAmountBN.toNumber();
 
-    const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(braintreeTransaction.status);
+    if (!refundAmount) throw new MedusaError(MedusaError.Types.INVALID_DATA, 'Refund amount is invalid');
+
+    const transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
+
+    const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
+
     if (shouldVoid) {
-      const cancelledTransaction = await this.gateway.transaction.void(braintreeTransaction.id);
+      const voidResponse = await this.gateway.transaction.void(transaction.id);
 
-      const result = await this.retrieveTransaction(braintreeTransaction.id);
+      if (!voidResponse.success)
+        throw new MedusaError(MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR, 'Failed to void transaction');
+
+      const voidedTransaction = voidResponse?.transaction;
 
       const refundResult: RefundPaymentOutput = {
         data: {
           ...input.data,
-          transaction: braintreeTransaction,
-          braintreeRefund: cancelledTransaction,
+          transaction: voidedTransaction,
         },
       };
 
       return refundResult;
     }
 
-    const shouldRefund = ['settled', 'settling'].includes(braintreeTransaction.status);
+    const shouldRefund = ['settled', 'settling'].includes(transaction.status);
 
     if (!shouldRefund) {
+      this.logger.error(
+        `Braintree transaction with ID ${transaction.id} cannot be refunded because it's in status ${transaction.status}`,
+      );
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Braintree transaction with ID ${braintreeTransaction.id} cannot be refunded`,
+        `Braintree transaction with ID ${transaction.id} cannot be refunded`,
       );
     }
 
-    if (braintreeTransaction.id) {
-      const refundAmountDecimal = this.formatToTwoDecimalString(refundAmountRounded);
+    if (transaction.id) {
+      const refundAmountDecimal = this.formatToTwoDecimalString(refundAmount);
       try {
-        const { transaction: refundTransaction } = await this.gateway.transaction.refund(
-          braintreeTransaction.id,
-          refundAmountDecimal,
+        this.logger.info(
+          `Refunding transaction: ${transaction.id} with amount: ${refundAmountDecimal} (created from ${refundAmount})`,
         );
 
-        const updatedTransaction = await this.retrieveTransaction(braintreeTransaction.id);
+        const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
+
+        console.log('>>>> refundResponse.message', refundResponse.message);
+        console.log('>>>> refundResponse.transaction', refundResponse.transaction);
+        console.log('>>>> refundResponse.success', refundResponse.success);
+        console.log('>>>> refundResponse.errors', refundResponse.errors);
+
+        if (!refundResponse.success)
+          throw new MedusaError(
+            MedusaError.Types.INVALID_DATA,
+            `Failed to create Braintree refund: ${refundResponse.message}`,
+          );
+
+        const updatedTransaction = await this.retrieveTransaction(transaction.id);
 
         const refundResult: RefundPaymentOutput = {
           data: {
             ...input.data,
-            braintreeTransaction: updatedTransaction,
-            braintreeRefund: refundTransaction,
+            transaction: updatedTransaction,
           },
         };
         return refundResult;
@@ -741,14 +757,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         this.logger.error(`Error creating Braintree refund: ${e.message} ${JSON.stringify(e)}`, e);
         throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to create Braintree refund: ${e.message}`);
       }
-    } else {
-      return {
-        data: {
-          ...input.data,
-          braintreeTransaction: braintreeTransaction,
-        },
-      };
     }
+
+    throw new MedusaError(MedusaError.Types.NOT_FOUND, `Braintree transaction with ID ${transaction.id} not found`);
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
@@ -763,7 +774,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return {
       data: {
         ...input.data,
-        braintreeTransaction: retrieved,
+        transaction: retrieved,
       },
     };
   }

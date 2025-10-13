@@ -107,13 +107,13 @@ const validateOptionalString = (value: unknown, fieldName: string): string | und
 };
 
 // Error handling utility that preserves full error context
-const handleBraintreeError = (error: unknown, operation: string, logger: Logger, context?: Record<string, unknown>): never => {
+const buildBraintreeError = (error: unknown, operation: string, logger: Logger, context?: Record<string, unknown>): MedusaError => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   
   // Preserve full error context in logging
   logger.error(`Braintree ${operation} failed: ${errorMessage}`, error instanceof Error ? error : undefined);
   
-  throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to ${operation}: ${errorMessage}`);
+  return new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to ${operation}: ${errorMessage}`);
 };
 
 class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
@@ -219,12 +219,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const num = Number.parseFloat(amount);
     const rounded = Math.round(num * 100) / 100;
     
+    if(Number.isNaN(rounded)) {
+      throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Invalid amount');
+    }
+
     // Use toFixed but handle any precision issues
     const fixed = rounded.toFixed(2);
     
     // Ensure it's exactly 2 decimal places
-    const parts = fixed.split('.');
-    return `${parts[0]}.${parts[1].padEnd(2, '0').substring(0, 2)}`;
+    return fixed;
   }
 
   private formatToTwoDecimalStringIfFinite(amount: unknown): string | undefined {
@@ -625,13 +628,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         if (saleResponse.transaction?.id) {
           await this.gateway.transaction.void(saleResponse.transaction.id);
         }
-        handleBraintreeError(error, 'sync payment session', this.logger, { transactionId: saleResponse.transaction?.id });
+       throw buildBraintreeError(error, 'sync payment session', this.logger, { transactionId: saleResponse.transaction?.id });
       }
     } catch (error) {
-      handleBraintreeError(error, 'create Braintree transaction', this.logger);
+      throw buildBraintreeError(error, 'create Braintree transaction', this.logger);
     }
-    // This line will never be reached due to handleBraintreeError throwing
-    throw new Error('Unreachable code');
   }
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
@@ -649,10 +650,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           },
         };
       } catch (e) {
-        handleBraintreeError(e, 'delete Braintree payment', this.logger);
+        throw buildBraintreeError(e, 'delete Braintree payment', this.logger);
       }
-      // This line will never be reached due to handleBraintreeError throwing
-      throw new Error('Unreachable code');
+      
     } else {
       return {
         data: {
@@ -726,12 +726,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     let shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
-    if(shouldVoid && this.gateway.config.environment ===  Braintree.Environment.Sandbox ) {
+    if(process.env.TEST_FORCE_SETTLED === 'true') {
+      shouldVoid = false;
       await this.gateway.testing.settle(transaction.id);
-      transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
-      shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status); 
+      transaction = await this.retrieveTransaction(transaction.id);
     }
-
+ 
     if (shouldVoid) {
       const voidResponse = await this.gateway.transaction.void(transaction.id);
 
@@ -787,7 +787,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         };
         return refundResult;
       } catch (e) {
-        handleBraintreeError(e, 'create Braintree refund', this.logger);
+        throw buildBraintreeError(e, 'create Braintree refund', this.logger);
       }
     }
 
@@ -863,10 +863,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         data: { ...updateResult.customer },
       };
     } catch (e) {
-      handleBraintreeError(e, 'update account holder', this.logger);
+      throw buildBraintreeError(e, 'update account holder', this.logger);
     }
-    // This line will never be reached due to handleBraintreeError throwing
-    throw new Error('Unreachable code');
   }
 
   async deleteAccountHolder(input: DeleteAccountHolderInput): Promise<DeleteAccountHolderOutput> {
@@ -888,10 +886,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         data: {},
       };
     } catch (e) {
-      handleBraintreeError(e, 'delete account holder', this.logger);
+      throw buildBraintreeError(e, 'delete account holder', this.logger);
     }
-    // This line will never be reached due to handleBraintreeError throwing
-    throw new Error('Unreachable code');
+   
   }
 
   async getWebhookActionAndData(webhookData: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {

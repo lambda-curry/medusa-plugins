@@ -104,9 +104,31 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreeImportPaymentSessionData;
   }
 
-  private formatToTwoDecimalString(amount: number): string {
-    const rounded = Math.round(Number(amount) * 100) / 100;
-    return rounded.toFixed(2);
+  private formatToTwoDecimalString(amount: number|string): string {
+    if (typeof amount !== 'string') {
+      amount = amount.toString();
+    }
+    
+    const num = Number.parseFloat(amount);
+    const rounded = Math.round(num * 100) / 100;
+    
+    if(Number.isNaN(rounded)) {
+      throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Invalid amount');
+    }
+
+    // Use toFixed but handle any precision issues
+    const fixed = rounded.toFixed(2);
+    
+    // Ensure it's exactly 2 decimal places
+    return fixed;
+  }
+
+
+  private truncate(value: unknown, max: number): string | undefined {
+    if (value === null || value === undefined) return undefined;
+    const str = String(value);
+    if (!str.length) return undefined;
+    return str.length > max ? str.slice(0, max) : str;
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {

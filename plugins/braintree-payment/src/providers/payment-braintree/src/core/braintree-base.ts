@@ -722,12 +722,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (!refundAmount) throw new MedusaError(MedusaError.Types.INVALID_DATA, 'Refund amount is invalid');
 
-    const transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
+    let transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
 
-    const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
+    let shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
-    if(shouldVoid) {
-      this.gateway.testing.settle(transaction.id);
+    if(shouldVoid && this.gateway.config.environment ===  Braintree.Environment.Sandbox ) {
+      await this.gateway.testing.settle(transaction.id);
+      transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
+      shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status); 
     }
 
     if (shouldVoid) {

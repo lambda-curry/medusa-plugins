@@ -9,6 +9,7 @@ import {
   PaymentSessionStatus,
   isDefined,
 } from '@medusajs/framework/utils';
+import { formatToTwoDecimalString } from '../../../../utils/format-amount';
 import type {
   AddressDTO,
   AuthorizePaymentInput,
@@ -52,7 +53,6 @@ import type { Transaction, TransactionNotification, TransactionStatus } from 'br
 import Braintree from 'braintree';
 import { z } from 'zod';
 import type { BraintreeOptions, CustomFields } from '../types';
-import { TransactionOrchestrator } from '@medusajs/framework/orchestration';
 
 export type BraintreeConstructorArgs = Record<string, unknown> & {
   logger: Logger;
@@ -107,7 +107,7 @@ const validateOptionalString = (value: unknown, fieldName: string): string | und
 };
 
 // Error handling utility that preserves full error context
-const buildBraintreeError = (error: unknown, operation: string, logger: Logger, context?: Record<string, unknown>): MedusaError => {
+export const buildBraintreeError = (error: unknown, operation: string, logger: Logger, context?: Record<string, unknown>): MedusaError => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   
   // Preserve full error context in logging
@@ -211,30 +211,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       });
   }
 
-  private formatToTwoDecimalString(amount: number|string): string {
-    if (typeof amount !== 'string') {
-      amount = amount.toString();
-    }
-    
-    const num = Number.parseFloat(amount);
-    const rounded = Math.round(num * 100) / 100;
-    
-    if(Number.isNaN(rounded)) {
-      throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Invalid amount');
-    }
-
-    // Use toFixed but handle any precision issues
-    const fixed = rounded.toFixed(2);
-    
-    // Ensure it's exactly 2 decimal places
-    return fixed;
-  }
-
   private formatToTwoDecimalStringIfFinite(amount: unknown): string | undefined {
     
     const n = Number(amount);
     if (!Number.isFinite(n)) return undefined;
-    return this.formatToTwoDecimalString(n);
+    return formatToTwoDecimalString(n);
   }
 
   private truncate(value: unknown, max: number): string | undefined {
@@ -377,8 +358,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         status: finalStatus,
       };
     } catch (error) {
-      this.logger.error(`Error capturing transaction: ${error.message}`, error);
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to capture transaction`);
+      this.logger.error(`Error authorizing transaction: ${error.message}`, error);
+      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to authorize transaction`);
     }
   }
 
@@ -466,7 +447,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const totalAmount = this.formatToTwoDecimalStringIfFinite(Number(item.total));
         const discount = Number(item.discount_total);
         const discountAmount =
-          Number.isFinite(discount) && discount > 0 ? this.formatToTwoDecimalString(discount) : undefined;
+          Number.isFinite(discount) && discount > 0 ? formatToTwoDecimalString(discount) : undefined;
 
         const li: Braintree.TransactionLineItem = {
           kind: 'debit',
@@ -602,7 +583,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const _context = input.context as ExtendedPaymentProviderContext;
 
-    const toPayDecimal = this.formatToTwoDecimalString(Number(sessionData.amount));
+    const toPayDecimal = formatToTwoDecimalString(Number(sessionData.amount));
 
     const transactionCreateRequest = this.getTransactionCreateRequestBody({
       amount: toPayDecimal,
@@ -763,7 +744,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     if (transaction.id) {
-      const refundAmountDecimal = this.formatToTwoDecimalString(refundAmount);
+      const refundAmountDecimal = formatToTwoDecimalString(refundAmount);
       try {
         this.logger.info(
           `Refunding transaction: ${transaction.id} with amount: ${refundAmountDecimal} (created from ${refundAmount})`,

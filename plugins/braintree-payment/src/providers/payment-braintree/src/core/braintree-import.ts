@@ -1,4 +1,13 @@
-import { AbstractPaymentProvider, MedusaError, PaymentActions, PaymentSessionStatus } from '@medusajs/framework/utils';
+import {
+  AbstractPaymentProvider,
+  ContainerRegistrationKeys,
+  MathBN,
+  MedusaError,
+  PaymentActions,
+  PaymentSessionStatus,
+} from '@medusajs/framework/utils';
+import { formatToTwoDecimalString } from '../../../../utils/format-amount';
+import { buildBraintreeError } from './braintree-base';
 import { z } from 'zod';
 import { BraintreeOptions, PaymentProviderKeys } from '../types';
 import type { BraintreeConstructorArgs } from './braintree-base';
@@ -28,6 +37,7 @@ import {
   CreateAccountHolderInput,
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
+  Logger,
 } from '@medusajs/types';
 
 export interface BraintreeImportInitiatePaymentData {
@@ -45,11 +55,13 @@ export interface BraintreeImportPaymentSessionData {
 class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
   static identifier = PaymentProviderKeys.IMPORTED;
   options: BraintreeOptions;
+  logger: Logger;
   private gateway: Braintree.BraintreeGateway;
 
   constructor(container: BraintreeConstructorArgs, options: BraintreeOptions) {
     super(container, options);
     this.options = options;
+    this.logger = container[ContainerRegistrationKeys.LOGGER];
     // Create a lightweight Braintree gateway for refund operations only
     const envKey = (this.options.environment || 'sandbox').toLowerCase();
     const envMap: Record<string, Braintree.Environment> = {
@@ -94,9 +106,12 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreeImportPaymentSessionData;
   }
 
-  private formatToTwoDecimalString(amount: number): string {
-    const rounded = Math.round(Number(amount) * 100) / 100;
-    return rounded.toFixed(2);
+
+  private truncate(value: unknown, max: number): string | undefined {
+    if (value === null || value === undefined) return undefined;
+    const str = String(value);
+    if (!str.length) return undefined;
+    return str.length > max ? str.slice(0, max) : str;
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
@@ -153,22 +168,27 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const session = this.parseSessionData(input.data ?? {});
 
-    const refundAmount = Number(input.amount);
-    const refundAmountRounded = Number(this.formatToTwoDecimalString(refundAmount));
-    const previouslyRefunded = Number(this.formatToTwoDecimalString(session.refundedTotal ?? 0));
+    const refundAmountBN = MathBN.convert(input.amount, 2);
+    const refundAmount = refundAmountBN.toNumber();
+
+    if (!refundAmount) throw new MedusaError(MedusaError.Types.INVALID_DATA, 'Refund amount is invalid');
+
+    const refundAmountRounded = Number(formatToTwoDecimalString(refundAmount));
+    const previouslyRefunded = Number(formatToTwoDecimalString(session.refundedTotal ?? 0));
 
     // If the order was imported as already refunded, simulate refund without hitting Braintree
     if (session.importedAsRefunded) {
       return {
         data: {
           ...session,
-          refundedTotal: Number(this.formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
+          refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
         },
       };
     }
 
     // Otherwise, perform a real refund/void against Braintree using the provided transaction id
     const transactionId = session.transactionId;
+
     if (!transactionId) {
       throw new MedusaError(
         MedusaError.Types.INVALID_ARGUMENT,
@@ -176,39 +196,66 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       );
     }
 
-    const braintreeTransaction = await this.gateway.transaction.find(transactionId);
+    const transaction = await this.gateway.transaction.find(transactionId);
 
-    const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(braintreeTransaction.status);
+    // Explicit guard to verify transaction and transaction.id exist
+    if (!transaction || !transaction.id) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_FOUND,
+        `Braintree transaction not found: ${transactionId}`
+      );
+    }
+
+    const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
+
     if (shouldVoid) {
-      const cancelledTransaction = await this.gateway.transaction.void(braintreeTransaction.id);
+      const cancelResponse = await this.gateway.transaction.void(transaction.id);
+
+      if (!cancelResponse.success) {
+        throw buildBraintreeError(
+          new Error(cancelResponse.message),
+          'void Braintree transaction',
+          this.logger,
+          { transactionId: transaction.id }
+        );
+      }
+
       return {
         data: {
           ...session,
-          braintreeRefund: cancelledTransaction,
-          refundedTotal: Number(this.formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
+          transaction: cancelResponse?.transaction,
+          refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
         },
       };
     }
 
-    const shouldRefund = ['settled', 'settling'].includes(braintreeTransaction.status);
+    const shouldRefund = ['settled', 'settling'].includes(transaction.status);
+
     if (!shouldRefund) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Braintree transaction with ID ${braintreeTransaction.id} cannot be refunded`,
+        `Braintree transaction with ID ${transaction.id} cannot be refunded`,
       );
     }
 
-    const refundAmountDecimal = this.formatToTwoDecimalString(refundAmountRounded);
-    const { transaction: refundTransaction } = await this.gateway.transaction.refund(
-      braintreeTransaction.id,
-      refundAmountDecimal,
-    );
+    const refundAmountDecimal = formatToTwoDecimalString(refundAmountRounded);
+
+    const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
+
+    if (!refundResponse.success) {
+      throw buildBraintreeError(
+        new Error(refundResponse.message),
+        'create Braintree refund',
+        this.logger,
+        { transactionId: transaction.id, refundAmount: refundAmountDecimal }
+      );
+    }
 
     return {
       data: {
         ...session,
-        braintreeRefund: refundTransaction,
-        refundedTotal: Number(this.formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
+        transaction: refundResponse.transaction,
+        refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
       },
     };
   }

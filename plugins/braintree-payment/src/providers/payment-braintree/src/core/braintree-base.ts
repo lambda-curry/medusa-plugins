@@ -533,6 +533,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const schema = z.object({
       paymentMethodNonce: z.string().optional(),
       payment_method_nonce: z.string().optional(),
+      cardDetails:z.object({
+        cardType: z.string().optional(),
+        lastFour: z.string().optional(),
+        lastTwo: z.string().optional(),
+        expirationMonth: z.string().optional(),
+        expirationYear: z.string().optional(),
+        cardholderName: z.string().optional(),
+    }).optional(),
     });
 
     const result = schema.safeParse(data);

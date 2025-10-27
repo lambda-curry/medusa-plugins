@@ -18,6 +18,7 @@ import type {
   CancelPaymentOutput,
   CapturePaymentInput,
   CapturePaymentOutput,
+  CartDTO,
   CartLineItemDTO,
   CreateAccountHolderInput,
   CreateAccountHolderOutput,
@@ -28,6 +29,7 @@ import type {
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
   ICacheService,
+  ICartModuleService,
   InitiatePaymentInput,
   InitiatePaymentOutput,
   Logger,
@@ -122,6 +124,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
   cache: ICacheService;
+  cartService: ICartModuleService;
 
   protected constructor(container: BraintreeConstructorArgs, options: BraintreeOptions) {
     super(container, options);
@@ -129,6 +132,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
     this.cache = container[Modules.CACHE];
+    this.cartService = container[Modules.CART] as ICartModuleService;
     this.init();
   }
 
@@ -392,7 +396,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     throw new MedusaError(MedusaError.Types.NOT_FOUND, `Payment cannot be cancelled ${transaction.id}`);
   }
 
-  private getTransactionCreateRequestBody({
+  private async getTransactionCreateRequestBody({
     accountHolder,
     customer,
     context,
@@ -406,7 +410,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     nonce: string;
     context: ExtendedPaymentProviderContext;
     orderId?: string;
-  }): Braintree.TransactionRequest {
+  }): Promise<Braintree.TransactionRequest> {
     // Enforce Braintree field limits to avoid validation errors.
     // - lineItems.name ≤ 35 chars (127 for PayPal; use 35 to be safe)
     // - orderId ≤ 255 (127 for PayPal; use 127 to be safe)
@@ -438,7 +442,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.shipping_address?.country_code),
         }
       : undefined;
-
+      let cart: CartDTO | undefined;
+      if(context.items?.[0]?.cart_id) {
+        cart = await this.cartService.retrieveCart(context.items?.[0]?.cart_id as string);
+          if (!cart) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Cart not found');
+          }
+        }
+      
     const lineItems = context.items
       ?.slice(0, 249)
       .map((item) => {
@@ -451,10 +462,18 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
         const li: Braintree.TransactionLineItem = {
           kind: 'debit',
-          name,
-          quantity: (item.quantity ?? 1).toString(),
-          unitAmount: unitAmount as string,
-          totalAmount: totalAmount as string,
+          name: name.substring(0, 127), // Max 127 characters
+          productCode: ((item.metadata?.productCode as string) ?? item.product_id).substring(0, 12), // Max 12 characters
+          commodityCode: ((item.metadata?.commodityCode as string) ?? "placeholder").substring(0, 12), // Max 12 characters
+          description: (item.product_description ?? "Healthcare").substring(0, 127), // Max 127 characters
+          url: `/${item.product_handle}`.substring(0, 255), // Max 255 characters
+          unitOfMeasure: ((cart?.currency_code as string)?.toUpperCase() ?? 'USD').substring(0, 12), // Max 12 characters
+          taxAmount: this.formatToTwoDecimalStringIfFinite(Number(item.tax_total)), // Must be decimal string
+          discountAmount: this.formatToTwoDecimalStringIfFinite(Number(item.discount_total)), // Must be decimal string
+          quantity: Math.max(1, Math.floor(Number(item.quantity) ?? 1)).toString(), // Must be positive integer
+          unitAmount: unitAmount as string, // Already formatted as decimal string
+          totalAmount: totalAmount as string, // Already formatted as decimal string
+          unitTaxAmount: this.formatToTwoDecimalStringIfFinite(Number(item.tax_total)), // Must be decimal string
         };
         if (discountAmount) li.discountAmount = discountAmount;
         return li;
@@ -533,6 +552,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const schema = z.object({
       paymentMethodNonce: z.string().optional(),
       payment_method_nonce: z.string().optional(),
+      cardDetails:z.object({
+        cardType: z.string().optional(),
+        lastFour: z.string().optional(),
+        lastTwo: z.string().optional(),
+        expirationMonth: z.string().optional(),
+        expirationYear: z.string().optional(),
+        cardholderName: z.string().optional(),
+    }).optional(),
     });
 
     const result = schema.safeParse(data);
@@ -585,7 +612,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const toPayDecimal = formatToTwoDecimalString(Number(sessionData.amount));
 
-    const transactionCreateRequest = this.getTransactionCreateRequestBody({
+    const transactionCreateRequest = await this.getTransactionCreateRequestBody({
       amount: toPayDecimal,
       nonce: validateString(sessionData.payment_method_nonce, 'Payment method nonce'),
       context: _context,

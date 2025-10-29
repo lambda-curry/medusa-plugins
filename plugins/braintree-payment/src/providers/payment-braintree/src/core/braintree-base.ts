@@ -62,6 +62,7 @@ export type BraintreeConstructorArgs = Record<string, unknown> & {
 };
 
 export interface ExtendedPaymentProviderContext extends PaymentProviderContext {
+  order_currency_code?: string;
   custom_fields?: Record<string, string>;
   order_id?: string;
   shipping_address?: AddressDTO;
@@ -124,7 +125,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
   cache: ICacheService;
-  cartService: ICartModuleService;
+  
 
   protected constructor(container: BraintreeConstructorArgs, options: BraintreeOptions) {
     super(container, options);
@@ -132,7 +133,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
     this.cache = container[Modules.CACHE];
-    this.cartService = container[Modules.CART] as ICartModuleService;
     this.init();
   }
 
@@ -443,12 +443,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         }
       : undefined;
       let cart: CartDTO | undefined;
-      if(context.items?.[0]?.cart_id) {
-        cart = await this.cartService.retrieveCart(context.items?.[0]?.cart_id as string);
-          if (!cart) {
-            throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Cart not found');
-          }
-        }
       
     const lineItems = context.items
       ?.slice(0, 249)
@@ -459,7 +453,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const discount = Number(item.discount_total);
         const discountAmount =
           Number.isFinite(discount) && discount > 0 ? formatToTwoDecimalString(discount) : undefined;
-
+        const currencyCode = context.order_currency_code ?? 'USD';
         const li: Braintree.TransactionLineItem = {
           kind: 'debit',
           name: name.substring(0, 127), // Max 127 characters
@@ -467,7 +461,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           commodityCode: ((item.metadata?.commodityCode as string) ?? "placeholder").substring(0, 12), // Max 12 characters
           description: (item.product_description ?? "Healthcare").substring(0, 127), // Max 127 characters
           url: `/${item.product_handle}`.substring(0, 255), // Max 255 characters
-          unitOfMeasure: ((cart?.currency_code as string)?.toUpperCase() ?? 'USD').substring(0, 12), // Max 12 characters
+          unitOfMeasure: (currencyCode as string)?.toUpperCase().substring(0, 12), // Max 12 characters
           taxAmount: this.formatToTwoDecimalStringIfFinite(Number(item.tax_total)), // Must be decimal string
           discountAmount: this.formatToTwoDecimalStringIfFinite(Number(item.discount_total)), // Must be decimal string
           quantity: Math.max(1, Math.floor(Number(item.quantity) ?? 1)).toString(), // Must be positive integer

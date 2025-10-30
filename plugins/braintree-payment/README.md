@@ -61,6 +61,7 @@ dependencies:[Modules.CACHE]
   id: 'braintree',
   options: {
     environment: process.env.BRAINTREE_ENVIRONMENT || (process.env.NODE_ENV !== 'production' ? 'sandbox' : 'production'),
+    defaultCurrencyCode: "USD",
     merchantId: process.env.BRAINTREE_MERCHANT_ID,
     publicKey: process.env.BRAINTREE_PUBLIC_KEY,
     privateKey: process.env.BRAINTREE_PRIVATE_KEY,
@@ -75,6 +76,7 @@ dependencies:[Modules.CACHE]
 #### Options
 
 - **merchantId**: Your Braintree Merchant ID.
+- **defaultCurrencyCode**: An optional field to indicate default currency code
 - **publicKey**: Your Braintree Public Key.
 - **privateKey**: Your Braintree Private Key.
 - **webhookSecret**: Secret for validating Braintree webhooks.

@@ -4,12 +4,10 @@ import {
   MathBN,
   MedusaError,
   Modules,
-  Order,
   PaymentActions,
   PaymentSessionStatus,
   isDefined,
 } from '@medusajs/framework/utils';
-import { formatToTwoDecimalString } from '../../../../utils/format-amount';
 import type {
   AddressDTO,
   AuthorizePaymentInput,
@@ -18,7 +16,6 @@ import type {
   CancelPaymentOutput,
   CapturePaymentInput,
   CapturePaymentOutput,
-  CartDTO,
   CartLineItemDTO,
   CreateAccountHolderInput,
   CreateAccountHolderOutput,
@@ -29,12 +26,9 @@ import type {
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
   ICacheService,
-  ICartModuleService,
   InitiatePaymentInput,
   InitiatePaymentOutput,
   Logger,
-  MedusaContainer,
-  OrderDTO,
   PaymentAccountHolderDTO,
   PaymentCustomerDTO,
   PaymentProviderContext,
@@ -54,6 +48,7 @@ import type {
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
 import { z } from 'zod';
+import { formatToTwoDecimalString } from '../../../../utils/format-amount';
 import type { BraintreeOptions, CustomFields } from '../types';
 
 export type BraintreeConstructorArgs = Record<string, unknown> & {
@@ -62,6 +57,7 @@ export type BraintreeConstructorArgs = Record<string, unknown> & {
 };
 
 export interface ExtendedPaymentProviderContext extends PaymentProviderContext {
+  order_currency_code?: string;
   custom_fields?: Record<string, string>;
   order_id?: string;
   shipping_address?: AddressDTO;
@@ -109,12 +105,17 @@ const validateOptionalString = (value: unknown, fieldName: string): string | und
 };
 
 // Error handling utility that preserves full error context
-export const buildBraintreeError = (error: unknown, operation: string, logger: Logger, context?: Record<string, unknown>): MedusaError => {
+export const buildBraintreeError = (
+  error: unknown,
+  operation: string,
+  logger: Logger,
+  context?: Record<string, unknown>,
+): MedusaError => {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  
+
   // Preserve full error context in logging
   logger.error(`Braintree ${operation} failed: ${errorMessage}`, error instanceof Error ? error : undefined);
-  
+
   return new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to ${operation}: ${errorMessage}`);
 };
 
@@ -124,7 +125,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   protected gateway: Braintree.BraintreeGateway;
   logger: Logger;
   cache: ICacheService;
-  cartService: ICartModuleService;
 
   protected constructor(container: BraintreeConstructorArgs, options: BraintreeOptions) {
     super(container, options);
@@ -132,7 +132,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
     this.cache = container[Modules.CACHE];
-    this.cartService = container[Modules.CART] as ICartModuleService;
     this.init();
   }
 
@@ -216,7 +215,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   private formatToTwoDecimalStringIfFinite(amount: unknown): string | undefined {
-    
     const n = Number(amount);
     if (!Number.isFinite(n)) return undefined;
     return formatToTwoDecimalString(n);
@@ -442,14 +440,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.shipping_address?.country_code),
         }
       : undefined;
-      let cart: CartDTO | undefined;
-      if(context.items?.[0]?.cart_id) {
-        cart = await this.cartService.retrieveCart(context.items?.[0]?.cart_id as string);
-          if (!cart) {
-            throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Cart not found');
-          }
-        }
-      
+
     const lineItems = context.items
       ?.slice(0, 249)
       .map((item) => {
@@ -459,15 +450,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const discount = Number(item.discount_total);
         const discountAmount =
           Number.isFinite(discount) && discount > 0 ? formatToTwoDecimalString(discount) : undefined;
-
+        const currencyCode = context.order_currency_code ?? this.options_.defaultCurrencyCode ?? 'USD';
         const li: Braintree.TransactionLineItem = {
           kind: 'debit',
           name: name.substring(0, 127), // Max 127 characters
           productCode: ((item.metadata?.productCode as string) ?? item.product_id).substring(0, 12), // Max 12 characters
-          commodityCode: ((item.metadata?.commodityCode as string) ?? "placeholder").substring(0, 12), // Max 12 characters
-          description: (item.product_description ?? "Healthcare").substring(0, 127), // Max 127 characters
+          commodityCode: ((item.metadata?.commodityCode as string) ?? 'placeholder').substring(0, 12), // Max 12 characters
+          description: (item.product_description ?? 'Healthcare').substring(0, 127), // Max 127 characters
           url: `/${item.product_handle}`.substring(0, 255), // Max 255 characters
-          unitOfMeasure: ((cart?.currency_code as string)?.toUpperCase() ?? 'USD').substring(0, 12), // Max 12 characters
+          unitOfMeasure: (currencyCode as string)?.toUpperCase().substring(0, 12), // Max 12 characters
           taxAmount: this.formatToTwoDecimalStringIfFinite(Number(item.tax_total)), // Must be decimal string
           discountAmount: this.formatToTwoDecimalStringIfFinite(Number(item.discount_total)), // Must be decimal string
           quantity: Math.max(1, Math.floor(Number(item.quantity) ?? 1)).toString(), // Must be positive integer
@@ -552,14 +543,16 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const schema = z.object({
       paymentMethodNonce: z.string().optional(),
       payment_method_nonce: z.string().optional(),
-      cardDetails:z.object({
-        cardType: z.string().optional(),
-        lastFour: z.string().optional(),
-        lastTwo: z.string().optional(),
-        expirationMonth: z.string().optional(),
-        expirationYear: z.string().optional(),
-        cardholderName: z.string().optional(),
-    }).optional(),
+      cardDetails: z
+        .object({
+          cardType: z.string().optional(),
+          lastFour: z.string().optional(),
+          lastTwo: z.string().optional(),
+          expirationMonth: z.string().optional(),
+          expirationYear: z.string().optional(),
+          cardholderName: z.string().optional(),
+        })
+        .optional(),
     });
 
     const result = schema.safeParse(data);
@@ -636,7 +629,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         if (saleResponse.transaction?.id) {
           await this.gateway.transaction.void(saleResponse.transaction.id);
         }
-       throw buildBraintreeError(error, 'sync payment session', this.logger, { transactionId: saleResponse.transaction?.id });
+        throw buildBraintreeError(error, 'sync payment session', this.logger, {
+          transactionId: saleResponse.transaction?.id,
+        });
       }
     } catch (error) {
       throw buildBraintreeError(error, 'create Braintree transaction', this.logger);
@@ -660,7 +655,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       } catch (e) {
         throw buildBraintreeError(e, 'delete Braintree payment', this.logger);
       }
-      
     } else {
       return {
         data: {
@@ -734,12 +728,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     let shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
-    if(process.env.TEST_FORCE_SETTLED === 'true') {
+    if (process.env.TEST_FORCE_SETTLED === 'true') {
       shouldVoid = false;
       await this.gateway.testing.settle(transaction.id);
       transaction = await this.retrieveTransaction(transaction.id);
     }
- 
+
     if (shouldVoid) {
       const voidResponse = await this.gateway.transaction.void(transaction.id);
 
@@ -784,8 +778,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             MedusaError.Types.INVALID_DATA,
             `Failed to create Braintree refund: ${refundResponse.message}`,
           );
-
-       
 
         const refundResult: RefundPaymentOutput = {
           data: {
@@ -896,7 +888,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     } catch (e) {
       throw buildBraintreeError(e, 'delete account holder', this.logger);
     }
-   
   }
 
   async getWebhookActionAndData(webhookData: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {

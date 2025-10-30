@@ -1,6 +1,7 @@
 import type Braintree from 'braintree';
 
 export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
+  defaultCurrencyCode?: string;
   environment: 'production' | 'sandbox' | 'development' | 'qa';
   merchantId: string;
   publicKey: string;

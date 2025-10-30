@@ -1,7 +1,7 @@
-import type { BraintreeOptions } from '../types';
-import { PaymentProviderKeys } from '../types';
 import { BraintreeConstructorArgs } from '../core/braintree-base';
 import BraintreeImport from '../core/braintree-import';
+import type { BraintreeOptions } from '../types';
+import { PaymentProviderKeys } from '../types';
 
 class BraintreeImportService extends BraintreeImport {
   static identifier = PaymentProviderKeys.IMPORTED;

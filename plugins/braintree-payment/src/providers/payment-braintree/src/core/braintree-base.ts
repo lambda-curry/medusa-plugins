@@ -442,7 +442,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.shipping_address?.country_code),
         }
       : undefined;
-      let cart: CartDTO | undefined;
+    
       
     const lineItems = context.items
       ?.slice(0, 249)
@@ -453,7 +453,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         const discount = Number(item.discount_total);
         const discountAmount =
           Number.isFinite(discount) && discount > 0 ? formatToTwoDecimalString(discount) : undefined;
-        const currencyCode = context.order_currency_code ?? 'USD';
+        const currencyCode = context.order_currency_code ?? this.options_.defaultCurrencyCode ?? 'USD';
         const li: Braintree.TransactionLineItem = {
           kind: 'debit',
           name: name.substring(0, 127), // Max 127 characters

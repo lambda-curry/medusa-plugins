@@ -35,6 +35,7 @@ Add the following configuration to the `payment` section of your `medusa-config.
   id: 'braintree',
   options: {
     environment: process.env.NODE_ENV !== 'production' ? 'sandbox' : 'production',
+    defaultCurrencyCode:"USD"
     merchantId: process.env.BRAINTREE_MERCHANT_ID,
     publicKey: process.env.BRAINTREE_PUBLIC_KEY,
     privateKey: process.env.BRAINTREE_PRIVATE_KEY,
@@ -56,6 +57,7 @@ Add the following configuration to the `payment` section of your `medusa-config.
 - **enable3DSecure**: Enable 3D Secure authentication (`true` or `false`).
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
+- **defaultCurrencyCode**: The default currency to use. This is optional
 - **customFields**: Array of Braintree custom field API names permitted to be forwarded from `data.custom_fields`. If empty or omitted, no user-provided custom fields are sent.
 
 ## Features

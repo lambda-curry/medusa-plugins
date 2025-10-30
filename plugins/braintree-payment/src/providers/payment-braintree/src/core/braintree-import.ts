@@ -6,39 +6,39 @@ import {
   PaymentActions,
   PaymentSessionStatus,
 } from '@medusajs/framework/utils';
-import { formatToTwoDecimalString } from '../../../../utils/format-amount';
-import { buildBraintreeError } from './braintree-base';
-import { z } from 'zod';
-import { BraintreeOptions, PaymentProviderKeys } from '../types';
-import type { BraintreeConstructorArgs } from './braintree-base';
-import Braintree from 'braintree';
 import {
-  CapturePaymentInput,
-  CapturePaymentOutput,
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
   CancelPaymentInput,
   CancelPaymentOutput,
-  InitiatePaymentInput,
-  InitiatePaymentOutput,
+  CapturePaymentInput,
+  CapturePaymentOutput,
+  CreateAccountHolderInput,
+  CreateAccountHolderOutput,
+  DeleteAccountHolderInput,
+  DeleteAccountHolderOutput,
   DeletePaymentInput,
   DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
+  InitiatePaymentInput,
+  InitiatePaymentOutput,
+  Logger,
+  ProviderWebhookPayload,
   RefundPaymentInput,
   RefundPaymentOutput,
   RetrievePaymentInput,
   RetrievePaymentOutput,
   UpdatePaymentInput,
   UpdatePaymentOutput,
-  ProviderWebhookPayload,
   WebhookActionResult,
-  DeleteAccountHolderOutput,
-  CreateAccountHolderInput,
-  CreateAccountHolderOutput,
-  DeleteAccountHolderInput,
-  Logger,
 } from '@medusajs/types';
+import Braintree from 'braintree';
+import { z } from 'zod';
+import { formatToTwoDecimalString } from '../../../../utils/format-amount';
+import { BraintreeOptions, PaymentProviderKeys } from '../types';
+import { buildBraintreeError } from './braintree-base';
+import type { BraintreeConstructorArgs } from './braintree-base';
 
 export interface BraintreeImportInitiatePaymentData {
   transactionId?: string;
@@ -105,7 +105,6 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     }
     return result.data as BraintreeImportPaymentSessionData;
   }
-
 
   private truncate(value: unknown, max: number): string | undefined {
     if (value === null || value === undefined) return undefined;
@@ -200,10 +199,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
     // Explicit guard to verify transaction and transaction.id exist
     if (!transaction || !transaction.id) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Braintree transaction not found: ${transactionId}`
-      );
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, `Braintree transaction not found: ${transactionId}`);
     }
 
     const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
@@ -212,12 +208,9 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       const cancelResponse = await this.gateway.transaction.void(transaction.id);
 
       if (!cancelResponse.success) {
-        throw buildBraintreeError(
-          new Error(cancelResponse.message),
-          'void Braintree transaction',
-          this.logger,
-          { transactionId: transaction.id }
-        );
+        throw buildBraintreeError(new Error(cancelResponse.message), 'void Braintree transaction', this.logger, {
+          transactionId: transaction.id,
+        });
       }
 
       return {
@@ -243,12 +236,10 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
 
     if (!refundResponse.success) {
-      throw buildBraintreeError(
-        new Error(refundResponse.message),
-        'create Braintree refund',
-        this.logger,
-        { transactionId: transaction.id, refundAmount: refundAmountDecimal }
-      );
+      throw buildBraintreeError(new Error(refundResponse.message), 'create Braintree refund', this.logger, {
+        transactionId: transaction.id,
+        refundAmount: refundAmountDecimal,
+      });
     }
 
     return {

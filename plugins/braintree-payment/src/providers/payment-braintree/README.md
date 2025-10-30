@@ -35,7 +35,7 @@ Add the following configuration to the `payment` section of your `medusa-config.
   id: 'braintree',
   options: {
     environment: process.env.NODE_ENV !== 'production' ? 'sandbox' : 'production',
-    defaultCurrencyCode:"USD"
+    defaultCurrencyCode: "USD",
     merchantId: process.env.BRAINTREE_MERCHANT_ID,
     publicKey: process.env.BRAINTREE_PUBLIC_KEY,
     privateKey: process.env.BRAINTREE_PRIVATE_KEY,

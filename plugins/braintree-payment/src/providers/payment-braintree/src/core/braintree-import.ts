@@ -33,7 +33,7 @@ import {
   UpdatePaymentOutput,
   WebhookActionResult,
 } from '@medusajs/types';
-import Braintree from 'braintree';
+import Braintree, { Transaction } from 'braintree';
 import { z } from 'zod';
 import { formatToTwoDecimalString } from '../../../../utils/format-amount';
 import { BraintreeOptions, PaymentProviderKeys } from '../types';
@@ -47,6 +47,7 @@ export interface BraintreeImportInitiatePaymentData {
 
 export interface BraintreeImportPaymentSessionData {
   transactionId?: string;
+  transaction?: Transaction | undefined;
   refundedTotal?: number;
   importedAsRefunded?: boolean;
   status: PaymentSessionStatus;
@@ -106,13 +107,6 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreeImportPaymentSessionData;
   }
 
-  private truncate(value: unknown, max: number): string | undefined {
-    if (value === null || value === undefined) return undefined;
-    const str = String(value);
-    if (!str.length) return undefined;
-    return str.length > max ? str.slice(0, max) : str;
-  }
-
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     const data = this.parseInitiateData(input.data ?? {});
     const id = input.context?.idempotency_key ?? crypto.randomUUID();
@@ -123,6 +117,16 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       importedAsRefunded: data.importedAsRefunded ?? false,
       status: PaymentSessionStatus.PENDING,
     };
+
+    if (session.transactionId) {
+      try {
+        session.transaction = await this.gateway.transaction.find(session.transactionId);
+      } catch (error) {
+        this.logger.warn(
+          `Could not find transaction with ID ${session.transactionId} in Braintree for imported payment`,
+        );
+      }
+    }
 
     return { id, data: { ...session } };
   }

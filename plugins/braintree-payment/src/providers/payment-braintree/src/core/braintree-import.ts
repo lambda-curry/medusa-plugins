@@ -96,6 +96,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
   private parseSessionData(data: Record<string, unknown>): BraintreeImportPaymentSessionData {
     const schema = z.object({
       transactionId: z.string().optional(),
+      transaction: z.any().optional(),
       refundedTotal: z.number().optional().default(0),
       importedAsRefunded: z.boolean().optional().default(false),
       status: z.nativeEnum(PaymentSessionStatus).optional().default(PaymentSessionStatus.PENDING),

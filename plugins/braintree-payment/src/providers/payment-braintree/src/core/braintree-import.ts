@@ -200,6 +200,47 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       );
     }
 
+    // If allowRefundOnRefunded is enabled, wrap the refund attempt in a try-catch
+    // to gracefully handle already-refunded transactions
+    if (this.options.allowRefundOnRefunded) {
+      try {
+        return await this.performRefundOrVoid(session, transactionId, refundAmountRounded, previouslyRefunded);
+      } catch (error) {
+        // Check if the error is due to the transaction already being refunded
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isAlreadyRefunded =
+          errorMessage.includes('already') ||
+          errorMessage.includes('refunded') ||
+          errorMessage.includes('cannot be refunded');
+
+        if (isAlreadyRefunded) {
+          this.logger.warn(
+            `Transaction ${transactionId} appears to be already refunded in Braintree. Recording refund locally only.`,
+          );
+          // Just update the local database without hitting Braintree again
+          return {
+            data: {
+              ...session,
+              refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
+            },
+          };
+        }
+
+        // If it's a different error, re-throw it
+        throw error;
+      }
+    }
+
+    // Default behavior: perform refund/void without catching errors
+    return await this.performRefundOrVoid(session, transactionId, refundAmountRounded, previouslyRefunded);
+  }
+
+  private async performRefundOrVoid(
+    session: BraintreeImportPaymentSessionData,
+    transactionId: string,
+    refundAmountRounded: number,
+    previouslyRefunded: number,
+  ): Promise<RefundPaymentOutput> {
     const transaction = await this.gateway.transaction.find(transactionId);
 
     // Explicit guard to verify transaction and transaction.id exist

@@ -89,4 +89,84 @@ describe('BraintreeImportService', () => {
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t3', '2.75');
     expect((res.data as any).refundedTotal).toBe(4.0);
   });
+
+  it('gracefully handles already-refunded transactions when allowRefundOnRefunded is enabled', async () => {
+    const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() } as any;
+    const cache = { get: jest.fn(), set: jest.fn() } as any;
+
+    const container: BraintreeConstructorArgs = { logger, cache };
+
+    const options = {
+      environment: 'sandbox' as const,
+      merchantId: 'merchant',
+      publicKey: 'public',
+      privateKey: 'private',
+      enable3DSecure: false,
+      savePaymentMethod: false,
+      webhookSecret: 'whsec',
+      autoCapture: true,
+      allowRefundOnRefunded: true, // Enable graceful handling
+    } as any;
+
+    const service = new BraintreeImportService(container, options);
+
+    const gateway = {
+      transaction: {
+        find: jest.fn(),
+        void: jest.fn(),
+        refund: jest.fn(),
+      },
+    } as any;
+
+    (service as any).gateway = gateway;
+
+    const session = { transactionId: 't4', importedAsRefunded: false, refundedTotal: 0, status: 'captured' } as any;
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't4', status: 'settled' });
+    gateway.transaction.refund.mockRejectedValueOnce(new Error('Transaction has already been refunded'));
+
+    const res = await service.refundPayment({ amount: 10, data: session } as any);
+
+    // Should not throw error, but log warning and update locally
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('already refunded in Braintree'),
+    );
+    expect((res.data as any).refundedTotal).toBe(10);
+  });
+
+  it('throws error on non-refund-related errors even with allowRefundOnRefunded enabled', async () => {
+    const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() } as any;
+    const cache = { get: jest.fn(), set: jest.fn() } as any;
+
+    const container: BraintreeConstructorArgs = { logger, cache };
+
+    const options = {
+      environment: 'sandbox' as const,
+      merchantId: 'merchant',
+      publicKey: 'public',
+      privateKey: 'private',
+      enable3DSecure: false,
+      savePaymentMethod: false,
+      webhookSecret: 'whsec',
+      autoCapture: true,
+      allowRefundOnRefunded: true,
+    } as any;
+
+    const service = new BraintreeImportService(container, options);
+
+    const gateway = {
+      transaction: {
+        find: jest.fn(),
+        void: jest.fn(),
+        refund: jest.fn(),
+      },
+    } as any;
+
+    (service as any).gateway = gateway;
+
+    const session = { transactionId: 't5', importedAsRefunded: false, refundedTotal: 0, status: 'captured' } as any;
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't5', status: 'settled' });
+    gateway.transaction.refund.mockRejectedValueOnce(new Error('Network timeout'));
+
+    await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toThrow('Network timeout');
+  });
 });

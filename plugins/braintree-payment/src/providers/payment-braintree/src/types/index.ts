@@ -10,6 +10,7 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   savePaymentMethod: boolean;
   webhookSecret: string;
   autoCapture: boolean;
+  allowRefundOnRefunded?: boolean;
 }
 
 export const PaymentProviderKeys = {

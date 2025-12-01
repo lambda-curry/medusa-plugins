@@ -9,14 +9,12 @@ import {
   isDefined,
 } from '@medusajs/framework/utils';
 import type {
-  AddressDTO,
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
   CancelPaymentInput,
   CancelPaymentOutput,
   CapturePaymentInput,
   CapturePaymentOutput,
-  CartLineItemDTO,
   CreateAccountHolderInput,
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
@@ -56,25 +54,19 @@ export type BraintreeConstructorArgs = Record<string, unknown> & {
   cache: ICacheService;
 };
 
-export interface ExtendedPaymentProviderContext extends PaymentProviderContext {
-  order_currency_code?: string;
-  custom_fields?: Record<string, string>;
-  order_id?: string;
-  shipping_address?: AddressDTO;
-  billing_address?: AddressDTO;
-  order_display_id?: string;
-  totals?: {
-    tax_total: number;
-    shipping_total: number;
-    shipping_tax_total: number;
-    discount_total: number;
-    discount_tax_total: number;
-    item_total: number;
-    item_tax_total: number;
-    item_subtotal: number;
-  };
-  items?: Array<CartLineItemDTO>;
-}
+export type BraintreeTransactionContext = PaymentProviderContext &
+  Pick<
+    Braintree.TransactionRequest,
+    | 'billing'
+    | 'shipping'
+    | 'customFields'
+    | 'orderId'
+    | 'lineItems'
+    | 'shippingAmount'
+    | 'taxAmount'
+    | 'shippingTaxAmount'
+    | 'discountAmount'
+  >;
 
 export interface BraintreePaymentSessionData {
   client_token: string;
@@ -214,34 +206,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       });
   }
 
-  private formatToTwoDecimalStringIfFinite(amount: unknown): string | undefined {
-    const n = Number(amount);
-    if (!Number.isFinite(n)) return undefined;
-    return formatToTwoDecimalString(n);
-  }
-
-  private truncate(value: unknown, max: number): string | undefined {
-    if (value === null || value === undefined) return undefined;
-    const str = String(value);
-    if (!str.length) return undefined;
-    return str.length > max ? str.slice(0, max) : str;
-  }
-
-  private sanitizeCountryCodeAlpha2(value: unknown): string | undefined {
-    const v = typeof value === 'string' ? value.trim().toUpperCase() : undefined;
-    return v ? this.truncate(v, 2) : undefined;
-  }
-
-  private sanitizeCustomFields(fields?: Record<string, unknown>): Record<string, string> | undefined {
-    if (!fields) return undefined;
-    const out: Record<string, string> = {};
-    for (const [k, v] of Object.entries(fields)) {
-      const val = this.truncate(v, 255);
-      if (val !== undefined) out[k] = val;
-    }
-    return Object.keys(out).length ? out : undefined;
-  }
-
   static validateOptions(options: BraintreeOptions): void {
     const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
 
@@ -265,8 +229,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     options.enable3DSecure = options.enable3DSecure ?? false;
     options.savePaymentMethod = options.savePaymentMethod ?? false;
     options.autoCapture = options.autoCapture ?? false;
+    options.allowRefundOnRefunded = options.allowRefundOnRefunded ?? false;
 
-    const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture'];
+    const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture', 'allowRefundOnRefunded'];
     for (const field of booleanFields) {
       if (isDefined(options[field]) && typeof options[field] !== 'boolean') {
         throw new MedusaError(
@@ -400,80 +365,27 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     context,
     amount,
     nonce,
-    orderId,
   }: {
     accountHolder?: PaymentAccountHolderDTO;
     customer?: PaymentCustomerDTO;
     amount: string;
     nonce: string;
-    context: ExtendedPaymentProviderContext;
-    orderId?: string;
+    context?: BraintreeTransactionContext;
   }): Promise<Braintree.TransactionRequest> {
-    // Enforce Braintree field limits to avoid validation errors.
-    // - lineItems.name ≤ 35 chars (127 for PayPal; use 35 to be safe)
-    // - orderId ≤ 255 (127 for PayPal; use 127 to be safe)
-    // - address components ≤ 255 chars
-    // - custom field values ≤ 255 chars
-
-    const safeOrderId = this.truncate(orderId ?? context.order_display_id ?? context.order_id, 127);
-
-    const billing = context.billing_address
-      ? {
-          company: this.truncate(context.billing_address?.company, 255),
-          streetAddress: this.truncate(context.billing_address?.address_1, 255),
-          extendedAddress: this.truncate(context.billing_address?.address_2, 255),
-          locality: this.truncate(context.billing_address?.city, 255),
-          region: this.truncate(context.billing_address?.province, 255),
-          postalCode: context.billing_address?.postal_code ?? '',
-          countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.billing_address?.country_code),
-        }
-      : undefined;
-
-    const shipping = context.shipping_address
-      ? {
-          company: this.truncate(context.shipping_address?.company, 255),
-          streetAddress: this.truncate(context.shipping_address?.address_1, 255),
-          extendedAddress: this.truncate(context.shipping_address?.address_2, 255),
-          locality: this.truncate(context.shipping_address?.city, 255),
-          region: this.truncate(context.shipping_address?.province, 255),
-          postalCode: context.shipping_address?.postal_code ?? '',
-          countryCodeAlpha2: this.sanitizeCountryCodeAlpha2(context.shipping_address?.country_code),
-        }
-      : undefined;
-
-    const lineItems = context.items
-      ?.slice(0, 249)
-      .map((item) => {
-        const name = this.truncate(item.title, 35) || 'Item';
-        const unitAmount = this.formatToTwoDecimalStringIfFinite(Number(item.unit_price));
-        const totalAmount = this.formatToTwoDecimalStringIfFinite(Number(item.total));
-        const discount = Number(item.discount_total);
-        const discountAmount =
-          Number.isFinite(discount) && discount > 0 ? formatToTwoDecimalString(discount) : undefined;
-        const currencyCode = context.order_currency_code ?? this.options_.defaultCurrencyCode ?? 'USD';
-        const li: Braintree.TransactionLineItem = {
-          kind: 'debit',
-          name: name.substring(0, 127), // Max 127 characters
-          productCode: ((item.metadata?.productCode as string) ?? item.product_id).substring(0, 12), // Max 12 characters
-          commodityCode: ((item.metadata?.commodityCode as string) ?? 'placeholder').substring(0, 12), // Max 12 characters
-          description: (item.product_description ?? 'Healthcare').substring(0, 127), // Max 127 characters
-          url: `/${item.product_handle}`.substring(0, 255), // Max 255 characters
-          unitOfMeasure: (currencyCode as string)?.toUpperCase().substring(0, 12), // Max 12 characters
-          taxAmount: this.formatToTwoDecimalStringIfFinite(Number(item.tax_total)), // Must be decimal string
-          discountAmount: this.formatToTwoDecimalStringIfFinite(Number(item.discount_total)), // Must be decimal string
-          quantity: Math.max(1, Math.floor(Number(item.quantity) ?? 1)).toString(), // Must be positive integer
-          unitAmount: unitAmount as string, // Already formatted as decimal string
-          totalAmount: totalAmount as string, // Already formatted as decimal string
-          unitTaxAmount: this.formatToTwoDecimalStringIfFinite(Number(item.tax_total)), // Must be decimal string
-        };
-        if (discountAmount) li.discountAmount = discountAmount;
-        return li;
-      })
-      .filter((li) => !!li.unitAmount && !!li.totalAmount);
+    const braintreeContext: Partial<Braintree.TransactionRequest> = {
+      shipping: context?.shipping,
+      billing: context?.billing,
+      customFields: context?.customFields,
+      orderId: context?.orderId,
+      lineItems: context?.lineItems,
+      shippingAmount: context?.shippingAmount,
+      taxAmount: context?.taxAmount,
+      shippingTaxAmount: context?.shippingTaxAmount,
+      discountAmount: context?.discountAmount,
+    };
 
     const transactionRequest: Braintree.TransactionRequest = {
       amount: amount.toString(),
-      billing,
       customerId: (accountHolder?.data?.id as string) ?? undefined,
       options: {
         submitForSettlement: this.options_.autoCapture,
@@ -485,24 +397,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
             }
           : undefined,
       },
-      shipping,
       paymentMethodNonce: nonce,
-      customFields: this.sanitizeCustomFields(context.custom_fields),
-      orderId: safeOrderId || undefined,
-      discountAmount: context.totals?.discount_total
-        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.discount_total))
-        : undefined,
-      taxAmount: context.totals?.tax_total
-        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.tax_total))
-        : undefined,
-      shippingAmount: context.totals?.shipping_total
-        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.shipping_total))
-        : undefined,
-      shippingTaxAmount: context.totals?.shipping_tax_total
-        ? this.formatToTwoDecimalStringIfFinite(Number(context.totals.shipping_tax_total))
-        : undefined,
-      lineItems: lineItems && lineItems.length ? lineItems : undefined,
+      ...braintreeContext,
     };
+
     return transactionRequest;
   }
 
@@ -601,7 +499,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }): Promise<Transaction> {
     const sessionData = await this.parsePaymentSessionData(input.data ?? {});
 
-    const _context = input.context as ExtendedPaymentProviderContext;
+    const _context = input.context as BraintreeTransactionContext | undefined;
 
     const toPayDecimal = formatToTwoDecimalString(Number(sessionData.amount));
 
@@ -611,7 +509,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       context: _context,
       accountHolder: sessionData.account_holder,
       customer: input.context?.customer,
-      orderId: _context?.order_display_id ?? _context?.order_id,
     });
     try {
       const saleResponse = await this.gateway.transaction.sale(transactionCreateRequest);
@@ -736,16 +633,22 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (shouldVoid) {
       const voidResponse = await this.gateway.transaction.void(transaction.id);
+      const voidSucceeded = voidResponse.success ?? false;
 
-      if (!voidResponse.success)
+      if (!voidSucceeded)
         throw new MedusaError(MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR, 'Failed to void transaction');
 
-      const voidedTransaction = voidResponse?.transaction;
+      const voidedTransaction = voidResponse?.transaction ?? (await this.retrieveTransaction(transaction.id));
 
       const refundResult: RefundPaymentOutput = {
         data: {
           ...input.data,
           transaction: voidedTransaction,
+          braintreeRefund: {
+            success: true,
+            transactionId: voidedTransaction?.id,
+            type: 'void',
+          },
         },
       };
 
@@ -773,16 +676,20 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
         const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
 
-        if (!refundResponse.success)
+        const refundSucceeded = refundResponse.success ?? false;
+        if (!refundSucceeded)
           throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
             `Failed to create Braintree refund: ${refundResponse.message}`,
           );
 
+        const refundTransaction = refundResponse.transaction ?? (await this.retrieveTransaction(transaction.id));
+
         const refundResult: RefundPaymentOutput = {
           data: {
             ...input.data,
-            transaction: refundResponse.transaction,
+            transaction: refundTransaction,
+            braintreeRefund: refundTransaction,
           },
         };
         return refundResult;

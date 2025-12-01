@@ -252,8 +252,9 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (shouldVoid) {
       const cancelResponse = await this.gateway.transaction.void(transaction.id);
+      const isCancelSuccessful = cancelResponse.success ?? false;
 
-      if (!cancelResponse.success) {
+      if (!isCancelSuccessful) {
         throw buildBraintreeError(new Error(cancelResponse.message), 'void Braintree transaction', this.logger, {
           transactionId: transaction.id,
         });
@@ -262,7 +263,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       return {
         data: {
           ...session,
-          transaction: cancelResponse?.transaction,
+          transaction: cancelResponse?.transaction ?? transaction,
           refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
         },
       };
@@ -280,8 +281,9 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const refundAmountDecimal = formatToTwoDecimalString(refundAmountRounded);
 
     const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
+    const isRefundSuccessful = refundResponse.success ?? false;
 
-    if (!refundResponse.success) {
+    if (!isRefundSuccessful) {
       throw buildBraintreeError(new Error(refundResponse.message), 'create Braintree refund', this.logger, {
         transactionId: transaction.id,
         refundAmount: refundAmountDecimal,
@@ -291,7 +293,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     return {
       data: {
         ...session,
-        transaction: refundResponse.transaction,
+        transaction: refundResponse.transaction ?? transaction,
         refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
       },
     };

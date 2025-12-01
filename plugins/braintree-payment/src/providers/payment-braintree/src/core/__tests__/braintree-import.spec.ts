@@ -49,10 +49,11 @@ describe('BraintreeImportService', () => {
       context: { idempotency_key: 'idem' },
     } as any);
     expect(init.id).toBeDefined();
+    expect(gateway.transaction.find).toHaveBeenCalledTimes(1);
+    expect(gateway.transaction.find).toHaveBeenCalledWith('t1');
 
     const auth = await service.authorizePayment({ data: init.data } as any);
     expect(auth.status).toBe('authorized');
-    expect(gateway.transaction.find).not.toHaveBeenCalled();
 
     const cap = await service.capturePayment({ data: auth.data } as any);
     expect((cap.data as any).status).toBe('captured');
@@ -83,7 +84,7 @@ describe('BraintreeImportService', () => {
     const { service, gateway } = buildService();
     const session = { transactionId: 't3', importedAsRefunded: false, refundedTotal: 1.25, status: 'captured' } as any;
     gateway.transaction.find.mockResolvedValueOnce({ id: 't3', status: 'settled' });
-    gateway.transaction.refund.mockResolvedValueOnce({ transaction: { id: 'r3' } });
+    gateway.transaction.refund.mockResolvedValueOnce({ success: true, transaction: { id: 'r3' } });
 
     const res = await service.refundPayment({ amount: 2.75, data: session } as any);
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t3', '2.75');
@@ -127,9 +128,7 @@ describe('BraintreeImportService', () => {
     const res = await service.refundPayment({ amount: 10, data: session } as any);
 
     // Should not throw error, but log warning and update locally
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('already refunded in Braintree'),
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('already refunded in Braintree'));
     expect((res.data as any).refundedTotal).toBe(10);
   });
 

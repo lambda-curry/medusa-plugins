@@ -6,39 +6,39 @@ import {
   PaymentActions,
   PaymentSessionStatus,
 } from '@medusajs/framework/utils';
-import { formatToTwoDecimalString } from '../../../../utils/format-amount';
-import { buildBraintreeError } from './braintree-base';
-import { z } from 'zod';
-import { BraintreeOptions, PaymentProviderKeys } from '../types';
-import type { BraintreeConstructorArgs } from './braintree-base';
-import Braintree from 'braintree';
 import {
-  CapturePaymentInput,
-  CapturePaymentOutput,
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
   CancelPaymentInput,
   CancelPaymentOutput,
-  InitiatePaymentInput,
-  InitiatePaymentOutput,
+  CapturePaymentInput,
+  CapturePaymentOutput,
+  CreateAccountHolderInput,
+  CreateAccountHolderOutput,
+  DeleteAccountHolderInput,
+  DeleteAccountHolderOutput,
   DeletePaymentInput,
   DeletePaymentOutput,
   GetPaymentStatusInput,
   GetPaymentStatusOutput,
+  InitiatePaymentInput,
+  InitiatePaymentOutput,
+  Logger,
+  ProviderWebhookPayload,
   RefundPaymentInput,
   RefundPaymentOutput,
   RetrievePaymentInput,
   RetrievePaymentOutput,
   UpdatePaymentInput,
   UpdatePaymentOutput,
-  ProviderWebhookPayload,
   WebhookActionResult,
-  DeleteAccountHolderOutput,
-  CreateAccountHolderInput,
-  CreateAccountHolderOutput,
-  DeleteAccountHolderInput,
-  Logger,
 } from '@medusajs/types';
+import Braintree, { Transaction } from 'braintree';
+import { z } from 'zod';
+import { formatToTwoDecimalString } from '../../../../utils/format-amount';
+import { BraintreeOptions, PaymentProviderKeys } from '../types';
+import { buildBraintreeError } from './braintree-base';
+import type { BraintreeConstructorArgs } from './braintree-base';
 
 export interface BraintreeImportInitiatePaymentData {
   transactionId?: string;
@@ -47,6 +47,7 @@ export interface BraintreeImportInitiatePaymentData {
 
 export interface BraintreeImportPaymentSessionData {
   transactionId?: string;
+  transaction?: Transaction | undefined;
   refundedTotal?: number;
   importedAsRefunded?: boolean;
   status: PaymentSessionStatus;
@@ -95,6 +96,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
   private parseSessionData(data: Record<string, unknown>): BraintreeImportPaymentSessionData {
     const schema = z.object({
       transactionId: z.string().optional(),
+      transaction: z.any().optional(),
       refundedTotal: z.number().optional().default(0),
       importedAsRefunded: z.boolean().optional().default(false),
       status: z.nativeEnum(PaymentSessionStatus).optional().default(PaymentSessionStatus.PENDING),
@@ -104,14 +106,6 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, result.error.message);
     }
     return result.data as BraintreeImportPaymentSessionData;
-  }
-
-
-  private truncate(value: unknown, max: number): string | undefined {
-    if (value === null || value === undefined) return undefined;
-    const str = String(value);
-    if (!str.length) return undefined;
-    return str.length > max ? str.slice(0, max) : str;
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
@@ -124,6 +118,16 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       importedAsRefunded: data.importedAsRefunded ?? false,
       status: PaymentSessionStatus.PENDING,
     };
+
+    if (session.transactionId) {
+      try {
+        session.transaction = await this.gateway.transaction.find(session.transactionId);
+      } catch (error) {
+        this.logger.warn(
+          `Could not find transaction with ID ${session.transactionId} in Braintree for imported payment`,
+        );
+      }
+    }
 
     return { id, data: { ...session } };
   }
@@ -196,34 +200,70 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       );
     }
 
+    // If allowRefundOnRefunded is enabled, wrap the refund attempt in a try-catch
+    // to gracefully handle already-refunded transactions
+    if (this.options.allowRefundOnRefunded) {
+      try {
+        return await this.performRefundOrVoid(session, transactionId, refundAmountRounded, previouslyRefunded);
+      } catch (error) {
+        // Check if the error is due to the transaction already being refunded
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isAlreadyRefunded =
+          errorMessage.includes('already') ||
+          errorMessage.includes('refunded') ||
+          errorMessage.includes('cannot be refunded');
+
+        if (isAlreadyRefunded) {
+          this.logger.warn(
+            `Transaction ${transactionId} appears to be already refunded in Braintree. Recording refund locally only.`,
+          );
+          // Just update the local database without hitting Braintree again
+          return {
+            data: {
+              ...session,
+              refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
+            },
+          };
+        }
+
+        // If it's a different error, re-throw it
+        throw error;
+      }
+    }
+
+    // Default behavior: perform refund/void without catching errors
+    return await this.performRefundOrVoid(session, transactionId, refundAmountRounded, previouslyRefunded);
+  }
+
+  private async performRefundOrVoid(
+    session: BraintreeImportPaymentSessionData,
+    transactionId: string,
+    refundAmountRounded: number,
+    previouslyRefunded: number,
+  ): Promise<RefundPaymentOutput> {
     const transaction = await this.gateway.transaction.find(transactionId);
 
     // Explicit guard to verify transaction and transaction.id exist
     if (!transaction || !transaction.id) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Braintree transaction not found: ${transactionId}`
-      );
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, `Braintree transaction not found: ${transactionId}`);
     }
 
     const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
     if (shouldVoid) {
       const cancelResponse = await this.gateway.transaction.void(transaction.id);
+      const isCancelSuccessful = cancelResponse.success ?? false;
 
-      if (!cancelResponse.success) {
-        throw buildBraintreeError(
-          new Error(cancelResponse.message),
-          'void Braintree transaction',
-          this.logger,
-          { transactionId: transaction.id }
-        );
+      if (!isCancelSuccessful) {
+        throw buildBraintreeError(new Error(cancelResponse.message), 'void Braintree transaction', this.logger, {
+          transactionId: transaction.id,
+        });
       }
 
       return {
         data: {
           ...session,
-          transaction: cancelResponse?.transaction,
+          transaction: cancelResponse?.transaction ?? transaction,
           refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
         },
       };
@@ -241,20 +281,19 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const refundAmountDecimal = formatToTwoDecimalString(refundAmountRounded);
 
     const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
+    const isRefundSuccessful = refundResponse.success ?? false;
 
-    if (!refundResponse.success) {
-      throw buildBraintreeError(
-        new Error(refundResponse.message),
-        'create Braintree refund',
-        this.logger,
-        { transactionId: transaction.id, refundAmount: refundAmountDecimal }
-      );
+    if (!isRefundSuccessful) {
+      throw buildBraintreeError(new Error(refundResponse.message), 'create Braintree refund', this.logger, {
+        transactionId: transaction.id,
+        refundAmount: refundAmountDecimal,
+      });
     }
 
     return {
       data: {
         ...session,
-        transaction: refundResponse.transaction,
+        transaction: refundResponse.transaction ?? transaction,
         refundedTotal: Number(formatToTwoDecimalString(previouslyRefunded + refundAmountRounded)),
       },
     };

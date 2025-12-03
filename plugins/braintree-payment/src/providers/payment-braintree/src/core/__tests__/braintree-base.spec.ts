@@ -1,4 +1,4 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import BraintreeProviderService from '../../services/braintree-provider';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 
@@ -193,7 +193,7 @@ describe('BraintreeProviderService core behaviors', () => {
     gateway.transaction.find
       .mockResolvedValueOnce({ id: 't2', status: 'settling' })
       .mockResolvedValueOnce({ id: 't2', status: 'settling' });
-    gateway.transaction.refund.mockResolvedValueOnce({ transaction: { id: 'r2' } });
+    gateway.transaction.refund.mockResolvedValueOnce({ success: true, transaction: { id: 'r2' } });
 
     const result = await service.refundPayment(input);
 
@@ -238,7 +238,7 @@ describe('BraintreeProviderService core behaviors', () => {
     gateway.transaction.find
       .mockResolvedValueOnce({ id: 't2', status: 'settled' }) // retrieveTransaction
       .mockResolvedValueOnce({ id: 't2', status: 'settled' }); // updated after refund
-    gateway.transaction.refund.mockResolvedValueOnce({ transaction: { id: 'r1' } });
+    gateway.transaction.refund.mockResolvedValueOnce({ success: true, transaction: { id: 'r1' } });
 
     const result = await service.refundPayment(input);
 

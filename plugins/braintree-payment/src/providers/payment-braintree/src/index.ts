@@ -1,5 +1,5 @@
 import { ModuleProvider, Modules } from '@medusajs/framework/utils';
-import { BraintreeProviderService, BraintreeImportService } from './services';
+import { BraintreeImportService, BraintreeProviderService } from './services';
 
 const services = [BraintreeProviderService, BraintreeImportService];
 

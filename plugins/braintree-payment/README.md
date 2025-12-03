@@ -61,6 +61,7 @@ dependencies:[Modules.CACHE]
   id: 'braintree',
   options: {
     environment: process.env.BRAINTREE_ENVIRONMENT || (process.env.NODE_ENV !== 'production' ? 'sandbox' : 'production'),
+    defaultCurrencyCode: "USD",
     merchantId: process.env.BRAINTREE_MERCHANT_ID,
     publicKey: process.env.BRAINTREE_PUBLIC_KEY,
     privateKey: process.env.BRAINTREE_PRIVATE_KEY,
@@ -75,16 +76,19 @@ dependencies:[Modules.CACHE]
 #### Options
 
 - **merchantId**: Your Braintree Merchant ID.
+- **defaultCurrencyCode**: An optional field to indicate default currency code
 - **publicKey**: Your Braintree Public Key.
 - **privateKey**: Your Braintree Private Key.
 - **webhookSecret**: Secret for validating Braintree webhooks.
 - **enable3DSecure**: Enable 3D Secure authentication (`true` or `false`).
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
+- **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
+> - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
 
 ### 3D Secure Setup
 
@@ -160,4 +164,4 @@ Implementation detail: the provider passes `context.custom_fields` directly to B
 
 This plugin is licensed under the [MIT License](LICENSE).
 
-For more information, visit the [Braintree Documentation](https://developer.paypal.com/braintree/docs).  
+For more information, visit the [Braintree Documentation](https://developer.paypal.com/braintree/docs).

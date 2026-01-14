@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-payment-braintree",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Braintree plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -38,13 +38,13 @@
     "lambdacurry"
   ],
   "devDependencies": {
-    "@medusajs/admin-sdk": "^2.8.2",
-    "@medusajs/cli": "^2.8.2",
-    "@medusajs/framework": "^2.8.2",
-    "@medusajs/icons": "^2.8.2",
-    "@medusajs/medusa": "^2.8.2",
-    "@medusajs/test-utils": "^2.8.2",
-    "@medusajs/ui": "^4.0.3",
+    "@medusajs/admin-sdk": "^2.12.5",
+    "@medusajs/cli": "^2.12.5",
+    "@medusajs/framework": "^2.12.5",
+    "@medusajs/icons": "^2.12.5",
+    "@medusajs/medusa": "^2.12.5",
+    "@medusajs/test-utils": "^2.12.5",
+    "@medusajs/ui": "^4.0.21",
     "@swc/core": "1.5.7",
     "@types/braintree": "^3.3.14",
     "@types/jest": "^29.5.12",
@@ -62,13 +62,13 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "^2.8.2",
-    "@medusajs/cli": "^2.8.2",
-    "@medusajs/framework": "^2.8.2",
-    "@medusajs/icons": "^2.8.2",
-    "@medusajs/medusa": "2.8.2",
-    "@medusajs/test-utils": "^2.8.2",
-    "@medusajs/ui": "^4.0.3",
+    "@medusajs/admin-sdk": "^2.12.5",
+    "@medusajs/cli": "^2.12.5",
+    "@medusajs/framework": "^2.12.5",
+    "@medusajs/icons": "^2.12.5",
+    "@medusajs/medusa": "2.12.5",
+    "@medusajs/test-utils": "^2.12.5",
+    "@medusajs/ui": "^4.0.21",
     "jsonwebtoken": "^9.0.2"
   },
   "engines": {

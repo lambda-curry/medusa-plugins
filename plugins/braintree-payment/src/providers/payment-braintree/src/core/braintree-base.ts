@@ -91,11 +91,6 @@ const validateString = (value: unknown, fieldName: string): string => {
   return value;
 };
 
-const validateOptionalString = (value: unknown, fieldName: string): string | undefined => {
-  if (value === undefined || value === null) return undefined;
-  return validateString(value, fieldName);
-};
-
 // Error handling utility that preserves full error context
 export const buildBraintreeError = (
   error: unknown,
@@ -204,34 +199,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         publicKey: this.options_.publicKey!,
         privateKey: this.options_.privateKey!,
       });
-  }
-
-  private formatToTwoDecimalStringIfFinite(amount: unknown): string | undefined {
-    const n = Number(amount);
-    if (!Number.isFinite(n)) return undefined;
-    return formatToTwoDecimalString(n);
-  }
-
-  private truncate(value: unknown, max: number): string | undefined {
-    if (value === null || value === undefined) return undefined;
-    const str = String(value);
-    if (!str.length) return undefined;
-    return str.length > max ? str.slice(0, max) : str;
-  }
-
-  private sanitizeCountryCodeAlpha2(value: unknown): string | undefined {
-    const v = typeof value === 'string' ? value.trim().toUpperCase() : undefined;
-    return v ? this.truncate(v, 2) : undefined;
-  }
-
-  private sanitizeCustomFields(fields?: Record<string, unknown>): Record<string, string> | undefined {
-    if (!fields) return undefined;
-    const out: Record<string, string> = {};
-    for (const [k, v] of Object.entries(fields)) {
-      const val = this.truncate(v, 255);
-      if (val !== undefined) out[k] = val;
-    }
-    return Object.keys(out).length ? out : undefined;
   }
 
   static validateOptions(options: BraintreeOptions): void {

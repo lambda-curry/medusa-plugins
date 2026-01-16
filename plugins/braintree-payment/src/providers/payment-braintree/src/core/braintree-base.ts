@@ -91,11 +91,6 @@ const validateString = (value: unknown, fieldName: string): string => {
   return value;
 };
 
-const validateOptionalString = (value: unknown, fieldName: string): string | undefined => {
-  if (value === undefined || value === null) return undefined;
-  return validateString(value, fieldName);
-};
-
 // Error handling utility that preserves full error context
 export const buildBraintreeError = (
   error: unknown,
@@ -300,10 +295,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       if (!sessionData.payment_method_nonce)
         throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, 'Payment method nonce is required');
 
-      if (!transaction)
+      if (!transaction) {
         transaction = await this.createTransaction({
           input,
         });
+      }
 
       const paymentStatusRequest: GetPaymentStatusInput = {
         ...input,
@@ -326,7 +322,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       };
     } catch (error) {
       this.logger.error(`Error authorizing transaction: ${error.message}`, error);
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to authorize transaction`);
+      throw new MedusaError(MedusaError.Types.INVALID_DATA, error.message ?? 'Unknown error');
     }
   }
 
@@ -516,7 +512,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       if (!saleResponse.success) {
         throw new MedusaError(
           MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-          `Failed to create Braintree transaction: ${JSON.stringify(saleResponse)}`,
+          saleResponse.transaction?.gatewayRejectionReason ?? 'Unknown error',
         );
       }
 

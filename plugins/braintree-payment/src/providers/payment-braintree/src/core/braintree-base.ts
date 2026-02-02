@@ -822,7 +822,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async createAccountHolder(input: CreateAccountHolderInput): Promise<CreateAccountHolderOutput> {
-    this.logDebug('createAccountHolder', { customerEmail: input.context.customer?.email });
+    this.logDebug('createAccountHolder', { customerId: input.context.customer?.id });
     const customer = await this.createBraintreeCustomer(input.context.customer);
 
     return {

@@ -962,7 +962,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (!customerResult.success) {
       this.logErrorDetail('createBraintreeCustomer', new Error(JSON.stringify(customerResult.errors)), {
-        email: customer.email,
+        customerId: customer.id,
         errors: customerResult.errors,
       });
       throw new MedusaError(

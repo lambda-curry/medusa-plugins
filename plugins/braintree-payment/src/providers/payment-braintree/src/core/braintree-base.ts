@@ -45,9 +45,11 @@ import type {
 } from '@medusajs/types';
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
+import http from 'http';
+import https from 'https';
 import { z } from 'zod';
 import { formatToTwoDecimalString } from '../../../../utils/format-amount';
-import type { BraintreeOptions, CustomFields } from '../types';
+import type { BraintreeOptions, CustomFields, HttpAgentConfig } from '../types';
 
 export type BraintreeConstructorArgs = Record<string, unknown> & {
   logger: Logger;
@@ -181,6 +183,54 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreePaymentSessionData;
   }
 
+  private createHttpAgent(): http.Agent | https.Agent | undefined {
+    // Backward compatibility: if customHttpAgent is directly provided, use it
+    if (this.options_.customHttpAgent) {
+      return this.options_.customHttpAgent;
+    }
+
+    // If proxy URL is provided, try to create a proxy agent
+    if (this.options_.proxyUrl) {
+      try {
+        // Try to use https-proxy-agent (most common for HTTPS proxies)
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { HttpsProxyAgent } = require('https-proxy-agent');
+
+        // Create proxy agent with URL string
+        // Proxy URL format: http://[username:password@]proxy.example.com:8080
+        return new HttpsProxyAgent(this.options_.proxyUrl);
+      } catch (error) {
+        this.logger.warn(
+          'https-proxy-agent package not found. Install it with: npm install https-proxy-agent. Falling back to regular agent.',
+        );
+        // Fall through to create regular agent if proxy agent creation fails
+      }
+    }
+
+    // If httpAgent config is provided, create a regular HTTPS agent
+    if (this.options_.httpAgent) {
+      const agentOptions: https.AgentOptions = {
+        keepAlive: this.options_.httpAgent.keepAlive ?? true,
+        keepAliveMsecs: this.options_.httpAgent.keepAliveMsecs ?? 1000,
+        maxSockets: this.options_.httpAgent.maxSockets,
+        maxFreeSockets: this.options_.httpAgent.maxFreeSockets,
+        timeout: this.options_.httpAgent.timeout,
+        rejectUnauthorized: this.options_.httpAgent.rejectUnauthorized ?? true,
+      };
+
+      // Remove undefined values
+      Object.keys(agentOptions).forEach((key) => {
+        if (agentOptions[key as keyof https.AgentOptions] === undefined) {
+          delete agentOptions[key as keyof https.AgentOptions];
+        }
+      });
+
+      return new https.Agent(agentOptions);
+    }
+
+    return undefined;
+  }
+
   init(): void {
     const envKey = (this.options_.environment || 'sandbox').toLowerCase();
     const envMap: Record<string, Braintree.Environment> = {
@@ -191,14 +241,22 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     };
     const environment = envMap[envKey] ?? Braintree.Environment.Sandbox;
 
-    this.gateway =
-      this.gateway ||
-      new Braintree.BraintreeGateway({
-        environment,
-        merchantId: this.options_.merchantId!,
-        publicKey: this.options_.publicKey!,
-        privateKey: this.options_.privateKey!,
-      });
+    const gatewayConfig: Braintree.GatewayConfig = {
+      environment,
+      merchantId: this.options_.merchantId!,
+      publicKey: this.options_.publicKey!,
+      privateKey: this.options_.privateKey!,
+    };
+
+    // Create and add HTTP agent if configured
+    // Using 'as any' because TypeScript definitions don't include customHttpAgent,
+    // but the runtime Braintree library supports it
+    const httpAgent = this.createHttpAgent();
+    if (httpAgent) {
+      (gatewayConfig as any).customHttpAgent = httpAgent;
+    }
+
+    this.gateway = this.gateway || new Braintree.BraintreeGateway(gatewayConfig);
   }
 
   static validateOptions(options: BraintreeOptions): void {

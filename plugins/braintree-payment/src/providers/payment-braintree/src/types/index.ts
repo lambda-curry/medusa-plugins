@@ -1,4 +1,15 @@
 import type Braintree from 'braintree';
+import type { Agent } from 'http';
+import type { Agent as HttpsAgent } from 'https';
+
+export interface HttpAgentConfig {
+  keepAlive?: boolean;
+  keepAliveMsecs?: number;
+  maxSockets?: number;
+  maxFreeSockets?: number;
+  timeout?: number;
+  rejectUnauthorized?: boolean;
+}
 
 export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   defaultCurrencyCode?: string;
@@ -11,6 +22,9 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   webhookSecret: string;
   autoCapture: boolean;
   allowRefundOnRefunded?: boolean;
+  httpAgent?: HttpAgentConfig;
+  proxyUrl?: string;
+  customHttpAgent?: Agent | HttpsAgent;
 }
 
 export const PaymentProviderKeys = {

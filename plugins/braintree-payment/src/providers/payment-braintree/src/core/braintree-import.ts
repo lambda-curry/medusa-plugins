@@ -79,6 +79,24 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       publicKey: this.options.publicKey!,
       privateKey: this.options.privateKey!,
     });
+
+    if (this.options.logging) {
+      this.logger.info(`[Braintree Import] Gateway initialized (environment: ${envKey})`);
+    }
+  }
+
+  private logDebug(message: string, context?: Record<string, unknown>): void {
+    if (this.options.logging) {
+      const msg = context ? `${message} ${JSON.stringify(context)}` : message;
+      this.logger.info(`[Braintree Import] ${msg}`);
+    }
+  }
+
+  private logErrorDetail(operation: string, error: unknown, context?: Record<string, unknown>): void {
+    if (!this.options.logging) return;
+    const msg = error instanceof Error ? error.message : String(error);
+    const ctx = context ? ` ${JSON.stringify(context)}` : '';
+    this.logger.info(`[Braintree Import] ERROR ${operation}: ${msg}${ctx}`);
   }
 
   private parseInitiateData(data: Record<string, unknown>): BraintreeImportInitiatePaymentData {
@@ -111,6 +129,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     const data = this.parseInitiateData(input.data ?? {});
     const id = input.context?.idempotency_key ?? crypto.randomUUID();
+    this.logDebug('initiatePayment (import)', { transactionId: data.transactionId, id });
 
     const session: BraintreeImportPaymentSessionData = {
       transactionId: data.transactionId,
@@ -123,6 +142,9 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       try {
         session.transaction = await this.gateway.transaction.find(session.transactionId);
       } catch (error) {
+        this.logErrorDetail('initiatePayment (transaction.find)', error, {
+          transactionId: session.transactionId,
+        });
         this.logger.warn(
           `Could not find transaction with ID ${session.transactionId} in Braintree for imported payment`,
         );
@@ -134,6 +156,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
     const session = this.parseSessionData(input.data ?? {});
+    this.logDebug('getPaymentStatus (import)', { status: session.status });
     return { status: session.status };
   }
 
@@ -143,6 +166,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     const session = this.parseSessionData(input.data ?? {});
+    this.logDebug('authorizePayment (import)', { transactionId: session.transactionId });
     const updated: BraintreeImportPaymentSessionData = { ...session, status: PaymentSessionStatus.AUTHORIZED };
     return { data: { ...updated }, status: PaymentSessionStatus.AUTHORIZED };
   }
@@ -171,6 +195,11 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const session = this.parseSessionData(input.data ?? {});
+    this.logDebug('refundPayment (import)', {
+      transactionId: session.transactionId,
+      amount: input.amount,
+      refundedTotal: session.refundedTotal,
+    });
 
     const refundAmountBN = MathBN.convert(input.amount, 2);
     const refundAmount = refundAmountBN.toNumber();
@@ -206,6 +235,11 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       try {
         return await this.performRefundOrVoid(session, transactionId, refundAmountRounded, previouslyRefunded);
       } catch (error) {
+        this.logErrorDetail('refundPayment (import)', error, {
+          transactionId,
+          refundAmount: refundAmountRounded,
+          previouslyRefunded,
+        });
         // Check if the error is due to the transaction already being refunded
         const errorMessage = error instanceof Error ? error.message : String(error);
         const isAlreadyRefunded =
@@ -255,6 +289,10 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
       const isCancelSuccessful = cancelResponse.success ?? false;
 
       if (!isCancelSuccessful) {
+        this.logErrorDetail('refundPayment (void)', new Error(cancelResponse.message), {
+          transactionId: transaction.id,
+          message: cancelResponse.message,
+        });
         throw buildBraintreeError(new Error(cancelResponse.message), 'void Braintree transaction', this.logger, {
           transactionId: transaction.id,
         });
@@ -284,6 +322,11 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const isRefundSuccessful = refundResponse.success ?? false;
 
     if (!isRefundSuccessful) {
+      this.logErrorDetail('refundPayment (refund)', new Error(refundResponse.message), {
+        transactionId: transaction.id,
+        refundAmount: refundAmountDecimal,
+        message: refundResponse.message,
+      });
       throw buildBraintreeError(new Error(refundResponse.message), 'create Braintree refund', this.logger, {
         transactionId: transaction.id,
         refundAmount: refundAmountDecimal,
@@ -301,6 +344,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     const session = this.parseSessionData(input.data ?? {});
+    this.logDebug('cancelPayment (import)', { transactionId: session.transactionId });
     return { data: { ...session, status: PaymentSessionStatus.CANCELED } };
   }
 

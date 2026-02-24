@@ -69,6 +69,7 @@ dependencies:[Modules.CACHE]
     enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
     savePaymentMethod: true, // Save payment methods for future use
     autoCapture: true,        // Automatically capture payments
+    logging: process.env.NODE_ENV !== 'production', // Enable debug logs (e.g. for development)
   }
 }
 ```
@@ -84,6 +85,7 @@ dependencies:[Modules.CACHE]
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
 - **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
+- **logging**: When `true`, logs important operations (initiate, authorize, capture, refund, etc.) to the console for debugging (default: `false`).
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.

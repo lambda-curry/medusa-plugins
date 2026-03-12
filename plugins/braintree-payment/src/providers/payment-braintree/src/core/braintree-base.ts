@@ -82,6 +82,27 @@ export interface BraintreeInitiatePaymentData {
 }
 
 const buildTokenCacheKey = (customerId: string) => `braintree:clientToken:${customerId}`;
+const UNKNOWN_BRAINTREE_ERROR = 'Unknown error';
+
+type BraintreeValidationErrorLike = {
+  attribute?: string;
+  code?: string;
+  message?: string;
+};
+
+type BraintreeValidationErrorsCollectionLike = {
+  deepErrors?: () => BraintreeValidationErrorLike[];
+};
+
+type BraintreeErrorResponseLike = {
+  message?: string;
+  errors?: BraintreeValidationErrorsCollectionLike;
+  transaction?: {
+    gatewayRejectionReason?: string;
+    processorResponseCode?: string;
+    processorResponseText?: string;
+  };
+};
 
 // Type guard utilities for safe type validation
 const validateString = (value: unknown, fieldName: string): string => {
@@ -89,6 +110,38 @@ const validateString = (value: unknown, fieldName: string): string => {
     throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, `${fieldName} must be a non-empty string`);
   }
   return value;
+};
+
+const getBraintreeValidationErrors = (
+  errors?: BraintreeValidationErrorsCollectionLike,
+): BraintreeValidationErrorLike[] => {
+  if (typeof errors?.deepErrors !== 'function') return [];
+  return errors.deepErrors().filter((error): error is BraintreeValidationErrorLike => Boolean(error?.message));
+};
+
+const formatBraintreeValidationError = (error: BraintreeValidationErrorLike): string => {
+  const prefix = error.attribute ? `${error.attribute}: ` : '';
+  const suffix = error.code ? ` (${error.code})` : '';
+  return `${prefix}${error.message}${suffix}`;
+};
+
+const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string => {
+  const gatewayRejectionReason = response.transaction?.gatewayRejectionReason?.trim();
+  if (gatewayRejectionReason) return gatewayRejectionReason;
+
+  const processorResponseText = response.transaction?.processorResponseText?.trim();
+  if (processorResponseText) {
+    const processorResponseCode = response.transaction?.processorResponseCode?.trim();
+    return processorResponseCode ? `${processorResponseText} (${processorResponseCode})` : processorResponseText;
+  }
+
+  const validationErrors = getBraintreeValidationErrors(response.errors).map(formatBraintreeValidationError);
+  if (validationErrors.length) return validationErrors.join('; ');
+
+  const message = response.message?.trim();
+  if (message) return message;
+
+  return UNKNOWN_BRAINTREE_ERROR;
 };
 
 // Error handling utility that preserves full error context
@@ -99,9 +152,13 @@ export const buildBraintreeError = (
   context?: Record<string, unknown>,
 ): MedusaError => {
   const errorMessage = error instanceof Error ? error.message : String(error);
+  const contextSuffix = context ? ` ${JSON.stringify(context)}` : '';
 
   // Preserve full error context in logging
-  logger.error(`Braintree ${operation} failed: ${errorMessage}`, error instanceof Error ? error : undefined);
+  logger.error(
+    `Braintree ${operation} failed: ${errorMessage}${contextSuffix}`,
+    error instanceof Error ? error : undefined,
+  );
 
   return new MedusaError(MedusaError.Types.INVALID_DATA, `Failed to ${operation}: ${errorMessage}`);
 };
@@ -551,21 +608,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       const saleResponse = await this.gateway.transaction.sale(transactionCreateRequest);
 
       if (!saleResponse.success) {
-        this.logErrorDetail(
-          'transaction.sale failed',
-          new Error(saleResponse.transaction?.gatewayRejectionReason ?? saleResponse.message ?? 'Unknown error'),
-          {
-            transactionId: saleResponse.transaction?.id,
-            gatewayRejectionReason: saleResponse.transaction?.gatewayRejectionReason,
-            processorResponseCode: saleResponse.transaction?.processorResponseCode,
-            processorResponseText: saleResponse.transaction?.processorResponseText,
-            errors: saleResponse.errors,
-          },
-        );
-        throw new MedusaError(
-          MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-          saleResponse.transaction?.gatewayRejectionReason ?? saleResponse.message ?? 'Unknown error',
-        );
+        const errorMessage = getBraintreeErrorMessage(saleResponse);
+        this.logErrorDetail('transaction.sale failed', new Error(errorMessage), {
+          transactionId: saleResponse.transaction?.id,
+          gatewayRejectionReason: saleResponse.transaction?.gatewayRejectionReason,
+          processorResponseCode: saleResponse.transaction?.processorResponseCode,
+          processorResponseText: saleResponse.transaction?.processorResponseText,
+          validationErrors: getBraintreeValidationErrors(saleResponse.errors).map(formatBraintreeValidationError),
+        });
+        throw new MedusaError(MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR, errorMessage);
       }
 
       try {

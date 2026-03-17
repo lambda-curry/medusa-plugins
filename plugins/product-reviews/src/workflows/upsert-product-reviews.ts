@@ -31,7 +31,7 @@ export const upsertProductReviewsWorkflow = createWorkflow(
 
     const { data: orders } = useQueryGraphStep({
       entity: "order",
-      fields: ["*", "shipping_address.*", "customer.*", "items.*"],
+      fields: ["*", "shipping_address.*", "customer.*", "items.*", "items.product_review.*"],
       filters: {
         id: orderIds,
       },

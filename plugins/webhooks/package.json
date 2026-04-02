@@ -2,8 +2,13 @@
   "name": "@lambdacurry/medusa-webhooks",
   "version": "1.2.0",
   "description": "A Medusa plugin that enables webhook management and integration, allowing you to configure and manage outgoing webhooks for your e-commerce events.",
-  "author": "Medusa (https://medusajs.com)",
+  "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lambda-curry/medusa-plugins"
+  },
+  "homepage": "https://github.com/lambda-curry/medusa-plugins/tree/main/plugins/webhooks",
   "files": [
     ".medusa/server"
   ],

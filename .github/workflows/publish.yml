@@ -1,0 +1,54 @@
+name: Publish Packages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build all packages
+        run: yarn build
+
+      - name: Publish changed packages
+        run: |
+          publish_if_new() {
+            local dir=$1
+            local name=$(node -p "require('./$dir/package.json').name")
+            local version=$(node -p "require('./$dir/package.json').version")
+            local published=$(npm view "$name@$version" version 2>/dev/null || echo "")
+
+            if [ "$published" = "$version" ]; then
+              echo "⏭️  $name@$version already published, skipping"
+            else
+              echo "📦 Publishing $name@$version..."
+              npm publish "./$dir" --access public
+              echo "✅ Published $name@$version"
+            fi
+          }
+
+          # SDK first (other plugins may depend on it)
+          publish_if_new packages/plugins-sdk
+
+          # Then plugins
+          publish_if_new plugins/product-reviews
+          publish_if_new plugins/braintree-payment
+          publish_if_new plugins/webhooks

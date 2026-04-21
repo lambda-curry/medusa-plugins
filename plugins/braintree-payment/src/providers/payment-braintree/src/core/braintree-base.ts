@@ -276,8 +276,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         return new HttpsProxyAgent(this.options_.proxyUrl);
       } catch (error) {
         const isRequireMissingProxyAgent =
-          error instanceof Error &&
-          /Cannot find module ['"]https-proxy-agent['"]/.test(error.message);
+          error instanceof Error && /Cannot find module ['"]https-proxy-agent['"]/.test(error.message);
         const isModuleNotFoundProxyAgent =
           typeof error === 'object' &&
           error !== null &&
@@ -400,18 +399,13 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       } catch {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
-          'Option "proxyUrl" must be a valid URL in Braintree plugin',
+          `Option "proxyUrl" must be a valid URL in Braintree plugin: "${options.proxyUrl}"`,
         );
-      }
       }
     }
 
     if (isDefined(options.httpAgent)) {
-      if (
-        typeof options.httpAgent !== 'object' ||
-        options.httpAgent === null ||
-        Array.isArray(options.httpAgent)
-      ) {
+      if (typeof options.httpAgent !== 'object' || options.httpAgent === null || Array.isArray(options.httpAgent)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           'Option "httpAgent" must be an object in Braintree plugin',

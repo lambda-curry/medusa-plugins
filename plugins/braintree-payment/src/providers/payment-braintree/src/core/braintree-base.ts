@@ -419,6 +419,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
       const { keepAlive, keepAliveMsecs, maxSockets, maxFreeSockets, timeout, rejectUnauthorized } = options.httpAgent;
 
+      const isNonNegativeNumber = (value: unknown): value is number =>
+        typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value) && value >= 0;
+
       if (isDefined(keepAlive) && typeof keepAlive !== 'boolean') {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -426,28 +429,28 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         );
       }
 
-      if (isDefined(keepAliveMsecs) && (typeof keepAliveMsecs !== 'number' || keepAliveMsecs < 0)) {
+      if (isDefined(keepAliveMsecs) && !isNonNegativeNumber(keepAliveMsecs)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           'Option "httpAgent.keepAliveMsecs" must be a number greater than or equal to 0 in Braintree plugin',
         );
       }
 
-      if (isDefined(maxSockets) && (typeof maxSockets !== 'number' || maxSockets < 0)) {
+      if (isDefined(maxSockets) && !isNonNegativeNumber(maxSockets)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           'Option "httpAgent.maxSockets" must be a number greater than or equal to 0 in Braintree plugin',
         );
       }
 
-      if (isDefined(maxFreeSockets) && (typeof maxFreeSockets !== 'number' || maxFreeSockets < 0)) {
+      if (isDefined(maxFreeSockets) && !isNonNegativeNumber(maxFreeSockets)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           'Option "httpAgent.maxFreeSockets" must be a number greater than or equal to 0 in Braintree plugin',
         );
       }
 
-      if (isDefined(timeout) && (typeof timeout !== 'number' || timeout < 0)) {
+      if (isDefined(timeout) && !isNonNegativeNumber(timeout)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           'Option "httpAgent.timeout" must be a number greater than or equal to 0 in Braintree plugin',

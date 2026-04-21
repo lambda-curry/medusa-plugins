@@ -22,8 +22,11 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   webhookSecret: string;
   autoCapture: boolean;
   allowRefundOnRefunded?: boolean;
+  /** Lowest precedence agent config, used to create a standard https.Agent. */
   httpAgent?: HttpAgentConfig;
+  /** Optional proxy URL used to create an HTTPS proxy agent. */
   proxyUrl?: string;
+  /** Highest precedence: pass a fully constructed Node HTTP(S) agent directly. */
   customHttpAgent?: Agent | HttpsAgent;
 }
 

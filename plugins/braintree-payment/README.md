@@ -84,11 +84,16 @@ dependencies:[Modules.CACHE]
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
 - **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
+- **customHttpAgent**: Optional pre-configured Node `http.Agent` or `https.Agent` used for all Braintree API requests. If set, this takes highest precedence.
+- **proxyUrl**: Optional proxy URL (for example `http://user:pass@proxy.example.com:8080`). When provided, the provider will try to create an HTTPS proxy agent using `https-proxy-agent`.
+- **httpAgent**: Optional HTTPS agent configuration object used to create a standard `https.Agent` when `customHttpAgent` and `proxyUrl` are not provided.
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 > - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
+> - HTTP agent precedence is: `customHttpAgent` -> `proxyUrl` -> `httpAgent`.
+> - If `proxyUrl` is set, install `https-proxy-agent` in your project so proxy agent creation succeeds.
 
 ### 3D Secure Setup
 

@@ -384,6 +384,81 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         );
       }
     }
+
+    if (isDefined(options.proxyUrl)) {
+      if (typeof options.proxyUrl !== 'string' || !options.proxyUrl.trim()) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "proxyUrl" must be a non-empty string in Braintree plugin',
+        );
+      }
+
+      try {
+        new URL(options.proxyUrl);
+      } catch {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          `Option "proxyUrl" must be a valid URL in Braintree plugin: "${options.proxyUrl}"`,
+        );
+      }
+    }
+
+    if (isDefined(options.httpAgent)) {
+      if (
+        typeof options.httpAgent !== 'object' ||
+        options.httpAgent === null ||
+        Array.isArray(options.httpAgent)
+      ) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent" must be an object in Braintree plugin',
+        );
+      }
+
+      const { keepAlive, keepAliveMsecs, maxSockets, maxFreeSockets, timeout, rejectUnauthorized } = options.httpAgent;
+
+      if (isDefined(keepAlive) && typeof keepAlive !== 'boolean') {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.keepAlive" must be a boolean in Braintree plugin',
+        );
+      }
+
+      if (isDefined(keepAliveMsecs) && (typeof keepAliveMsecs !== 'number' || keepAliveMsecs < 0)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.keepAliveMsecs" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(maxSockets) && (typeof maxSockets !== 'number' || maxSockets < 0)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.maxSockets" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(maxFreeSockets) && (typeof maxFreeSockets !== 'number' || maxFreeSockets < 0)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.maxFreeSockets" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(timeout) && (typeof timeout !== 'number' || timeout < 0)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.timeout" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(rejectUnauthorized) && typeof rejectUnauthorized !== 'boolean') {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.rejectUnauthorized" must be a boolean in Braintree plugin',
+        );
+      }
+    }
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {

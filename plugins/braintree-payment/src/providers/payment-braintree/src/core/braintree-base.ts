@@ -400,8 +400,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       } catch {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
-          `Option "proxyUrl" must be a valid URL in Braintree plugin: "${options.proxyUrl}"`,
+          'Option "proxyUrl" must be a valid URL in Braintree plugin',
         );
+      }
       }
     }
 

@@ -28,6 +28,8 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   proxyUrl?: string;
   /** Highest precedence: pass a fully constructed Node HTTP(S) agent directly. */
   customHttpAgent?: Agent | HttpsAgent;
+  /** When true, logs important operations to the console for debugging. */
+  logging?: boolean;
 }
 
 export const PaymentProviderKeys = {

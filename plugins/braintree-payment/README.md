@@ -69,6 +69,7 @@ dependencies:[Modules.CACHE]
     enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
     savePaymentMethod: true, // Save payment methods for future use
     autoCapture: true,        // Automatically capture payments
+    logging: process.env.NODE_ENV !== 'production', // Enable debug logs (e.g. for development)
   }
 }
 ```
@@ -87,6 +88,7 @@ dependencies:[Modules.CACHE]
 - **customHttpAgent**: Optional pre-configured Node `http.Agent` or `https.Agent` used for all Braintree API requests. If set, this takes highest precedence.
 - **proxyUrl**: Optional proxy URL (for example `http://user:pass@proxy.example.com:8080`). When provided, the provider will try to create an HTTPS proxy agent using `https-proxy-agent`.
 - **httpAgent**: Optional HTTPS agent configuration object used to create a standard `https.Agent` when `customHttpAgent` and `proxyUrl` are not provided.
+- **logging**: When `true`, logs important operations (initiate, authorize, capture, refund, etc.) to the console for debugging (default: `false`).
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.

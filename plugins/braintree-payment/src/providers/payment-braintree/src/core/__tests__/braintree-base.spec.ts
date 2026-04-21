@@ -109,6 +109,41 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(result.status).toBe('captured');
   });
 
+  it('authorizePayment surfaces validation errors when Braintree returns an unknown error message', async () => {
+    const { service, gateway } = buildService();
+
+    const input = {
+      data: {
+        clientToken: 'ct',
+        amount: 10,
+        currency_code: 'USD',
+        payment_method_nonce: 'fake-nonce',
+      },
+      context: {
+        idempotency_key: 'idem_2',
+      },
+    } as any;
+
+    gateway.transaction.sale.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      errors: {
+        deepErrors: () => [
+          {
+            attribute: 'postalCode',
+            code: '81813',
+            message: 'Postal code is invalid.',
+          },
+        ],
+      },
+      transaction: {},
+    });
+
+    await expect(service.authorizePayment(input)).rejects.toThrow(
+      'Failed to create Braintree transaction: postalCode: Postal code is invalid. (81813)',
+    );
+  });
+
   it('capturePayment submits for settlement when status is authorized', async () => {
     const { service, gateway } = buildService();
 

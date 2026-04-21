@@ -275,15 +275,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         // Proxy URL format: http://[username:password@]proxy.example.com:8080
         return new HttpsProxyAgent(this.options_.proxyUrl);
       } catch (error) {
-        const isModuleNotFound =
-          typeof error === 'object' &&
-          error !== null &&
-          ('code' in error ? (error as { code?: string }).code === 'MODULE_NOT_FOUND' : false);
         const isRequireMissingProxyAgent =
           error instanceof Error &&
           /Cannot find module ['"]https-proxy-agent['"]/.test(error.message);
+        const isModuleNotFoundProxyAgent =
+          typeof error === 'object' &&
+          error !== null &&
+          ('code' in error ? (error as { code?: string }).code === 'MODULE_NOT_FOUND' : false) &&
+          error instanceof Error &&
+          error.message.includes('https-proxy-agent');
 
-        if (isModuleNotFound || isRequireMissingProxyAgent) {
+        if (isRequireMissingProxyAgent || isModuleNotFoundProxyAgent) {
           this.logger.warn(
             'https-proxy-agent package not found. Install it with: npm install https-proxy-agent. Falling back to regular agent.',
           );

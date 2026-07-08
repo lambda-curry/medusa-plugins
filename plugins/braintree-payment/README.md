@@ -51,7 +51,7 @@ BRAINTREE_LOGGING=true|false
 - `BRAINTREE_WEBHOOK_SECRET`: Secret for validating Braintree webhooks.
 - `BRAINTREE_ENVIRONMENT`: One of `sandbox`, `development`, `production`, or `qa`.
 - `BRAINTREE_ENABLE_3D_SECURE`: Set to `true` to enable 3D Secure authentication, otherwise `false`.
-- `TEST_FORCE_SETTLED`: **Development/sandbox only.** When set to `true`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Do not enable in production.
+- `TEST_FORCE_SETTLED`: **Sandbox only.** When set to `true` **and** `BRAINTREE_ENVIRONMENT=sandbox`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Ignored (with a warning) outside sandbox. Do not enable in production.
 - `BRAINTREE_LOGGING`: Optional. Set to `true` to enable plugin debug logging. Wire this to the provider `logging` option in `medusa-config.ts` (see below). Defaults to `false`.
 
 ### Testing refunds in sandbox
@@ -64,10 +64,11 @@ In Braintree sandbox, transactions often remain in `authorized` or `submitted_fo
 To test the refund path locally without waiting for settlement, set:
 
 ```env
+BRAINTREE_ENVIRONMENT=sandbox
 TEST_FORCE_SETTLED=true
 ```
 
-When enabled, `refundPayment` calls Braintree's sandbox `testing.settle` on the transaction, re-fetches it, then proceeds with `transaction.refund`. This only works with Braintree sandbox credentials.
+When both are set, `refundPayment` calls Braintree's sandbox `testing.settle` on the transaction, re-fetches it, then proceeds with `transaction.refund`. If `TEST_FORCE_SETTLED=true` but the provider environment is not `sandbox`, the settle step is skipped and a warning is logged.
 
 ### Medusa Configuration
 
@@ -128,10 +129,13 @@ What `logging: true` enables:
 
 - **`logDebug`** — operation context for payment flows (e.g. refund input, API responses)
 - **`logErrorDetail`** — extra Braintree failure details (validation errors, processor response codes, stack traces)
+- **`[Braintree refund]` path tracing** — stringified JSON for refund input data, retrieved transactions, void/refund API responses, and result payloads
 
 Logs are written through Medusa's `logger.info()` and appear in the Medusa server output. Ensure Medusa's `LOG_LEVEL` is not set to `error` if you want to see them (the default `http` level includes `info` messages).
 
-> **Note:** Refund path tracing (`[Braintree refund]` logs with full JSON payloads) is separate and always emitted at `info` level during `refundPayment`, regardless of the `logging` option.
+### Upgrading to 0.1.2
+
+Earlier README examples used `logging: process.env.NODE_ENV !== 'production'` (auto-enabled in development). Current examples use explicit `BRAINTREE_LOGGING=true` / `logging: process.env.BRAINTREE_LOGGING === 'true'`. If you relied on implicit dev logging, set `BRAINTREE_LOGGING=true` or pass `logging: true` in provider options.
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.

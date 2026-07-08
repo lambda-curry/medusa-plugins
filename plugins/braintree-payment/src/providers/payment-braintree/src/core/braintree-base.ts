@@ -284,15 +284,23 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.logger.info(`[Braintree] ERROR ${operation}: ${msg}${ctx}${stackLine}`);
   }
 
-  /** Always-on path tracing for refund debugging. */
+  /** When options.logging is true, logs refund path steps for debugging. */
   protected logRefundTrace(step: string, context?: Record<string, unknown>): void {
+    if (!this.options_.logging) return;
     const msg = context ? ` ${JSON.stringify(context, null, 2)}` : '';
     this.logger.info(`[Braintree refund] ${step}${msg}`);
   }
 
-  /** Logs a stringified JSON payload from Braintree (API responses, input data, etc.). */
+  /** When options.logging is true, logs a stringified JSON payload from Braintree. */
   protected logRefundJson(step: string, data: unknown): void {
+    if (!this.options_.logging) return;
     this.logger.info(`[Braintree refund] ${step}: ${serializeForLog(data)}`);
+  }
+
+  private isTestForceSettledEnabled(): boolean {
+    return (
+      process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox'
+    );
   }
 
   async getValidClientToken(
@@ -452,12 +460,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
-    this.logDebug('authorizePayment', {
-      amount: (input.data as { amount?: number })?.amount,
-      currency_code: (input.data as { currency_code?: string })?.currency_code,
-    });
     try {
       const sessionData = await this.parsePaymentSessionData(input.data ?? {});
+      this.logDebug('authorizePayment', {
+        amount: sessionData.amount,
+        currency_code: sessionData.currency_code,
+      });
 
       let transaction = sessionData.transaction;
 
@@ -834,20 +842,31 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (!refundAmount) throw new MedusaError(MedusaError.Types.INVALID_DATA, 'Refund amount is invalid');
 
-    let transaction = await this.retrieveTransaction(sessionData.transaction?.id as string);
+    const transactionId = sessionData.transaction?.id;
+    if (!transactionId) {
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, 'Braintree transaction not found');
+    }
+
+    let transaction = await this.retrieveTransaction(transactionId);
 
     this.logRefundJson('transaction retrieved', transaction);
 
     let shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
     if (process.env.TEST_FORCE_SETTLED === 'true') {
-      this.logRefundTrace('TEST_FORCE_SETTLED enabled — settling transaction before refund', {
-        transactionId: transaction.id,
-      });
-      shouldVoid = false;
-      await this.gateway.testing.settle(transaction.id);
-      transaction = await this.retrieveTransaction(transaction.id);
-      this.logRefundJson('transaction settled for test', transaction);
+      if (!this.isTestForceSettledEnabled()) {
+        this.logger.warn(
+          '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
+        );
+      } else {
+        this.logRefundTrace('TEST_FORCE_SETTLED enabled — settling transaction before refund', {
+          transactionId: transaction.id,
+        });
+        shouldVoid = false;
+        await this.gateway.testing.settle(transaction.id);
+        transaction = await this.retrieveTransaction(transaction.id);
+        this.logRefundJson('transaction settled for test', transaction);
+      }
     }
 
     const shouldRefund = ['settled', 'settling'].includes(transaction.status);

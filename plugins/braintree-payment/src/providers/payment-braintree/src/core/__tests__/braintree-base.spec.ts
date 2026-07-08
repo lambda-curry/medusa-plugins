@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { MedusaError } from '@medusajs/framework/utils';
 import BraintreeProviderService from '../../services/braintree-provider';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 
@@ -255,8 +256,6 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });
 
-  // NOTE: Import/refund simulation moved to the dedicated import provider tests
-
   it('refundPayment refunds with 2dp decimal string when transaction is settled', async () => {
     const { service, gateway } = buildService();
 
@@ -279,6 +278,191 @@ describe('BraintreeProviderService core behaviors', () => {
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '5.00');
     expect((result.data as any)?.braintreeRefund?.id).toBe('r1');
+  });
+
+  const settledRefundInput = (amount: number) =>
+    ({
+      amount,
+      data: {
+        clientToken: 'ct',
+        amount: 350000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't-settled' },
+      },
+    }) as any;
+
+  it('refundPayment throws PAYMENT_AUTHORIZATION_ERROR with processor code 2005 on decline', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Invalid Credit Card Number',
+        processorResponseCode: '2005',
+      },
+    });
+
+    await expect(service.refundPayment(settledRefundInput(2005))).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Invalid Credit Card Number (2005)',
+    });
+  });
+
+  it('refundPayment surfaces processor code 2004 for expired card decline', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Expired Card',
+        processorResponseCode: '2004',
+      },
+    });
+
+    await expect(service.refundPayment(settledRefundInput(2004))).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Expired Card (2004)',
+    });
+  });
+
+  it('refundPayment surfaces processor code 2014 for fraud suspected decline', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Fraud Suspected',
+        processorResponseCode: '2014',
+      },
+    });
+
+    await expect(service.refundPayment(settledRefundInput(2014))).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Fraud Suspected (2014)',
+    });
+  });
+
+  it('refundPayment throws PAYMENT_AUTHORIZATION_ERROR on settlement_declined', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'settlement_declined',
+        processorSettlementResponseText: 'Settlement Declined',
+        processorSettlementResponseCode: '4001',
+      },
+    });
+
+    await expect(service.refundPayment(settledRefundInput(50))).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Settlement Declined (4001)',
+    });
+  });
+
+  it('refundPayment throws INVALID_DATA for validation-only refund failures', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      errors: {
+        deepErrors: () => [
+          {
+            attribute: 'amount',
+            code: '91517',
+            message: 'Refund amount is too large.',
+          },
+        ],
+      },
+      transaction: {},
+    });
+
+    await expect(service.refundPayment(settledRefundInput(9999))).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'amount: Refund amount is too large. (91517)',
+    });
+  });
+
+  it('refundPayment does not double-wrap handled decline errors', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: 'Gateway rejected refund',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Invalid Credit Card Number',
+        processorResponseCode: '2005',
+      },
+    });
+
+    await expect(service.refundPayment(settledRefundInput(2005))).rejects.not.toThrow(
+      /Failed to create Braintree refund/,
+    );
+  });
+
+  it('refundPayment treats processor_declined status as failure even when success is true', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Expired Card',
+        processorResponseCode: '2004',
+      },
+    });
+
+    await expect(service.refundPayment(settledRefundInput(2004))).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Expired Card (2004)',
+    });
+  });
+
+  it('refundPayment void failure surfaces processor decline details', async () => {
+    const { service, gateway } = buildService();
+
+    const input = {
+      amount: 10,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't-void' },
+      },
+    } as any;
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-void', status: 'authorized' });
+    gateway.transaction.void.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Do Not Honor',
+        processorResponseCode: '2000',
+      },
+    });
+
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Do Not Honor (2000)',
+    });
   });
 
   it('getPaymentStatus maps provider status correctly', async () => {

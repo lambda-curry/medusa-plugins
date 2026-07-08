@@ -41,6 +41,8 @@ BRAINTREE_PRIVATE_KEY=<your_private_key>
 BRAINTREE_WEBHOOK_SECRET=<your_webhook_secret>
 BRAINTREE_ENVIRONMENT=sandbox|development|production|qa
 BRAINTREE_ENABLE_3D_SECURE=true|false
+TEST_FORCE_SETTLED=true|false
+BRAINTREE_LOGGING=true|false
 ```
 
 - `BRAINTREE_PUBLIC_KEY`: Your Braintree public key.
@@ -49,6 +51,23 @@ BRAINTREE_ENABLE_3D_SECURE=true|false
 - `BRAINTREE_WEBHOOK_SECRET`: Secret for validating Braintree webhooks.
 - `BRAINTREE_ENVIRONMENT`: One of `sandbox`, `development`, `production`, or `qa`.
 - `BRAINTREE_ENABLE_3D_SECURE`: Set to `true` to enable 3D Secure authentication, otherwise `false`.
+- `TEST_FORCE_SETTLED`: **Development/sandbox only.** When set to `true`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Do not enable in production.
+- `BRAINTREE_LOGGING`: Optional. Set to `true` to enable plugin debug logging. Wire this to the provider `logging` option in `medusa-config.ts` (see below). Defaults to `false`.
+
+### Testing refunds in sandbox
+
+In Braintree sandbox, transactions often remain in `authorized` or `submitted_for_settlement` status until they are settled. The provider routes refunds differently by status:
+
+- **Void path:** `authorized`, `submitted_for_settlement`
+- **Refund path:** `settled`, `settling`
+
+To test the refund path locally without waiting for settlement, set:
+
+```env
+TEST_FORCE_SETTLED=true
+```
+
+When enabled, `refundPayment` calls Braintree's sandbox `testing.settle` on the transaction, re-fetches it, then proceeds with `transaction.refund`. This only works with Braintree sandbox credentials.
 
 ### Medusa Configuration
 
@@ -69,7 +88,8 @@ dependencies:[Modules.CACHE]
     enable3DSecure: process.env.BRAINTREE_ENABLE_3D_SECURE === 'true',
     savePaymentMethod: true, // Save payment methods for future use
     autoCapture: true,        // Automatically capture payments
-    logging: process.env.NODE_ENV !== 'production', // Enable debug logs (e.g. for development)
+    allowRefundOnRefunded: false,
+    logging: process.env.BRAINTREE_LOGGING === 'true', // Enable plugin debug logs
   }
 }
 ```
@@ -85,7 +105,33 @@ dependencies:[Modules.CACHE]
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
 - **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
-- **logging**: When `true`, logs important operations (initiate, authorize, capture, refund, etc.) to the console for debugging (default: `false`).
+- **logging**: Enable verbose plugin debug logging (`true` or `false`, default: `false`). When `true`, the provider logs operation details (initiate, authorize, capture, refund, etc.) and expanded Braintree error context via Medusa's logger with a `[Braintree]` prefix. Set via `BRAINTREE_LOGGING=true` in `.env` or pass `logging: true` directly in provider options. Disable in production unless actively debugging.
+
+### Debug logging
+
+Enable plugin debug logs in `medusa-config.ts`:
+
+```typescript
+options: {
+  // ...
+  logging: process.env.BRAINTREE_LOGGING === 'true',
+}
+```
+
+Then in `.env`:
+
+```env
+BRAINTREE_LOGGING=true
+```
+
+What `logging: true` enables:
+
+- **`logDebug`** — operation context for payment flows (e.g. refund input, API responses)
+- **`logErrorDetail`** — extra Braintree failure details (validation errors, processor response codes, stack traces)
+
+Logs are written through Medusa's `logger.info()` and appear in the Medusa server output. Ensure Medusa's `LOG_LEVEL` is not set to `error` if you want to see them (the default `http` level includes `info` messages).
+
+> **Note:** Refund path tracing (`[Braintree refund]` logs with full JSON payloads) is separate and always emitted at `info` level during `refundPayment`, regardless of the `logging` option.
 
 > **Note:**
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.

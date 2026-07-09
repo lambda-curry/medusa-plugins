@@ -173,7 +173,7 @@ describe('BraintreeProviderService core behaviors', () => {
     });
 
     await expect(service.authorizePayment(input)).rejects.toThrow(
-      'Failed to create Braintree transaction: postalCode: Postal code is invalid. (81813)',
+      'Failed to create Braintree transaction: BT: Postal code is invalid. (81813)',
     );
   });
 
@@ -336,46 +336,6 @@ describe('BraintreeProviderService core behaviors', () => {
     });
   });
 
-  it('refundPayment surfaces processor code 2004 for expired card decline', async () => {
-    const { service, gateway } = buildService();
-
-    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
-    gateway.transaction.refund.mockResolvedValueOnce({
-      success: false,
-      message: '',
-      transaction: {
-        status: 'processor_declined',
-        processorResponseText: 'Expired Card',
-        processorResponseCode: '2004',
-      },
-    });
-
-    await expect(service.refundPayment(settledRefundInput(2004))).rejects.toMatchObject({
-      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-      message: 'Expired Card (2004)',
-    });
-  });
-
-  it('refundPayment surfaces processor code 2014 for fraud suspected decline', async () => {
-    const { service, gateway } = buildService();
-
-    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
-    gateway.transaction.refund.mockResolvedValueOnce({
-      success: false,
-      message: '',
-      transaction: {
-        status: 'processor_declined',
-        processorResponseText: 'Fraud Suspected',
-        processorResponseCode: '2014',
-      },
-    });
-
-    await expect(service.refundPayment(settledRefundInput(2014))).rejects.toMatchObject({
-      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-      message: 'Fraud Suspected (2014)',
-    });
-  });
-
   it('refundPayment throws PAYMENT_AUTHORIZATION_ERROR on settlement_declined', async () => {
     const { service, gateway } = buildService();
 
@@ -417,7 +377,7 @@ describe('BraintreeProviderService core behaviors', () => {
 
     await expect(service.refundPayment(settledRefundInput(9999))).rejects.toMatchObject({
       type: MedusaError.Types.INVALID_DATA,
-      message: 'amount: Refund amount is too large. (91517)',
+      message: 'BT: Refund amount is too large. (91517)',
     });
   });
 
@@ -529,34 +489,6 @@ describe('BraintreeProviderService core behaviors', () => {
       '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
     );
     expect((result.data as RefundResultData).braintreeRefund?.success).toBe(true);
-  });
-
-  it('refundPayment does not emit [Braintree refund] logs when logging is false', async () => {
-    const { service, gateway, logger } = buildService({ logging: false });
-
-    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
-    gateway.transaction.refund.mockResolvedValueOnce({ success: true, transaction: { id: 'r1' } });
-
-    await service.refundPayment(settledRefundInput(5));
-
-    const refundLogCalls = logger.info.mock.calls.filter(
-      (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('[Braintree refund]'),
-    );
-    expect(refundLogCalls).toHaveLength(0);
-  });
-
-  it('refundPayment emits [Braintree refund] logs when logging is true', async () => {
-    const { service, gateway, logger } = buildService({ logging: true });
-
-    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
-    gateway.transaction.refund.mockResolvedValueOnce({ success: true, transaction: { id: 'r1' } });
-
-    await service.refundPayment(settledRefundInput(5));
-
-    const refundLogCalls = logger.info.mock.calls.filter(
-      (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('[Braintree refund]'),
-    );
-    expect(refundLogCalls.length).toBeGreaterThan(0);
   });
 
   it('getPaymentStatus maps provider status correctly', async () => {

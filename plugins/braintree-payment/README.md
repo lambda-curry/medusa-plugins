@@ -129,7 +129,6 @@ What `logging: true` enables:
 
 - **`logDebug`** — operation context for payment flows (e.g. refund input, API responses)
 - **`logErrorDetail`** — extra Braintree failure details (validation errors, processor response codes, stack traces)
-- **`[Braintree refund]` path tracing** — stringified JSON for refund input data, retrieved transactions, void/refund API responses, and result payloads
 
 Logs are written through Medusa's `logger.info()` and appear in the Medusa server output. Ensure Medusa's `LOG_LEVEL` is not set to `error` if you want to see them (the default `http` level includes `info` messages).
 

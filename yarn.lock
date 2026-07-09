@@ -2618,7 +2618,7 @@ __metadata:
     typescript: "npm:^5.7.2"
   peerDependencies:
     "@medusajs/admin-sdk": ^2.15.2
-    "@medusajs/cli": ^2.15.2
+    "@medusajs/cli": ^2.13.5
     "@medusajs/framework": ^2.15.2
     "@medusajs/icons": ^2.15.2
     "@medusajs/medusa": 2.15.2

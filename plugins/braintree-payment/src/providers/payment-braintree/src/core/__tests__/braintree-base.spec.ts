@@ -173,7 +173,7 @@ describe('BraintreeProviderService core behaviors', () => {
     });
 
     await expect(service.authorizePayment(input)).rejects.toThrow(
-      'Failed to create Braintree transaction: BT: Postal code is invalid. (81813)',
+      'Failed to create Braintree transaction: BT: postalCode: Postal code is invalid. (81813)',
     );
   });
 
@@ -377,7 +377,7 @@ describe('BraintreeProviderService core behaviors', () => {
 
     await expect(service.refundPayment(settledRefundInput(9999))).rejects.toMatchObject({
       type: MedusaError.Types.INVALID_DATA,
-      message: 'BT: Refund amount is too large. (91517)',
+      message: 'BT: amount: Refund amount is too large. (91517)',
     });
   });
 

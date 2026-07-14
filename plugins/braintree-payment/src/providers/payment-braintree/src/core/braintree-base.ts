@@ -129,8 +129,10 @@ const getBraintreeValidationErrors = (
 };
 
 const formatBraintreeValidationError = (error: BraintreeValidationErrorLike): string => {
+  const attribute = error.attribute?.trim();
+  const prefix = attribute ? `${attribute}: ` : '';
   const suffix = error.code ? ` (${error.code})` : '';
-  return `BT: ${error.message}${suffix}`;
+  return `BT: ${prefix}${error.message}${suffix}`;
 };
 
 const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string => {

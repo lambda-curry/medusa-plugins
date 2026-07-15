@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.5
+
+### Fixes
+
+- Format Braintree validation errors with a `BT:` prefix and optional attribute (e.g. `BT: amount: Refund amount is too large. (91517)`).
+- Publish `.medusa/server/**/*` so Yarn 4 packages include built plugin files correctly.
+
+### Improvements
+
+- Remove dedicated `[Braintree refund]` JSON path tracing; refund debugging remains available via provider `logging` (`logDebug` / `logErrorDetail`).
+- Bump Medusa peer dependencies to `2.15.2` and `braintree` to `^3.38.0`.
+- Expand import-provider tests for processor declines and validation errors on void/refund.
+
 ## 0.1.2
 
 ### Fixes

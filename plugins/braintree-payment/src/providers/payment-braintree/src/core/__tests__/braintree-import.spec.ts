@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { MedusaError } from '@medusajs/framework/utils';
 import BraintreeImportService from '../../services/braintree-import';
 import { BraintreeConstructorArgs } from '../braintree-base';
 
@@ -167,5 +168,82 @@ describe('BraintreeImportService', () => {
     gateway.transaction.refund.mockRejectedValueOnce(new Error('Network timeout'));
 
     await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toThrow('Network timeout');
+  });
+
+  it('refundPayment void Result decline throws PAYMENT_AUTHORIZATION_ERROR', async () => {
+    const { service, gateway } = buildService();
+    const session = {
+      transactionId: 't-void',
+      importedAsRefunded: false,
+      refundedTotal: 0,
+      status: 'captured',
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-void', status: 'authorized' });
+    gateway.transaction.void.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Do Not Honor',
+        processorResponseCode: '2000',
+      },
+    });
+
+    await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Do Not Honor (2000)',
+    });
+  });
+
+  it('refundPayment refund Result decline throws PAYMENT_AUTHORIZATION_ERROR', async () => {
+    const { service, gateway } = buildService();
+    const session = {
+      transactionId: 't-settled',
+      importedAsRefunded: false,
+      refundedTotal: 0,
+      status: 'captured',
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      transaction: {
+        status: 'processor_declined',
+        processorResponseText: 'Invalid Credit Card Number',
+        processorResponseCode: '2005',
+      },
+    });
+
+    await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'Invalid Credit Card Number (2005)',
+    });
+  });
+
+  it('refundPayment validation-only Result throws INVALID_DATA with attribute', async () => {
+    const { service, gateway } = buildService();
+    const session = {
+      transactionId: 't-settled',
+      importedAsRefunded: false,
+      refundedTotal: 0,
+      status: 'captured',
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: false,
+      message: '',
+      errors: {
+        deepErrors: () => [{ attribute: 'amount', code: '91517', message: 'Refund amount is too large.' }],
+      },
+      transaction: {},
+    });
+
+    await expect(service.refundPayment({ amount: 9999, data: session } as any)).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'BT: amount: Refund amount is too large. (91517)',
+    });
   });
 });

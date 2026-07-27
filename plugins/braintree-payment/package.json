@@ -1,6 +1,6 @@
 {
   "name": "@lambdacurry/medusa-payment-braintree",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "Braintree plugin for Medusa",
   "author": "Lambda Curry (https://lambdacurry.dev)",
   "license": "MIT",
@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/lambda-curry/medusa-plugins/tree/main/plugins/braintree-payment",
   "files": [
-    ".medusa/server"
+    ".medusa/server/**/*"
   ],
   "main": "./.medusa/server/src/index.js",
   "types": "./.medusa/server/src/index.d.ts",
@@ -38,12 +38,12 @@
     "lambdacurry"
   ],
   "devDependencies": {
-    "@medusajs/admin-sdk": "^2.13.5",
-    "@medusajs/cli": "^2.13.5",
-    "@medusajs/framework": "^2.13.5",
-    "@medusajs/icons": "^2.13.5",
-    "@medusajs/medusa": "^2.13.5",
-    "@medusajs/test-utils": "^2.13.5",
+    "@medusajs/admin-sdk": "^2.15.2",
+    "@medusajs/cli": "^2.15.2",
+    "@medusajs/framework": "^2.15.2",
+    "@medusajs/icons": "^2.15.2",
+    "@medusajs/medusa": "^2.15.2",
+    "@medusajs/test-utils": "^2.15.2",
     "@medusajs/ui": "^4.1.5",
     "@swc/core": "^1.7.28",
     "@types/braintree": "^3.3.14",
@@ -62,12 +62,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "^2.13.5",
+    "@medusajs/admin-sdk": "^2.15.2",
     "@medusajs/cli": "^2.13.5",
-    "@medusajs/framework": "^2.13.5",
-    "@medusajs/icons": "^2.13.5",
-    "@medusajs/medusa": "2.13.5",
-    "@medusajs/test-utils": "^2.13.5",
+    "@medusajs/framework": "^2.15.2",
+    "@medusajs/icons": "^2.15.2",
+    "@medusajs/medusa": "2.15.2",
+    "@medusajs/test-utils": "^2.15.2",
     "@medusajs/ui": "^4.1.5",
     "jsonwebtoken": "^9.0.2"
   },
@@ -75,6 +75,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "braintree": "^3.30.0"
+    "braintree": "^3.38.0"
   }
 }

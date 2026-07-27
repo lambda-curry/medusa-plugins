@@ -100,11 +100,15 @@ type TransactionSaleResponse = Awaited<
 
 type BraintreeErrorResponseLike = {
   message?: string;
+  success?: boolean;
   errors?: BraintreeValidationErrorsCollectionLike;
   transaction?: {
+    status?: string;
     gatewayRejectionReason?: string;
     processorResponseCode?: string;
     processorResponseText?: string;
+    processorSettlementResponseCode?: string;
+    processorSettlementResponseText?: string;
   };
 };
 
@@ -119,15 +123,19 @@ const isVoidableRefundStatus = (status: TransactionStatus): boolean =>
 const isSettledRefundStatus = (status: TransactionStatus): boolean =>
   (SETTLED_REFUND_STATUSES as readonly string[]).includes(status);
 
-/** History entries persisted on payment session data under `braintreeRefund`. */
 type BraintreeRefundHistoryEntry = {
   type: 'voided' | 'refund';
   transaction: Transaction;
 };
 
-type RefundAction =
-  | { kind: 'void'; transaction: Transaction }
-  | { kind: 'refund'; transaction: Transaction };
+type RefundAction = {
+  kind: BraintreeRefundHistoryEntry['type'];
+  transaction: Transaction;
+};
+
+type GatewayTransactionResponse = BraintreeErrorResponseLike & {
+  transaction?: Transaction;
+};
 
 export const isBraintreeDeclinedTransactionStatus = (status?: string): boolean =>
   (BRAINTREE_DECLINED_TRANSACTION_STATUSES as readonly string[]).includes(status ?? '');
@@ -148,9 +156,10 @@ const getBraintreeValidationErrors = (
 };
 
 const formatBraintreeValidationError = (error: BraintreeValidationErrorLike): string => {
-  const prefix = error.attribute ? `${error.attribute}: ` : '';
+  const attribute = error.attribute?.trim();
+  const prefix = attribute ? `${attribute}: ` : '';
   const suffix = error.code ? ` (${error.code})` : '';
-  return `${prefix}${error.message}${suffix}`;
+  return `BT: ${prefix}${error.message}${suffix}`;
 };
 
 const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string => {
@@ -163,6 +172,14 @@ const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string 
     return processorResponseCode ? `${processorResponseText} (${processorResponseCode})` : processorResponseText;
   }
 
+  const settlementResponseText = response.transaction?.processorSettlementResponseText?.trim();
+  if (settlementResponseText) {
+    const settlementResponseCode = response.transaction?.processorSettlementResponseCode?.trim();
+    return settlementResponseCode
+      ? `${settlementResponseText} (${settlementResponseCode})`
+      : settlementResponseText;
+  }
+
   const validationErrors = getBraintreeValidationErrors(response.errors).map(formatBraintreeValidationError);
   if (validationErrors.length) return validationErrors.join('; ');
 
@@ -171,6 +188,40 @@ const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string 
 
   return UNKNOWN_BRAINTREE_ERROR;
 };
+
+export const isBraintreeFailureResponse = (response: BraintreeErrorResponseLike): boolean =>
+  !response.success || isBraintreeDeclinedTransactionStatus(response.transaction?.status);
+
+type BraintreeFailureLogFn = (operation: string, error: unknown, context?: Record<string, unknown>) => void;
+
+export function throwOnBraintreeFailure(
+  response: BraintreeErrorResponseLike,
+  operation: string,
+  log: BraintreeFailureLogFn,
+  context: Record<string, unknown>,
+): never {
+  const message = getBraintreeErrorMessage(response);
+  const hasProcessorSignal =
+    response.transaction?.gatewayRejectionReason ||
+    response.transaction?.processorResponseText ||
+    response.transaction?.processorSettlementResponseText;
+  const type = hasProcessorSignal
+    ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR
+    : MedusaError.Types.INVALID_DATA;
+
+  log(`${operation} failed`, new Error(message), {
+    ...context,
+    transactionStatus: response.transaction?.status,
+    gatewayRejectionReason: response.transaction?.gatewayRejectionReason,
+    processorResponseCode: response.transaction?.processorResponseCode,
+    processorResponseText: response.transaction?.processorResponseText,
+    processorSettlementResponseCode: response.transaction?.processorSettlementResponseCode,
+    processorSettlementResponseText: response.transaction?.processorSettlementResponseText,
+    validationErrors: getBraintreeValidationErrors(response.errors).map(formatBraintreeValidationError),
+  });
+
+  throw new MedusaError(type, message);
+}
 
 // Error handling utility that preserves full error context
 export const buildBraintreeError = (
@@ -236,6 +287,12 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const ctx = context ? ` ${JSON.stringify(context)}` : '';
     const stackLine = stack ? ` stack: ${stack}` : '';
     this.logger.info(`[Braintree] ERROR ${operation}: ${msg}${ctx}${stackLine}`);
+  }
+
+  private isTestForceSettledEnabled(): boolean {
+    return (
+      process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox'
+    );
   }
 
   async getValidClientToken(
@@ -619,6 +676,20 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     throw buildBraintreeError(error, operation, this.logger, context);
   }
 
+  /** Fail on gateway error responses; otherwise return the transaction (retrieve if missing). */
+  private async requireGatewayTransaction(
+    response: GatewayTransactionResponse,
+    operation: string,
+    context: Record<string, unknown>,
+    fallbackTransactionId: string,
+  ): Promise<Transaction> {
+    if (isBraintreeFailureResponse(response)) {
+      throwOnBraintreeFailure(response, operation, this.logErrorDetail.bind(this), context);
+    }
+
+    return response.transaction ?? (await this.retrieveTransaction(fallbackTransactionId));
+  }
+
   private async saleTransaction(
     request: Braintree.TransactionRequest,
     context: BraintreeTransactionContext | undefined,
@@ -631,6 +702,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const saleResponse = await this.gateway.transaction.sale(request);
     if (saleResponse.success) return saleResponse;
 
+    // Sales always surface as authorization failures (even validation declines).
     const errorMessage = getBraintreeErrorMessage(saleResponse);
     this.logErrorDetail('transaction.sale failed', new Error(errorMessage), {
       transactionId: saleResponse.transaction?.id,
@@ -695,8 +767,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           },
         };
       } catch (e) {
-        this.logErrorDetail('delete Braintree payment', e, { transactionId: transaction?.id });
-        throw buildBraintreeError(e, 'delete Braintree payment', this.logger);
+        this.rethrowGatewayError(e, 'delete Braintree payment', { transactionId: transaction?.id });
       }
     } else {
       return {
@@ -772,24 +843,18 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     };
   }
 
-  private appendRefundHistory(
-    data: Record<string, unknown> | undefined,
-    entry: BraintreeRefundHistoryEntry,
-  ): BraintreeRefundHistoryEntry[] {
-    const prior = (data?.braintreeRefund as BraintreeRefundHistoryEntry[] | undefined) ?? [];
-    return [...prior, entry];
-  }
-
   private buildRefundPaymentOutput(
     input: RefundPaymentInput,
     transaction: Transaction,
     entry: BraintreeRefundHistoryEntry,
   ): RefundPaymentOutput {
+    const prior = (input.data?.braintreeRefund as BraintreeRefundHistoryEntry[] | undefined) ?? [];
+
     return {
       data: {
         ...input.data,
         transaction,
-        braintreeRefund: this.appendRefundHistory(input.data, entry),
+        braintreeRefund: [...prior, entry],
       },
     };
   }
@@ -839,7 +904,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const resolved = await this.applyTestForceSettled(transaction);
 
     if (isVoidableRefundStatus(resolved.status)) {
-      return { kind: 'void', transaction: resolved };
+      return { kind: 'voided', transaction: resolved };
     }
 
     if (isSettledRefundStatus(resolved.status)) {
@@ -855,73 +920,52 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     );
   }
 
-  private async voidForRefund(
-    input: RefundPaymentInput,
-    transaction: Transaction,
-  ): Promise<RefundPaymentOutput> {
-    const voidResponse = await this.gateway.transaction.void(transaction.id);
-    this.logDebug('refundPayment void response', { response: voidResponse });
-
-    if (isBraintreeFailureResponse(voidResponse)) {
-      throwOnBraintreeFailure(voidResponse, 'refundPayment (void)', this.logErrorDetail.bind(this), {
-        transactionId: transaction.id,
-      });
-    }
-
-    const voidedTransaction = voidResponse.transaction ?? (await this.retrieveTransaction(transaction.id));
-
-    return this.buildRefundPaymentOutput(input, transaction, {
-      type: 'voided',
-      transaction: voidedTransaction,
-    });
-  }
-
-  private async refundSettled(
-    input: RefundPaymentInput,
-    transaction: Transaction,
-    refundAmount: number,
-  ): Promise<RefundPaymentOutput> {
-    const refundAmountDecimal = formatToTwoDecimalString(refundAmount);
+  private async executeRefundAction(action: RefundAction, refundAmount: number): Promise<Transaction> {
+    const { transaction, kind } = action;
 
     try {
+      if (kind === 'voided') {
+        const response = await this.gateway.transaction.void(transaction.id);
+        this.logDebug('refundPayment void response', { response });
+        return await this.requireGatewayTransaction(
+          response,
+          'refundPayment (void)',
+          { transactionId: transaction.id },
+          transaction.id,
+        );
+      }
+
+      const refundAmountDecimal = formatToTwoDecimalString(refundAmount);
       this.logger.info(
         `Refunding transaction: ${transaction.id} with amount: ${refundAmountDecimal} (created from ${refundAmount})`,
       );
 
-      const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
-      this.logDebug('refundPayment refund response', { response: refundResponse });
-
-      if (isBraintreeFailureResponse(refundResponse)) {
-        throwOnBraintreeFailure(refundResponse, 'refundPayment (refund)', this.logErrorDetail.bind(this), {
-          transactionId: transaction.id,
-          refundAmount: refundAmountDecimal,
-        });
-      }
-
-      const refundTransaction = refundResponse.transaction ?? (await this.retrieveTransaction(transaction.id));
-
-      return this.buildRefundPaymentOutput(input, transaction, {
-        type: 'refund',
-        transaction: refundTransaction,
-      });
+      const response = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
+      this.logDebug('refundPayment refund response', { response });
+      return await this.requireGatewayTransaction(
+        response,
+        'refundPayment (refund)',
+        { transactionId: transaction.id, refundAmount: refundAmountDecimal },
+        transaction.id,
+      );
     } catch (error) {
-      this.rethrowGatewayError(error, 'create Braintree refund', {
-        transactionId: transaction.id,
-        refundAmount: refundAmountDecimal,
-      });
+      this.rethrowGatewayError(
+        error,
+        kind === 'voided' ? 'void Braintree transaction' : 'create Braintree refund',
+        { transactionId: transaction.id },
+      );
     }
   }
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const { transaction, refundAmount } = await this.loadRefundContext(input);
     const action = await this.resolveRefundAction(transaction);
+    const resultTransaction = await this.executeRefundAction(action, refundAmount);
 
-    switch (action.kind) {
-      case 'void':
-        return this.voidForRefund(input, action.transaction);
-      case 'refund':
-        return this.refundSettled(input, action.transaction, refundAmount);
-    }
+    return this.buildRefundPaymentOutput(input, action.transaction, {
+      type: action.kind,
+      transaction: resultTransaction,
+    });
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
@@ -1031,57 +1075,60 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
   }
 
-  async getWebhookActionAndData(webhookData: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {
-    const logger = this.logger;
-
-    this.logDebug('getWebhookActionAndData', { hasData: !!webhookData?.data });
-    logger.info(`Received Braintree webhook with data: ${!!webhookData.data}`);
-
+  private async parseWebhookNotification(
+    webhookData: ProviderWebhookPayload['payload'],
+  ): Promise<TransactionNotification | null> {
     const decodedPayload = new URLSearchParams(webhookData.data as unknown as string);
 
-    let notification: TransactionNotification;
     try {
-      notification = (await this.gateway.webhookNotification.parse(
+      const notification = (await this.gateway.webhookNotification.parse(
         decodedPayload.get('bt_signature') ?? '',
         decodedPayload.get('bt_payload') ?? '',
-      )) as TransactionNotification;
+      )) as TransactionNotification | null;
 
-      if (!notification) {
-        return { action: PaymentActions.FAILED };
-      }
+      return notification ?? null;
     } catch (error) {
       this.logErrorDetail('webhook validation', error, { hasPayload: !!webhookData?.data });
-      logger.error(`Braintree webhook validation failed : ${error}`);
+      this.logger.error(`Braintree webhook validation failed : ${error}`);
+      return null;
+    }
+  }
 
+  private mapWebhookKindToAction(kind: TransactionNotification['kind']): PaymentActions {
+    switch (kind) {
+      case 'transaction_settled':
+        return PaymentActions.SUCCESSFUL;
+      case 'transaction_settlement_declined':
+        return PaymentActions.FAILED;
+      default:
+        return PaymentActions.NOT_SUPPORTED;
+    }
+  }
+
+  async getWebhookActionAndData(webhookData: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {
+    this.logDebug('getWebhookActionAndData', { hasData: !!webhookData?.data });
+    this.logger.info(`Received Braintree webhook with data: ${!!webhookData.data}`);
+
+    const notification = await this.parseWebhookNotification(webhookData);
+    if (!notification) {
       return { action: PaymentActions.FAILED };
     }
 
-    const paymentData = await this.gateway.transaction.find(notification.transaction.id);
-
-    const customFields = paymentData.customFields as CustomFields;
-
-    switch (notification.kind) {
-      case 'transaction_settled':
-        return {
-          action: PaymentActions.SUCCESSFUL,
-          data: {
-            session_id: customFields.medusa_payment_session_id ?? '',
-            amount: paymentData.amount,
-          },
-        };
-
-      case 'transaction_settlement_declined':
-        return {
-          action: PaymentActions.FAILED,
-          data: {
-            session_id: customFields.medusa_payment_session_id ?? '',
-            amount: paymentData.amount,
-          },
-        };
-
-      default:
-        return { action: PaymentActions.NOT_SUPPORTED };
+    const action = this.mapWebhookKindToAction(notification.kind);
+    if (action === PaymentActions.NOT_SUPPORTED) {
+      return { action };
     }
+
+    const paymentData = await this.gateway.transaction.find(notification.transaction.id);
+    const sessionId = (paymentData.customFields as CustomFields).medusa_payment_session_id ?? '';
+
+    return {
+      action,
+      data: {
+        session_id: sessionId,
+        amount: paymentData.amount,
+      },
+    };
   }
 
   private async createBraintreeCustomer(customer: PaymentCustomerDTO): Promise<Braintree.Customer> {

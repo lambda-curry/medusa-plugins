@@ -228,7 +228,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
     this.cache = container[Modules.CACHE];
-    this.init();
+    this.gateway = this.init();
   }
 
   async saveClientTokenToCache(clientToken: string, customerId: string, expiresOnEpochSeconds: number): Promise<void> {
@@ -314,7 +314,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreePaymentSessionData;
   }
 
-  init(): void {
+  init(): Braintree.BraintreeGateway {
     const envKey = (this.options_.environment || 'sandbox').toLowerCase();
     const envMap: Record<string, Braintree.Environment> = {
       qa: Braintree.Environment.Qa,
@@ -334,13 +334,14 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       });
 
     this.logDebug(`Gateway initialized (environment: ${envKey})`);
+    return this.gateway;
   }
 
   static validateOptions(options: BraintreeOptions): void {
     const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
 
     for (const field of requiredFields) {
-      if (!isDefined(options[field]) || typeof options[field] !== 'string') {
+      if (!isDefined(options[field as keyof BraintreeOptions]) || typeof options[field as keyof BraintreeOptions] !== 'string') {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Required option "${field}" is missing or invalid in Braintree plugin`,
@@ -364,7 +365,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture', 'allowRefundOnRefunded', 'logging'];
     for (const field of booleanFields) {
-      if (isDefined(options[field]) && typeof options[field] !== 'boolean') {
+      if (isDefined(options[field as keyof BraintreeOptions]) && typeof options[field as keyof BraintreeOptions] !== 'boolean') {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Option "${field}" must be a boolean in Braintree plugin`,
@@ -839,16 +840,18 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       }
 
       const voidedTransaction = voidResponse?.transaction ?? (await this.retrieveTransaction(transaction.id));
+      const braintreeRefund = {
+        success: true,
+        transactionId: voidedTransaction?.id,
+        type: 'void',
+      };
+      const priorRefunds = input.data?.braintreeRefunds as []?? [];
 
       const refundResult: RefundPaymentOutput = {
         data: {
           ...input.data,
-          transaction: voidedTransaction,
-          braintreeRefund: {
-            success: true,
-            transactionId: voidedTransaction?.id,
-            type: 'void',
-          },
+          transaction: transaction,
+          braintreeRefunds: [...priorRefunds, braintreeRefund],
         },
       };
 
@@ -885,11 +888,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
         const refundTransaction = refundResponse.transaction ?? (await this.retrieveTransaction(transaction.id));
 
+        const braintreeRefund = {
+          success: true,
+          transactionId: refundTransaction?.id,
+          type: 'refund',
+        };
+        const priorRefunds = input.data?.braintreeRefunds as []?? [];
         const refundResult: RefundPaymentOutput = {
           data: {
             ...input.data,
-            transaction: refundTransaction,
-            braintreeRefund: refundTransaction,
+            transaction: transaction,
+            braintreeRefunds: [...priorRefunds, braintreeRefund],
           },
         };
 

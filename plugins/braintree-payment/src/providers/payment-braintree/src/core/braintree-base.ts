@@ -845,7 +845,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         transactionId: voidedTransaction?.id,
         type: 'void',
       };
-      const priorRefunds = input.data?.braintreeRefunds as []?? [];
+      const priorRefunds = Array.isArray(input.data?.braintreeRefunds)
+        ? input.data.braintreeRefunds
+        : [];
 
       const refundResult: RefundPaymentOutput = {
         data: {
@@ -893,7 +895,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           transactionId: refundTransaction?.id,
           type: 'refund',
         };
-        const priorRefunds = input.data?.braintreeRefunds as []?? [];
+        const priorRefunds = Array.isArray(input.data?.braintreeRefunds)
+          ? input.data.braintreeRefunds
+          : [];
         const refundResult: RefundPaymentOutput = {
           data: {
             ...input.data,

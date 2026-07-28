@@ -866,7 +866,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       );
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Braintree transaction with ID ${transaction.id} cannot be refunded`,
+        `Braintree transaction with ID ${transaction.id} cannot be refunded because it's in status ${transaction.status}`,
       );
     }
 

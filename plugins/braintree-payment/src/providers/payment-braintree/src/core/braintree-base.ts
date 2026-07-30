@@ -148,9 +148,7 @@ const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string 
   const settlementResponseText = response.transaction?.processorSettlementResponseText?.trim();
   if (settlementResponseText) {
     const settlementResponseCode = response.transaction?.processorSettlementResponseCode?.trim();
-    return settlementResponseCode
-      ? `${settlementResponseText} (${settlementResponseCode})`
-      : settlementResponseText;
+    return settlementResponseCode ? `${settlementResponseText} (${settlementResponseCode})` : settlementResponseText;
   }
 
   const validationErrors = getBraintreeValidationErrors(response.errors).map(formatBraintreeValidationError);
@@ -178,9 +176,7 @@ export function throwOnBraintreeFailure(
     response.transaction?.gatewayRejectionReason ||
     response.transaction?.processorResponseText ||
     response.transaction?.processorSettlementResponseText;
-  const type = hasProcessorSignal
-    ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR
-    : MedusaError.Types.INVALID_DATA;
+  const type = hasProcessorSignal ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR : MedusaError.Types.INVALID_DATA;
 
   log(`${operation} failed`, new Error(message), {
     ...context,
@@ -263,9 +259,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   private isTestForceSettledEnabled(): boolean {
-    return (
-      process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox'
-    );
+    return process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox';
   }
 
   async getValidClientToken(
@@ -341,7 +335,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
 
     for (const field of requiredFields) {
-      if (!isDefined(options[field as keyof BraintreeOptions]) || typeof options[field as keyof BraintreeOptions] !== 'string') {
+      if (
+        !isDefined(options[field as keyof BraintreeOptions]) ||
+        typeof options[field as keyof BraintreeOptions] !== 'string'
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Required option "${field}" is missing or invalid in Braintree plugin`,
@@ -365,7 +362,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture', 'allowRefundOnRefunded', 'logging'];
     for (const field of booleanFields) {
-      if (isDefined(options[field as keyof BraintreeOptions]) && typeof options[field as keyof BraintreeOptions] !== 'boolean') {
+      if (
+        isDefined(options[field as keyof BraintreeOptions]) &&
+        typeof options[field as keyof BraintreeOptions] !== 'boolean'
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Option "${field}" must be a boolean in Braintree plugin`,
@@ -816,9 +816,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (process.env.TEST_FORCE_SETTLED === 'true') {
       if (!this.isTestForceSettledEnabled()) {
-        this.logger.warn(
-          '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
-        );
+        this.logger.warn('[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox');
       } else {
         shouldVoid = false;
         await this.gateway.testing.settle(transaction.id);
@@ -845,10 +843,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         transactionId: voidedTransaction?.id,
         type: 'void',
       };
-      const priorRefunds = Array.isArray(input.data?.braintreeRefunds)
-        ? input.data.braintreeRefunds
-        : [];
-
+      const priorRefunds = Array.isArray(input.data?.braintreeRefunds) ? input.data.braintreeRefunds : [];
+      // we need to preserve the original transaction data and store the refund history separately
       const refundResult: RefundPaymentOutput = {
         data: {
           ...input.data,
@@ -895,9 +891,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
           transactionId: refundTransaction?.id,
           type: 'refund',
         };
-        const priorRefunds = Array.isArray(input.data?.braintreeRefunds)
-          ? input.data.braintreeRefunds
-          : [];
+        const priorRefunds = Array.isArray(input.data?.braintreeRefunds) ? input.data.braintreeRefunds : [];
+        // we need to preserve the original transaction data and store the refund history separately. This is to support multiple partial refunds
+
         const refundResult: RefundPaymentOutput = {
           data: {
             ...input.data,

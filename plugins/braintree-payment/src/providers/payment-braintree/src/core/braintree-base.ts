@@ -148,9 +148,7 @@ const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string 
   const settlementResponseText = response.transaction?.processorSettlementResponseText?.trim();
   if (settlementResponseText) {
     const settlementResponseCode = response.transaction?.processorSettlementResponseCode?.trim();
-    return settlementResponseCode
-      ? `${settlementResponseText} (${settlementResponseCode})`
-      : settlementResponseText;
+    return settlementResponseCode ? `${settlementResponseText} (${settlementResponseCode})` : settlementResponseText;
   }
 
   const validationErrors = getBraintreeValidationErrors(response.errors).map(formatBraintreeValidationError);
@@ -178,9 +176,7 @@ export function throwOnBraintreeFailure(
     response.transaction?.gatewayRejectionReason ||
     response.transaction?.processorResponseText ||
     response.transaction?.processorSettlementResponseText;
-  const type = hasProcessorSignal
-    ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR
-    : MedusaError.Types.INVALID_DATA;
+  const type = hasProcessorSignal ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR : MedusaError.Types.INVALID_DATA;
 
   log(`${operation} failed`, new Error(message), {
     ...context,
@@ -228,7 +224,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     this.options_ = options;
     this.logger = container[ContainerRegistrationKeys.LOGGER];
     this.cache = container[Modules.CACHE];
-    this.init();
+    this.gateway = this.init();
   }
 
   async saveClientTokenToCache(clientToken: string, customerId: string, expiresOnEpochSeconds: number): Promise<void> {
@@ -263,9 +259,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   private isTestForceSettledEnabled(): boolean {
-    return (
-      process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox'
-    );
+    return process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox';
   }
 
   async getValidClientToken(
@@ -314,7 +308,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreePaymentSessionData;
   }
 
-  init(): void {
+  init(): Braintree.BraintreeGateway {
     const envKey = (this.options_.environment || 'sandbox').toLowerCase();
     const envMap: Record<string, Braintree.Environment> = {
       qa: Braintree.Environment.Qa,
@@ -334,13 +328,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       });
 
     this.logDebug(`Gateway initialized (environment: ${envKey})`);
+    return this.gateway;
   }
 
   static validateOptions(options: BraintreeOptions): void {
     const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
 
     for (const field of requiredFields) {
-      if (!isDefined(options[field]) || typeof options[field] !== 'string') {
+      if (
+        !isDefined(options[field as keyof BraintreeOptions]) ||
+        typeof options[field as keyof BraintreeOptions] !== 'string'
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Required option "${field}" is missing or invalid in Braintree plugin`,
@@ -364,7 +362,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture', 'allowRefundOnRefunded', 'logging'];
     for (const field of booleanFields) {
-      if (isDefined(options[field]) && typeof options[field] !== 'boolean') {
+      if (
+        isDefined(options[field as keyof BraintreeOptions]) &&
+        typeof options[field as keyof BraintreeOptions] !== 'boolean'
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Option "${field}" must be a boolean in Braintree plugin`,
@@ -815,9 +816,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (process.env.TEST_FORCE_SETTLED === 'true') {
       if (!this.isTestForceSettledEnabled()) {
-        this.logger.warn(
-          '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
-        );
+        this.logger.warn('[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox');
       } else {
         shouldVoid = false;
         await this.gateway.testing.settle(transaction.id);
@@ -839,16 +838,18 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       }
 
       const voidedTransaction = voidResponse?.transaction ?? (await this.retrieveTransaction(transaction.id));
-
+      const braintreeRefund = {
+        success: true,
+        transactionId: voidedTransaction?.id,
+        type: 'void',
+      };
+      const priorRefunds = Array.isArray(input.data?.braintreeRefunds) ? input.data.braintreeRefunds : [];
+      // we need to preserve the original transaction data and store the refund history separately
       const refundResult: RefundPaymentOutput = {
         data: {
           ...input.data,
-          transaction: voidedTransaction,
-          braintreeRefund: {
-            success: true,
-            transactionId: voidedTransaction?.id,
-            type: 'void',
-          },
+          transaction: transaction,
+          braintreeRefunds: [...priorRefunds, braintreeRefund],
         },
       };
 
@@ -861,7 +862,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       );
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Braintree transaction with ID ${transaction.id} cannot be refunded`,
+        `Braintree transaction with ID ${transaction.id} cannot be refunded because it's in status ${transaction.status}`,
       );
     }
 
@@ -885,11 +886,19 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
         const refundTransaction = refundResponse.transaction ?? (await this.retrieveTransaction(transaction.id));
 
+        const braintreeRefund = {
+          success: true,
+          transactionId: refundTransaction?.id,
+          type: 'refund',
+        };
+        const priorRefunds = Array.isArray(input.data?.braintreeRefunds) ? input.data.braintreeRefunds : [];
+        // we need to preserve the original transaction data and store the refund history separately. This is to support multiple partial refunds
+
         const refundResult: RefundPaymentOutput = {
           data: {
             ...input.data,
-            transaction: refundTransaction,
-            braintreeRefund: refundTransaction,
+            transaction: transaction,
+            braintreeRefunds: [...priorRefunds, braintreeRefund],
           },
         };
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.8
+
+### Fixes
+
+- Preserve the original Braintree transaction on refund/void instead of overwriting payment data with the refund or void transaction.
+- Track refund/void history as `braintreeRefunds[]` (supports multiple partial refunds) instead of a single `braintreeRefund` field.
+- Guard non-array `braintreeRefunds` values when appending to refund history.
+- Include transaction status in the error when a refund is rejected for an unsupported status.
+
+### Improvements
+
+- Assign `init()` return value to `this.gateway` and tighten `validateOptions` typing with `keyof BraintreeOptions`.
+
 ## 0.1.5
 
 ### Fixes

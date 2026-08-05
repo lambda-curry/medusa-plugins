@@ -145,14 +145,8 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
         this.logErrorDetail('initiatePayment (transaction.find)', error, {
           transactionId: session.transactionId,
         });
-        this.logger.error(
+        this.logger.warn(
           `Could not find transaction with ID ${session.transactionId} in Braintree for imported payment`,
-          error instanceof Error ? error : undefined,
-        );
-        if (MedusaError.isMedusaError(error)) throw error;
-        throw new MedusaError(
-          MedusaError.Types.NOT_FOUND,
-          `Braintree transaction not found: ${session.transactionId}`,
         );
       }
     }

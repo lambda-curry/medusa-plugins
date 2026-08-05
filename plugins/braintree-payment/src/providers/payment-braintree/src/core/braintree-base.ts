@@ -181,7 +181,7 @@ export const isBraintreeDeclinedTransactionStatus = (status?: string): boolean =
  * Asserts `value` is a non-empty string.
  * @param value - Value to validate
  * @param fieldName - Used in the error message
- * @returns Trimmed string value (as provided; not trimmed before return)
+ * @returns The original string value (not trimmed)
  * @throws {MedusaError} `INVALID_ARGUMENT` when empty or not a string
  */
 const validateString = (value: unknown, fieldName: string): string => {
@@ -933,25 +933,31 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
    * Retrieve the created sale; void it if session sync fails so we don't leave an orphan auth.
    * A failed void is logged but does not replace the original sync error.
    * @param saleResponse - Successful sale Result (must include `transaction.id`)
-   * @throws {MedusaError} `INVALID_DATA` via {@link buildBraintreeError} for the sync failure
+   * @throws {MedusaError} `INVALID_DATA` when the sale Result has no transaction id, or via
+   *   {@link buildBraintreeError} for the sync failure
    */
   private async retrieveOrVoidSale(saleResponse: TransactionSaleResponse): Promise<Transaction> {
     const transactionId = saleResponse.transaction?.id;
 
+    if (!transactionId) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'Braintree sale succeeded without a transaction id',
+      );
+    }
+
     try {
-      return await this.retrieveTransaction(saleResponse.transaction.id);
+      return await this.retrieveTransaction(transactionId);
     } catch (error) {
       this.logErrorDetail('sync payment session (retrieveTransaction)', error, { transactionId });
-      if (transactionId) {
-        try {
-          await this.gateway.transaction.void(transactionId);
-        } catch (voidError) {
-          this.logErrorDetail('void orphan sale after sync failure', voidError, { transactionId });
-          this.logger.error(
-            `Failed to void orphan Braintree transaction ${transactionId} after sync failure`,
-            voidError instanceof Error ? voidError : undefined,
-          );
-        }
+      try {
+        await this.gateway.transaction.void(transactionId);
+      } catch (voidError) {
+        this.logErrorDetail('void orphan sale after sync failure', voidError, { transactionId });
+        this.logger.error(
+          `Failed to void orphan Braintree transaction ${transactionId} after sync failure`,
+          voidError instanceof Error ? voidError : undefined,
+        );
       }
       throw buildBraintreeError(error, 'sync payment session', this.logger, { transactionId });
     }
@@ -1097,6 +1103,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Builds refund output `data`, appending one entry to `braintreeRefund` history.
+   * Legacy non-array `braintreeRefund` values are ignored so spreads stay safe.
    * @param input - Original refund input (prior history read from `data.braintreeRefund`)
    * @param transaction - Pre-refund Braintree transaction retained on session data
    * @param entry - New void/refund history entry
@@ -1106,7 +1113,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     transaction: Transaction,
     entry: BraintreeRefundHistoryEntry,
   ): RefundPaymentOutput {
-    const prior = (input.data?.braintreeRefund as BraintreeRefundHistoryEntry[] | undefined) ?? [];
+    const stored = input.data?.braintreeRefund;
+    const prior: BraintreeRefundHistoryEntry[] = Array.isArray(stored)
+      ? (stored as BraintreeRefundHistoryEntry[])
+      : [];
 
     return {
       data: {
@@ -1453,7 +1463,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     }
 
     const paymentData = await this.gateway.transaction.find(notification.transaction.id);
-    const sessionId = (paymentData.customFields as CustomFields).medusa_payment_session_id ?? '';
+    const customFields = (paymentData.customFields ?? {}) as CustomFields;
+    const sessionId = customFields.medusa_payment_session_id ?? '';
 
     return {
       action,

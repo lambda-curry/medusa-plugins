@@ -509,6 +509,32 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(prodEntry?.transaction?.id).toBe('t-prod');
   });
 
+  it('refundPayment tolerates legacy non-array braintreeRefund session data', async () => {
+    const { service, gateway } = buildService();
+
+    const input: RefundPaymentInput = {
+      amount: 5,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefund: { success: true, type: 'void' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'authorized' });
+    gateway.transaction.void.mockResolvedValueOnce({ success: true });
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'voided' });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefund;
+
+    expect(Array.isArray(history)).toBe(true);
+    expect(history).toHaveLength(1);
+    expect(history?.[0]?.type).toBe('voided');
+  });
+
   it('getPaymentStatus maps provider status correctly', async () => {
     const { service, gateway } = buildService();
     const input = { data: { braintreeTransaction: { id: 't3' } } } as any;
@@ -534,6 +560,46 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.getWebhookActionAndData({ data: payloadStr } as any);
     expect(result.action).toBe('captured');
     expect((result as any).data.session_id).toBe('sess_123');
+  });
+
+  it('getWebhookActionAndData tolerates transactions without customFields', async () => {
+    const { service, gateway } = buildService();
+    gateway.webhookNotification.parse.mockResolvedValueOnce({
+      kind: 'transaction_settled',
+      transaction: { id: 't-foreign' },
+    });
+    gateway.transaction.find.mockResolvedValueOnce({
+      id: 't-foreign',
+      amount: '1.00',
+    });
+
+    const result = await service.getWebhookActionAndData({
+      data: 'bt_signature=s&bt_payload=p',
+    } as any);
+
+    expect(result.action).toBe('captured');
+    expect((result as any).data.session_id).toBe('');
+  });
+
+  it('authorizePayment fails clearly when sale Result omits transaction id', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: undefined });
+
+    await expect(
+      service.authorizePayment({
+        data: {
+          clientToken: 'ct',
+          amount: 10,
+          currency_code: 'USD',
+          payment_method_nonce: 'fake-nonce',
+        },
+        context: { idempotency_key: 'idem_missing_tx' },
+      } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'Braintree sale succeeded without a transaction id',
+    });
   });
 
   it('getWebhookActionAndData propagates webhook parse failures', async () => {

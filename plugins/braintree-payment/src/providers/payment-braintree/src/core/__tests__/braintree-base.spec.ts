@@ -233,6 +233,39 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(entry?.transaction?.id).toBe('t1');
   });
 
+  it('refundPayment appends to existing braintreeRefund history', async () => {
+    const { service, gateway } = buildService();
+    const priorEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-prior', status: 'submitted_for_settlement' },
+    };
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefund: [priorEntry],
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-new', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefund;
+
+    expect(history).toHaveLength(2);
+    expect(history?.[0]).toMatchObject(priorEntry);
+    expect(history?.[1]?.type).toBe('refund');
+    expect(history?.[1]?.transaction?.id).toBe('r-new');
+  });
+
   it('refundPayment voids when transaction is submitted_for_settlement', async () => {
     const { service, gateway } = buildService();
 
@@ -600,6 +633,67 @@ describe('BraintreeProviderService core behaviors', () => {
       type: MedusaError.Types.INVALID_DATA,
       message: 'Braintree sale succeeded without a transaction id',
     });
+  });
+
+  it('authorizePayment preserves sync error when orphan void rejects', async () => {
+    const { service, gateway, logger } = buildService();
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: { id: 't-orphan' } });
+    gateway.transaction.find.mockRejectedValueOnce(new Error('sync failed'));
+    gateway.transaction.void.mockRejectedValueOnce(new Error('void network error'));
+
+    await expect(
+      service.authorizePayment({
+        data: {
+          clientToken: 'ct',
+          amount: 10,
+          currency_code: 'USD',
+          payment_method_nonce: 'fake-nonce',
+        },
+        context: { idempotency_key: 'idem_orphan_reject' },
+      } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: expect.stringContaining('sync payment session'),
+    });
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t-orphan');
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to void orphan Braintree transaction t-orphan'),
+      expect.any(Error),
+    );
+  });
+
+  it('authorizePayment preserves sync error when orphan void returns success false', async () => {
+    const { service, gateway, logger } = buildService();
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: { id: 't-orphan2' } });
+    gateway.transaction.find.mockRejectedValueOnce(new Error('sync failed'));
+    gateway.transaction.void.mockResolvedValueOnce({
+      success: false,
+      message: 'Cannot void',
+      transaction: { status: 'processor_declined', processorResponseText: 'Do Not Honor' },
+    });
+
+    await expect(
+      service.authorizePayment({
+        data: {
+          clientToken: 'ct',
+          amount: 10,
+          currency_code: 'USD',
+          payment_method_nonce: 'fake-nonce',
+        },
+        context: { idempotency_key: 'idem_orphan_false' },
+      } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: expect.stringContaining('sync payment session'),
+    });
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t-orphan2');
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to void orphan Braintree transaction t-orphan2 after sync failure'),
+    );
   });
 
   it('getWebhookActionAndData propagates webhook parse failures', async () => {

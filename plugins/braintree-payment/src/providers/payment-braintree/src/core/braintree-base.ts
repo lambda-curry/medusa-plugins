@@ -642,10 +642,6 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         status: finalStatus,
       };
     } catch (error) {
-      this.logErrorDetail('authorizePayment', error, {
-        amount: (input.data as { amount?: number })?.amount,
-        currency_code: (input.data as { currency_code?: string })?.currency_code,
-      });
       this.logger.error(`Error authorizing transaction: ${(error as Error).message}`, error as Error);
       this.rethrowGatewayError(error, 'authorize payment', {
         amount: (input.data as { amount?: number })?.amount,
@@ -951,7 +947,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     } catch (error) {
       this.logErrorDetail('sync payment session (retrieveTransaction)', error, { transactionId });
       try {
-        await this.gateway.transaction.void(transactionId);
+        const voidResponse = await this.gateway.transaction.void(transactionId);
+        if (isBraintreeFailureResponse(voidResponse)) {
+          const voidMessage = getBraintreeErrorMessage(voidResponse);
+          this.logErrorDetail('void orphan sale after sync failure', new Error(voidMessage), {
+            transactionId,
+            transactionStatus: voidResponse.transaction?.status,
+          });
+          this.logger.error(
+            `Failed to void orphan Braintree transaction ${transactionId} after sync failure: ${voidMessage}`,
+          );
+        }
       } catch (voidError) {
         this.logErrorDetail('void orphan sale after sync failure', voidError, { transactionId });
         this.logger.error(

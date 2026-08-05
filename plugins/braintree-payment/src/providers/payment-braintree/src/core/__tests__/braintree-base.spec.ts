@@ -5,13 +5,18 @@ import BraintreeProviderService from '../../services/braintree-provider';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 import type { BraintreeOptions } from '../../types';
 
+type RefundHistoryEntry = {
+  type?: 'voided' | 'refund';
+  transaction?: { id?: string; status?: string };
+};
+
 type RefundResultData = {
-  braintreeRefund?: {
-    id?: string;
-    success?: boolean;
-    transactionId?: string;
-    type?: string;
-  };
+  braintreeRefund?: RefundHistoryEntry[];
+};
+
+const lastRefundEntry = (data: unknown): RefundHistoryEntry | undefined => {
+  const history = (data as RefundResultData)?.braintreeRefund;
+  return history?.[history.length - 1];
 };
 
 const buildService = (overrideOptions?: Partial<BraintreeOptions>) => {
@@ -172,9 +177,10 @@ describe('BraintreeProviderService core behaviors', () => {
       transaction: {},
     });
 
-    await expect(service.authorizePayment(input)).rejects.toThrow(
-      'Failed to create Braintree transaction: BT: postalCode: Postal code is invalid. (81813)',
-    );
+    await expect(service.authorizePayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'BT: postalCode: Postal code is invalid. (81813)',
+    });
   });
 
   it('capturePayment submits for settlement when status is authorized', async () => {
@@ -222,7 +228,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
-    expect((result.data as RefundResultData)?.braintreeRefund?.success).toBe(true);
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('voided');
+    expect(entry?.transaction?.id).toBe('t1');
   });
 
   it('refundPayment voids when transaction is submitted_for_settlement', async () => {
@@ -245,7 +253,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
-    expect((result.data as RefundResultData)?.braintreeRefund?.success).toBe(true);
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('voided');
+    expect(entry?.transaction?.id).toBe('t1');
   });
 
   it('refundPayment refunds with 2dp when transaction is settling', async () => {
@@ -269,7 +279,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '7.50');
-    expect((result.data as RefundResultData)?.braintreeRefund?.id).toBe('r2');
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('refund');
+    expect(entry?.transaction?.id).toBe('r2');
   });
 
   it('refundPayment throws for non-refundable statuses', async () => {
@@ -313,7 +325,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '5.00');
-    expect((result.data as RefundResultData)?.braintreeRefund?.id).toBe('r1');
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('refund');
+    expect(entry?.transaction?.id).toBe('r1');
   });
 
   it('refundPayment throws PAYMENT_AUTHORIZATION_ERROR with processor code 2005 on decline', async () => {
@@ -468,7 +482,9 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.testing.settle).toHaveBeenCalledWith('t-force');
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t-force', '10.00');
-    expect((result.data as RefundResultData).braintreeRefund?.id).toBe('r-force');
+    const forceEntry = lastRefundEntry(result.data);
+    expect(forceEntry?.type).toBe('refund');
+    expect(forceEntry?.transaction?.id).toBe('r-force');
   });
 
   it('refundPayment ignores TEST_FORCE_SETTLED outside sandbox and voids authorized transactions', async () => {
@@ -488,7 +504,9 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(logger.warn).toHaveBeenCalledWith(
       '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
     );
-    expect((result.data as RefundResultData).braintreeRefund?.success).toBe(true);
+    const prodEntry = lastRefundEntry(result.data);
+    expect(prodEntry?.type).toBe('voided');
+    expect(prodEntry?.transaction?.id).toBe('t-prod');
   });
 
   it('getPaymentStatus maps provider status correctly', async () => {
@@ -516,5 +534,17 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.getWebhookActionAndData({ data: payloadStr } as any);
     expect(result.action).toBe('captured');
     expect((result as any).data.session_id).toBe('sess_123');
+  });
+
+  it('getWebhookActionAndData propagates webhook parse failures', async () => {
+    const { service, gateway } = buildService();
+    gateway.webhookNotification.parse.mockRejectedValueOnce(new Error('invalid signature'));
+
+    await expect(
+      service.getWebhookActionAndData({ data: 'bt_signature=bad&bt_payload=x' } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: expect.stringContaining('validate Braintree webhook'),
+    });
   });
 });

@@ -233,6 +233,47 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(entry?.transaction?.id).toBe('t1');
   });
 
+  it('refundPayment throws when disableVoidTransactions and status is authorized', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+
+    const input: RefundPaymentInput = {
+      amount: 5,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'authorized' });
+
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'Braintree transaction with ID t1 cannot be refunded right now',
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
+  it('refundPayment refunds settled transactions when disableVoidTransactions is enabled', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+
+    gateway.transaction.find
+      .mockResolvedValueOnce({ id: 't-settled', status: 'settled' })
+      .mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-settled', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(settledRefundInput(10));
+
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).toHaveBeenCalledWith('t-settled', '10.00');
+    expect(lastRefundEntry(result.data)?.type).toBe('refund');
+  });
+
   it('refundPayment appends to existing braintreeRefund history', async () => {
     const { service, gateway } = buildService();
     const priorEntry = {

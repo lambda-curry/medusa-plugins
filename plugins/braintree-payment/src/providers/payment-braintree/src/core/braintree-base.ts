@@ -527,9 +527,17 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     options.savePaymentMethod = options.savePaymentMethod ?? false;
     options.autoCapture = options.autoCapture ?? false;
     options.allowRefundOnRefunded = options.allowRefundOnRefunded ?? false;
+    options.disableVoidTransactions = options.disableVoidTransactions ?? false;
     options.logging = options.logging ?? false;
 
-    const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture', 'allowRefundOnRefunded', 'logging'];
+    const booleanFields = [
+      'enable3DSecure',
+      'savePaymentMethod',
+      'autoCapture',
+      'allowRefundOnRefunded',
+      'disableVoidTransactions',
+      'logging',
+    ];
     for (const field of booleanFields) {
       if (isDefined(options[field as keyof BraintreeOptions]) && typeof options[field as keyof BraintreeOptions] !== 'boolean') {
         throw new MedusaError(
@@ -1186,12 +1194,22 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   /**
    * Chooses void vs refund based on transaction status (after optional test settle).
    * @param transaction - Live Braintree transaction
+   * @throws {MedusaError} `INVALID_DATA` when void is disabled and status is voidable
    * @throws {MedusaError} `NOT_FOUND` when status is neither voidable nor refundable
    */
   private async resolveRefundAction(transaction: Transaction): Promise<RefundAction> {
     const resolved = await this.applyTestForceSettled(transaction);
 
     if (isVoidableRefundStatus(resolved.status)) {
+      if (this.options.disableVoidTransactions) {
+        this.logger.error(
+          `Braintree transaction with ID ${resolved.id} cannot be refunded right now because it's in status ${resolved.status}`,
+        );
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Braintree transaction with ID ${resolved.id} cannot be refunded right now`,
+        );
+      }
       return { kind: 'voided', transaction: resolved };
     }
 

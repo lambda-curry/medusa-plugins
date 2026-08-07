@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.9-next
+
+### Improvements
+
+- Add `disableVoidTransactions` option: when enabled, refunds never void and only proceed for `settled`/`settling` transactions (late requirement for future partial order refunds and order edits). Unsettled refunds throw `INVALID_DATA` with “cannot be refunded right now”.
+
 ## 0.1.8
 
 ### Fixes

@@ -11,6 +11,12 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   webhookSecret: string;
   autoCapture: boolean;
   allowRefundOnRefunded?: boolean;
+  /**
+   * When true, refundPayment never voids. Only settled/settling transactions may be refunded.
+   * Late requirement so future partial order refunds and order edits can be supported
+   * (void cancels the full authorization).
+   */
+  disableVoidTransactions?: boolean;
   /** When true, logs important operations to the console for debugging. */
   logging?: boolean;
 }

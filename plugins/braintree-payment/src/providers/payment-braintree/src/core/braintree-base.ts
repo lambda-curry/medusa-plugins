@@ -402,11 +402,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   /**
-   * Whether sandbox test settlement is enabled (`TEST_FORCE_SETTLED=true` and env is sandbox).
+   * Whether sandbox test settlement is enabled (`testForceSettled` option and env is sandbox).
    */
   private isTestForceSettledEnabled(): boolean {
     return (
-      process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox'
+      !!this.options_.testForceSettled && this.options_.environment.toLowerCase() === 'sandbox'
     );
   }
 
@@ -529,6 +529,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     options.allowRefundOnRefunded = options.allowRefundOnRefunded ?? false;
     options.disableVoidTransactions = options.disableVoidTransactions ?? false;
     options.logging = options.logging ?? false;
+    options.testForceSettled = options.testForceSettled ?? false;
 
     const booleanFields = [
       'enable3DSecure',
@@ -537,6 +538,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       'allowRefundOnRefunded',
       'disableVoidTransactions',
       'logging',
+      'testForceSettled',
     ];
     for (const field of booleanFields) {
       if (isDefined(options[field as keyof BraintreeOptions]) && typeof options[field as keyof BraintreeOptions] !== 'boolean') {
@@ -1174,15 +1176,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Sandbox-only: force settle so refund paths can be exercised in tests.
-   * No-ops unless `TEST_FORCE_SETTLED=true` and environment is sandbox.
+   * No-ops unless `testForceSettled` is true and environment is sandbox.
    * @param transaction - Transaction to optionally settle
    */
   private async applyTestForceSettled(transaction: Transaction): Promise<Transaction> {
-    if (process.env.TEST_FORCE_SETTLED !== 'true') return transaction;
+    if (!this.options_.testForceSettled) return transaction;
 
     if (!this.isTestForceSettledEnabled()) {
       this.logger.warn(
-        '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
+        '[Braintree refund] testForceSettled ignored — only supported when environment is sandbox',
       );
       return transaction;
     }

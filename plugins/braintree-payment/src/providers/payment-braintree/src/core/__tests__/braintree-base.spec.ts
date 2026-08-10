@@ -75,20 +75,12 @@ const settledRefundInput = (amount: number, transactionId = 't-settled'): Refund
 });
 
 describe('BraintreeProviderService core behaviors', () => {
-  const originalTestForceSettled = process.env.TEST_FORCE_SETTLED;
-
   beforeEach(() => {
     jest.resetAllMocks();
-    delete process.env.TEST_FORCE_SETTLED;
   });
 
   afterEach(() => {
     jest.useRealTimers();
-    if (originalTestForceSettled === undefined) {
-      delete process.env.TEST_FORCE_SETTLED;
-    } else {
-      process.env.TEST_FORCE_SETTLED = originalTestForceSettled;
-    }
   });
 
   it('returns cached client token when available', async () => {
@@ -538,9 +530,8 @@ describe('BraintreeProviderService core behaviors', () => {
     });
   });
 
-  it('refundPayment settles then refunds when TEST_FORCE_SETTLED is enabled in sandbox', async () => {
-    process.env.TEST_FORCE_SETTLED = 'true';
-    const { service, gateway } = buildService({ environment: 'sandbox' });
+  it('refundPayment settles then refunds when testForceSettled is enabled in sandbox', async () => {
+    const { service, gateway } = buildService({ environment: 'sandbox', testForceSettled: true });
 
     gateway.transaction.find
       .mockResolvedValueOnce({ id: 't-force', status: 'authorized' })
@@ -561,9 +552,8 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(forceEntry?.transaction?.id).toBe('r-force');
   });
 
-  it('refundPayment ignores TEST_FORCE_SETTLED outside sandbox and voids authorized transactions', async () => {
-    process.env.TEST_FORCE_SETTLED = 'true';
-    const { service, gateway, logger } = buildService({ environment: 'production' });
+  it('refundPayment ignores testForceSettled outside sandbox and voids authorized transactions', async () => {
+    const { service, gateway, logger } = buildService({ environment: 'production', testForceSettled: true });
 
     gateway.transaction.find
       .mockResolvedValueOnce({ id: 't-prod', status: 'authorized' })
@@ -576,7 +566,7 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.transaction.void).toHaveBeenCalledWith('t-prod');
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
-      '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
+      '[Braintree refund] testForceSettled ignored — only supported when environment is sandbox',
     );
     const prodEntry = lastRefundEntry(result.data);
     expect(prodEntry?.type).toBe('voided');

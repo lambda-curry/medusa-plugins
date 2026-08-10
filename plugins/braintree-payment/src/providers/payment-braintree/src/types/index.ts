@@ -19,6 +19,12 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   disableVoidTransactions?: boolean;
   /** When true, logs important operations to the console for debugging. */
   logging?: boolean;
+  /**
+   * Sandbox only. When true, refundPayment settles the transaction via the
+   * Braintree testing API before refunding (exercises refund vs void path).
+   * Ignored outside sandbox. Default: false.
+   */
+  testForceSettled?: boolean;
 }
 
 export const PaymentProviderKeys = {

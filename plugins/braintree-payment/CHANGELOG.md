@@ -5,6 +5,7 @@
 ### Improvements
 
 - Add `disableVoidTransactions` option: when enabled, refunds never void and only proceed for `settled`/`settling` transactions (late requirement for future partial order refunds and order edits). Unsettled refunds throw `INVALID_DATA` with “cannot be refunded right now”.
+- Move sandbox settle-before-refund from reading `process.env.TEST_FORCE_SETTLED` inside the provider to a `testForceSettled` option (wire `TEST_FORCE_SETTLED` in `medusa-config` if you still use the env var).
 
 ## 0.1.8
 

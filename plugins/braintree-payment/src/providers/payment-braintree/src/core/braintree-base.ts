@@ -153,7 +153,7 @@ const isVoidableRefundStatus = (status: TransactionStatus): boolean =>
 const isSettledRefundStatus = (status: TransactionStatus): boolean =>
   (SETTLED_REFUND_STATUSES as readonly string[]).includes(status);
 
-/** One entry appended to session `data.braintreeRefund` after a void or refund. */
+/** One entry appended to session `data.braintreeRefunds` after a void or refund. */
 type BraintreeRefundHistoryEntry = {
   type: 'voided' | 'refund';
   transaction: Transaction;
@@ -402,11 +402,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   /**
-   * Whether sandbox test settlement is enabled (`TEST_FORCE_SETTLED=true` and env is sandbox).
+   * Whether sandbox test settlement is enabled (`testForceSettled` option and env is sandbox).
    */
   private isTestForceSettledEnabled(): boolean {
     return (
-      process.env.TEST_FORCE_SETTLED === 'true' && this.options_.environment.toLowerCase() === 'sandbox'
+      !!this.options_.testForceSettled && this.options_.environment.toLowerCase() === 'sandbox'
     );
   }
 
@@ -527,9 +527,19 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     options.savePaymentMethod = options.savePaymentMethod ?? false;
     options.autoCapture = options.autoCapture ?? false;
     options.allowRefundOnRefunded = options.allowRefundOnRefunded ?? false;
+    options.disableVoidTransactions = options.disableVoidTransactions ?? false;
     options.logging = options.logging ?? false;
+    options.testForceSettled = options.testForceSettled ?? false;
 
-    const booleanFields = ['enable3DSecure', 'savePaymentMethod', 'autoCapture', 'allowRefundOnRefunded', 'logging'];
+    const booleanFields = [
+      'enable3DSecure',
+      'savePaymentMethod',
+      'autoCapture',
+      'allowRefundOnRefunded',
+      'disableVoidTransactions',
+      'logging',
+      'testForceSettled',
+    ];
     for (const field of booleanFields) {
       if (isDefined(options[field as keyof BraintreeOptions]) && typeof options[field as keyof BraintreeOptions] !== 'boolean') {
         throw new MedusaError(
@@ -1108,9 +1118,36 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   }
 
   /**
-   * Builds refund output `data`, appending one entry to `braintreeRefund` history.
-   * Legacy non-array `braintreeRefund` values are ignored so spreads stay safe.
-   * @param input - Original refund input (prior history read from `data.braintreeRefund`)
+   * Reads refund/void history from session data.
+   * Prefers `braintreeRefunds` (0.1.8+). Falls back to an array on `braintreeRefund`
+   * (0.2.0-next regression). Non-array values on either key are discarded.
+   * @param data - Payment session `data` bag
+   */
+  private readRefundHistory(data: Record<string, unknown> | undefined): BraintreeRefundHistoryEntry[] {
+    const fromPlural = data?.braintreeRefunds;
+    if (Array.isArray(fromPlural)) {
+      return fromPlural as BraintreeRefundHistoryEntry[];
+    }
+    if (fromPlural !== undefined) {
+      this.logger.warn('[Braintree] Discarding legacy non-array braintreeRefunds session data');
+    }
+
+    const fromSingular = data?.braintreeRefund;
+    if (Array.isArray(fromSingular)) {
+      return fromSingular as BraintreeRefundHistoryEntry[];
+    }
+    if (fromSingular !== undefined) {
+      this.logger.warn('[Braintree] Discarding legacy non-array braintreeRefund session data');
+    }
+
+    return [];
+  }
+
+  /**
+   * Builds refund output `data`, appending one entry to `braintreeRefunds` history.
+   * Reads prior history from `braintreeRefunds` (preferred) or leftover `braintreeRefund`.
+   * Writes only `braintreeRefunds` so the two keys cannot drift.
+   * @param input - Original refund input (prior history read from session `data`)
    * @param transaction - Pre-refund Braintree transaction retained on session data
    * @param entry - New void/refund history entry
    */
@@ -1119,16 +1156,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     transaction: Transaction,
     entry: BraintreeRefundHistoryEntry,
   ): RefundPaymentOutput {
-    const stored = input.data?.braintreeRefund;
-    const prior: BraintreeRefundHistoryEntry[] = Array.isArray(stored)
-      ? (stored as BraintreeRefundHistoryEntry[])
-      : [];
+    const prior = this.readRefundHistory(input.data);
+    const data = { ...(input.data ?? {}) };
+    delete data.braintreeRefund;
 
     return {
       data: {
-        ...input.data,
+        ...data,
         transaction,
-        braintreeRefund: [...prior, entry],
+        braintreeRefunds: [...prior, entry],
       },
     };
   }
@@ -1166,15 +1202,15 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Sandbox-only: force settle so refund paths can be exercised in tests.
-   * No-ops unless `TEST_FORCE_SETTLED=true` and environment is sandbox.
+   * No-ops unless `testForceSettled` is true and environment is sandbox.
    * @param transaction - Transaction to optionally settle
    */
   private async applyTestForceSettled(transaction: Transaction): Promise<Transaction> {
-    if (process.env.TEST_FORCE_SETTLED !== 'true') return transaction;
+    if (!this.options_.testForceSettled) return transaction;
 
     if (!this.isTestForceSettledEnabled()) {
       this.logger.warn(
-        '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
+        '[Braintree refund] testForceSettled ignored — only supported when environment is sandbox',
       );
       return transaction;
     }
@@ -1186,12 +1222,22 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   /**
    * Chooses void vs refund based on transaction status (after optional test settle).
    * @param transaction - Live Braintree transaction
+   * @throws {MedusaError} `INVALID_DATA` when void is disabled and status is voidable
    * @throws {MedusaError} `NOT_FOUND` when status is neither voidable nor refundable
    */
   private async resolveRefundAction(transaction: Transaction): Promise<RefundAction> {
     const resolved = await this.applyTestForceSettled(transaction);
 
     if (isVoidableRefundStatus(resolved.status)) {
+      if (this.options_.disableVoidTransactions) {
+        this.logger.error(
+          `Braintree transaction with ID ${resolved.id} cannot be refunded right now because it's in status ${resolved.status}`,
+        );
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Braintree transaction with ID ${resolved.id} cannot be refunded right now`,
+        );
+      }
       return { kind: 'voided', transaction: resolved };
     }
 
@@ -1253,7 +1299,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Medusa refund hook: voids or refunds based on transaction status and
-   * appends history under `data.braintreeRefund`.
+   * appends history under `data.braintreeRefunds`.
    * @param input - Amount + session transaction
    */
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
@@ -1407,7 +1453,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
    * Parses a Braintree webhook notification from form-encoded signature + payload.
    * @param webhookData - Provider webhook payload from Medusa
    * @returns Parsed notification, or `null` when parse succeeds with an empty body
-   * @throws {MedusaError} When signature/payload validation fails (does not swallow)
+   *   or when signature/payload validation fails (logged; avoids Braintree retries)
    */
   private async parseWebhookNotification(
     webhookData: ProviderWebhookPayload['payload'],
@@ -1424,10 +1470,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     } catch (error) {
       this.logErrorDetail('webhook validation', error, { hasPayload: !!webhookData?.data });
       this.logger.error(`Braintree webhook validation failed : ${error}`);
-      if (MedusaError.isMedusaError(error)) throw error;
-      throw buildBraintreeError(error, 'validate Braintree webhook', this.logger, {
-        hasPayload: !!webhookData?.data,
-      });
+      // Permanently invalid signatures/payloads cannot succeed on retry; return null so
+      // getWebhookActionAndData maps to NOT_SUPPORTED (Medusa 2xx) instead of throwing.
+      return null;
     }
   }
 
@@ -1449,10 +1494,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Medusa webhook hook: parses the notification and returns action + session_id/amount.
-   * Empty/null notification → `NOT_SUPPORTED`. Parse/signature failures propagate as errors.
+   * Empty/null notification or permanent parse/signature failures → `NOT_SUPPORTED`.
    * Missing custom field session id → empty string.
    * @param webhookData - Raw provider webhook payload
-   * @throws {MedusaError} When webhook validation fails
    */
   async getWebhookActionAndData(webhookData: ProviderWebhookPayload['payload']): Promise<WebhookActionResult> {
     this.logDebug('getWebhookActionAndData', { hasData: !!webhookData?.data });

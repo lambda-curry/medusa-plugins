@@ -41,8 +41,8 @@ BRAINTREE_PRIVATE_KEY=<your_private_key>
 BRAINTREE_WEBHOOK_SECRET=<your_webhook_secret>
 BRAINTREE_ENVIRONMENT=sandbox|development|production|qa
 BRAINTREE_ENABLE_3D_SECURE=true|false
-TEST_FORCE_SETTLED=true|false
 BRAINTREE_LOGGING=true|false
+TEST_FORCE_SETTLED=true|false
 ```
 
 - `BRAINTREE_PUBLIC_KEY`: Your Braintree public key.
@@ -51,8 +51,8 @@ BRAINTREE_LOGGING=true|false
 - `BRAINTREE_WEBHOOK_SECRET`: Secret for validating Braintree webhooks.
 - `BRAINTREE_ENVIRONMENT`: One of `sandbox`, `development`, `production`, or `qa`.
 - `BRAINTREE_ENABLE_3D_SECURE`: Set to `true` to enable 3D Secure authentication, otherwise `false`.
-- `TEST_FORCE_SETTLED`: **Sandbox only.** When set to `true` **and** `BRAINTREE_ENVIRONMENT=sandbox`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Ignored (with a warning) outside sandbox. Do not enable in production.
 - `BRAINTREE_LOGGING`: Optional. Set to `true` to enable plugin debug logging. Wire this to the provider `logging` option in `medusa-config.ts` (see below). Defaults to `false`.
+- `TEST_FORCE_SETTLED`: Optional. **Sandbox only.** Wire this to the provider `testForceSettled` option in `medusa-config.ts` (see below). Defaults to `false`. Do not enable in production.
 
 ### Testing refunds in sandbox
 
@@ -61,14 +61,22 @@ In Braintree sandbox, transactions often remain in `authorized` or `submitted_fo
 - **Void path:** `authorized`, `submitted_for_settlement`
 - **Refund path:** `settled`, `settling`
 
-To test the refund path locally without waiting for settlement, set:
+To test the refund path locally without waiting for settlement, set `environment: 'sandbox'` and `testForceSettled: true` in provider options (optionally via env):
 
 ```env
 BRAINTREE_ENVIRONMENT=sandbox
 TEST_FORCE_SETTLED=true
 ```
 
-When both are set, `refundPayment` calls Braintree's sandbox `testing.settle` on the transaction, re-fetches it, then proceeds with `transaction.refund`. If `TEST_FORCE_SETTLED=true` but the provider environment is not `sandbox`, the settle step is skipped and a warning is logged.
+```javascript
+options: {
+  environment: process.env.BRAINTREE_ENVIRONMENT || 'sandbox',
+  testForceSettled: process.env.TEST_FORCE_SETTLED === 'true',
+  // ...
+}
+```
+
+When both are set, `refundPayment` calls Braintree's sandbox `testing.settle` on the transaction, re-fetches it, then proceeds with `transaction.refund`. If `testForceSettled` is `true` but the provider environment is not `sandbox`, the settle step is skipped and a warning is logged.
 
 ### Medusa Configuration
 
@@ -90,7 +98,9 @@ dependencies:[Modules.CACHE]
     savePaymentMethod: true, // Save payment methods for future use
     autoCapture: true,        // Automatically capture payments
     allowRefundOnRefunded: false,
+    disableVoidTransactions: false,
     logging: process.env.BRAINTREE_LOGGING === 'true', // Enable plugin debug logs
+    testForceSettled: process.env.TEST_FORCE_SETTLED === 'true', // Sandbox: settle before refund
   }
 }
 ```
@@ -106,7 +116,9 @@ dependencies:[Modules.CACHE]
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
 - **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
+- **disableVoidTransactions**: When `true`, refunds never void; only `settled`/`settling` transactions may be refunded. Late requirement so future partial order refunds and order edits can be supported (void cancels the full authorization). Default: `false`. With this enabled, `authorized`/`submitted_for_settlement` refunds fail with `INVALID_DATA` (“cannot be refunded right now”); other non-refundable statuses fail with `NOT_FOUND` (“cannot be refunded”).
 - **logging**: Enable verbose plugin debug logging (`true` or `false`, default: `false`). When `true`, the provider logs operation details (initiate, authorize, capture, refund, etc.) and expanded Braintree error context via Medusa's logger with a `[Braintree]` prefix. Set via `BRAINTREE_LOGGING=true` in `.env` or pass `logging: true` directly in provider options. Disable in production unless actively debugging.
+- **testForceSettled**: **Sandbox only.** When `true` **and** `environment` is `sandbox`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Ignored (with a warning) outside sandbox. Set via `TEST_FORCE_SETTLED=true` in `.env` wired to this option, or pass `testForceSettled: true` directly. Do not enable in production.
 
 ### Debug logging
 
@@ -140,6 +152,11 @@ Earlier README examples used `logging: process.env.NODE_ENV !== 'production'` (a
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 > - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
+
+### Upgrading to 0.2.0-next
+
+> **Note:**
+> - `disableVoidTransactions`: Late additional requirement so future partial order refunds and order edits can be supported. When `true`, only `settled`/`settling` may be refunded; `authorized`/`submitted_for_settlement` fail with `INVALID_DATA` (“cannot be refunded right now”); other statuses fail with `NOT_FOUND` (“cannot be refunded”). `cancelPayment` may still void.
 
 ### 3D Secure Setup
 

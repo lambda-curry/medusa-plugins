@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { MedusaError } from '@medusajs/framework/utils';
+import { MedusaError, PaymentActions } from '@medusajs/framework/utils';
 import type { RefundPaymentInput } from '@medusajs/types';
 import BraintreeProviderService from '../../services/braintree-provider';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
@@ -11,11 +11,12 @@ type RefundHistoryEntry = {
 };
 
 type RefundResultData = {
-  braintreeRefund?: RefundHistoryEntry[];
+  braintreeRefund?: RefundHistoryEntry[] | Record<string, unknown>;
+  braintreeRefunds?: RefundHistoryEntry[];
 };
 
 const lastRefundEntry = (data: unknown): RefundHistoryEntry | undefined => {
-  const history = (data as RefundResultData)?.braintreeRefund;
+  const history = (data as RefundResultData)?.braintreeRefunds;
   return history?.[history.length - 1];
 };
 
@@ -266,7 +267,41 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(lastRefundEntry(result.data)?.type).toBe('refund');
   });
 
-  it('refundPayment appends to existing braintreeRefund history', async () => {
+  it('refundPayment appends to existing braintreeRefunds history', async () => {
+    const { service, gateway } = buildService();
+    const priorEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-prior', status: 'submitted_for_settlement' },
+    };
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefunds: [priorEntry],
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-new', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
+
+    expect(history).toHaveLength(2);
+    expect(history?.[0]).toMatchObject(priorEntry);
+    expect(history?.[1]?.type).toBe('refund');
+    expect(history?.[1]?.transaction?.id).toBe('r-new');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
+  });
+
+  it('refundPayment migrates leftover braintreeRefund array onto braintreeRefunds', async () => {
     const { service, gateway } = buildService();
     const priorEntry = {
       type: 'refund' as const,
@@ -291,12 +326,51 @@ describe('BraintreeProviderService core behaviors', () => {
     });
 
     const result = await service.refundPayment(input);
-    const history = (result.data as RefundResultData)?.braintreeRefund;
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
 
     expect(history).toHaveLength(2);
     expect(history?.[0]).toMatchObject(priorEntry);
     expect(history?.[1]?.type).toBe('refund');
     expect(history?.[1]?.transaction?.id).toBe('r-new');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
+  });
+
+  it('refundPayment prefers braintreeRefunds when both history keys are present', async () => {
+    const { service, gateway } = buildService();
+    const pluralEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-plural', status: 'submitted_for_settlement' },
+    };
+    const singularEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-singular', status: 'submitted_for_settlement' },
+    };
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefunds: [pluralEntry],
+        braintreeRefund: [singularEntry],
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-new', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
+
+    expect(history).toHaveLength(2);
+    expect(history?.[0]).toMatchObject(pluralEntry);
+    expect(history?.[1]?.transaction?.id).toBe('r-new');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
   });
 
   it('refundPayment voids when transaction is submitted_for_settlement', async () => {
@@ -592,11 +666,12 @@ describe('BraintreeProviderService core behaviors', () => {
     gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'voided' });
 
     const result = await service.refundPayment(input);
-    const history = (result.data as RefundResultData)?.braintreeRefund;
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
 
     expect(Array.isArray(history)).toBe(true);
     expect(history).toHaveLength(1);
     expect(history?.[0]?.type).toBe('voided');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
   });
 
   it('getPaymentStatus maps provider status correctly', async () => {
@@ -622,7 +697,7 @@ describe('BraintreeProviderService core behaviors', () => {
     });
 
     const result = await service.getWebhookActionAndData({ data: payloadStr } as any);
-    expect(result.action).toBe('captured');
+    expect(result.action).toBe(PaymentActions.SUCCESSFUL);
     expect((result as any).data.session_id).toBe('sess_123');
   });
 
@@ -641,7 +716,7 @@ describe('BraintreeProviderService core behaviors', () => {
       data: 'bt_signature=s&bt_payload=p',
     } as any);
 
-    expect(result.action).toBe('captured');
+    expect(result.action).toBe(PaymentActions.SUCCESSFUL);
     expect((result as any).data.session_id).toBe('');
   });
 
@@ -727,15 +802,15 @@ describe('BraintreeProviderService core behaviors', () => {
     );
   });
 
-  it('getWebhookActionAndData propagates webhook parse failures', async () => {
-    const { service, gateway } = buildService();
+  it('getWebhookActionAndData returns NOT_SUPPORTED for webhook parse failures', async () => {
+    const { service, gateway, logger } = buildService();
     gateway.webhookNotification.parse.mockRejectedValueOnce(new Error('invalid signature'));
 
-    await expect(
-      service.getWebhookActionAndData({ data: 'bt_signature=bad&bt_payload=x' } as any),
-    ).rejects.toMatchObject({
-      type: MedusaError.Types.INVALID_DATA,
-      message: expect.stringContaining('validate Braintree webhook'),
-    });
+    const result = await service.getWebhookActionAndData({
+      data: 'bt_signature=bad&bt_payload=x',
+    } as any);
+
+    expect(result.action).toBe(PaymentActions.NOT_SUPPORTED);
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('webhook validation failed'));
   });
 });

@@ -1,10 +1,14 @@
 # Changelog
 
-## 0.1.9-next
+## 0.2.0-next
+
+### Fixes
+
+- Keep refund/void history on `braintreeRefunds[]` (same key as 0.1.8). Read leftover `braintreeRefund` arrays from the 0.2.0-next regression and migrate them onto `braintreeRefunds` on the next refund so both keys cannot drift.
 
 ### Improvements
 
-- Add `disableVoidTransactions` option: when enabled, refunds never void and only proceed for `settled`/`settling` transactions (late requirement for future partial order refunds and order edits). Unsettled refunds throw `INVALID_DATA` with “cannot be refunded right now”.
+- Add `disableVoidTransactions` option: when enabled, refunds never void. Only `settled`/`settling` may be refunded; `authorized`/`submitted_for_settlement` throw `INVALID_DATA` with “cannot be refunded right now”; other statuses throw `NOT_FOUND` with “cannot be refunded” (late requirement for future partial order refunds and order edits).
 - Move sandbox settle-before-refund from reading `process.env.TEST_FORCE_SETTLED` inside the provider to a `testForceSettled` option (wire `TEST_FORCE_SETTLED` in `medusa-config` if you still use the env var).
 
 ## 0.1.8

@@ -116,7 +116,7 @@ dependencies:[Modules.CACHE]
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
 - **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
-- **disableVoidTransactions**: When `true`, refunds never void; only `settled`/`settling` transactions may be refunded. Late requirement so future partial order refunds and order edits can be supported (void cancels the full authorization). Default: `false`. With this enabled, refunds on unsettled transactions fail with “cannot be refunded right now”.
+- **disableVoidTransactions**: When `true`, refunds never void; only `settled`/`settling` transactions may be refunded. Late requirement so future partial order refunds and order edits can be supported (void cancels the full authorization). Default: `false`. With this enabled, `authorized`/`submitted_for_settlement` refunds fail with `INVALID_DATA` (“cannot be refunded right now”); other non-refundable statuses fail with `NOT_FOUND` (“cannot be refunded”).
 - **logging**: Enable verbose plugin debug logging (`true` or `false`, default: `false`). When `true`, the provider logs operation details (initiate, authorize, capture, refund, etc.) and expanded Braintree error context via Medusa's logger with a `[Braintree]` prefix. Set via `BRAINTREE_LOGGING=true` in `.env` or pass `logging: true` directly in provider options. Disable in production unless actively debugging.
 - **testForceSettled**: **Sandbox only.** When `true` **and** `environment` is `sandbox`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Ignored (with a warning) outside sandbox. Set via `TEST_FORCE_SETTLED=true` in `.env` wired to this option, or pass `testForceSettled: true` directly. Do not enable in production.
 
@@ -152,7 +152,11 @@ Earlier README examples used `logging: process.env.NODE_ENV !== 'production'` (a
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 > - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
-> - `disableVoidTransactions`: Late additional requirement so future partial order refunds and order edits can be supported. When `true`, the provider waits for `settled`/`settling` before refunding; otherwise refund fails with “cannot be refunded right now”. `cancelPayment` may still void.
+
+### Upgrading to 0.2.0-next
+
+> **Note:**
+> - `disableVoidTransactions`: Late additional requirement so future partial order refunds and order edits can be supported. When `true`, only `settled`/`settling` may be refunded; `authorized`/`submitted_for_settlement` fail with `INVALID_DATA` (“cannot be refunded right now”); other statuses fail with `NOT_FOUND` (“cannot be refunded”). `cancelPayment` may still void.
 
 ### 3D Secure Setup
 

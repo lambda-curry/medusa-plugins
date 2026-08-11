@@ -110,9 +110,7 @@ type BraintreeValidationErrorsCollectionLike = {
   deepErrors?: () => BraintreeValidationErrorLike[];
 };
 
-type TransactionSaleResponse = Awaited<
-  ReturnType<Braintree.BraintreeGateway['transaction']['sale']>
->;
+type TransactionSaleResponse = Awaited<ReturnType<Braintree.BraintreeGateway['transaction']['sale']>>;
 
 /**
  * Subset of Braintree Result / transaction fields used when classifying failures
@@ -231,9 +229,7 @@ const getBraintreeErrorMessage = (response: BraintreeErrorResponseLike): string 
   const settlementResponseText = response.transaction?.processorSettlementResponseText?.trim();
   if (settlementResponseText) {
     const settlementResponseCode = response.transaction?.processorSettlementResponseCode?.trim();
-    return settlementResponseCode
-      ? `${settlementResponseText} (${settlementResponseCode})`
-      : settlementResponseText;
+    return settlementResponseCode ? `${settlementResponseText} (${settlementResponseCode})` : settlementResponseText;
   }
 
   const validationErrors = getBraintreeValidationErrors(response.errors).map(formatBraintreeValidationError);
@@ -277,9 +273,7 @@ export function throwOnBraintreeFailure(
     response.transaction?.gatewayRejectionReason ||
     response.transaction?.processorResponseText ||
     response.transaction?.processorSettlementResponseText;
-  const type = hasProcessorSignal
-    ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR
-    : MedusaError.Types.INVALID_DATA;
+  const type = hasProcessorSignal ? MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR : MedusaError.Types.INVALID_DATA;
 
   log(`${operation} failed`, new Error(message), {
     ...context,
@@ -405,9 +399,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
    * Whether sandbox test settlement is enabled (`testForceSettled` option and env is sandbox).
    */
   private isTestForceSettledEnabled(): boolean {
-    return (
-      !!this.options_.testForceSettled && this.options_.environment.toLowerCase() === 'sandbox'
-    );
+    return !!this.options_.testForceSettled && this.options_.environment.toLowerCase() === 'sandbox';
   }
 
   /**
@@ -507,7 +499,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const requiredFields = ['merchantId', 'publicKey', 'privateKey', 'webhookSecret', 'environment'];
 
     for (const field of requiredFields) {
-      if (!isDefined(options[field as keyof BraintreeOptions]) || typeof options[field as keyof BraintreeOptions] !== 'string') {
+      if (
+        !isDefined(options[field as keyof BraintreeOptions]) ||
+        typeof options[field as keyof BraintreeOptions] !== 'string'
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Required option "${field}" is missing or invalid in Braintree plugin`,
@@ -541,7 +536,10 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       'testForceSettled',
     ];
     for (const field of booleanFields) {
-      if (isDefined(options[field as keyof BraintreeOptions]) && typeof options[field as keyof BraintreeOptions] !== 'boolean') {
+      if (
+        isDefined(options[field as keyof BraintreeOptions]) &&
+        typeof options[field as keyof BraintreeOptions] !== 'boolean'
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Option "${field}" must be a boolean in Braintree plugin`,
@@ -873,11 +871,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
    * @param context - Optional log context
    * @throws {MedusaError} Always throws
    */
-  private rethrowGatewayError(
-    error: unknown,
-    operation: string,
-    context?: Record<string, unknown>,
-  ): never {
+  private rethrowGatewayError(error: unknown, operation: string, context?: Record<string, unknown>): never {
     if (MedusaError.isMedusaError(error)) throw error;
     this.logErrorDetail(operation, error, context);
     throw buildBraintreeError(error, operation, this.logger, context);
@@ -946,10 +940,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     const transactionId = saleResponse.transaction?.id;
 
     if (!transactionId) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        'Braintree sale succeeded without a transaction id',
-      );
+      throw new MedusaError(MedusaError.Types.INVALID_DATA, 'Braintree sale succeeded without a transaction id');
     }
 
     try {
@@ -1209,9 +1200,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     if (!this.options_.testForceSettled) return transaction;
 
     if (!this.isTestForceSettledEnabled()) {
-      this.logger.warn(
-        '[Braintree refund] testForceSettled ignored — only supported when environment is sandbox',
-      );
+      this.logger.warn('[Braintree refund] testForceSettled ignored — only supported when environment is sandbox');
       return transaction;
     }
 
@@ -1289,11 +1278,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         transaction.id,
       );
     } catch (error) {
-      this.rethrowGatewayError(
-        error,
-        kind === 'voided' ? 'void Braintree transaction' : 'create Braintree refund',
-        { transactionId: transaction.id },
-      );
+      this.rethrowGatewayError(error, kind === 'voided' ? 'void Braintree transaction' : 'create Braintree refund', {
+        transactionId: transaction.id,
+      });
     }
   }
 

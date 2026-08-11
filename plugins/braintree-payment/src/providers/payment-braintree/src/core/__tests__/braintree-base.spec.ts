@@ -1,17 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { MedusaError } from '@medusajs/framework/utils';
+import { MedusaError, PaymentActions } from '@medusajs/framework/utils';
 import type { RefundPaymentInput } from '@medusajs/types';
 import BraintreeProviderService from '../../services/braintree-provider';
 import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 import type { BraintreeOptions } from '../../types';
 
+type RefundHistoryEntry = {
+  type?: 'voided' | 'refund';
+  transaction?: { id?: string; status?: string };
+};
+
 type RefundResultData = {
-  braintreeRefund?: {
-    id?: string;
-    success?: boolean;
-    transactionId?: string;
-    type?: string;
-  };
+  braintreeRefund?: RefundHistoryEntry[] | Record<string, unknown>;
+  braintreeRefunds?: RefundHistoryEntry[];
+};
+
+const lastRefundEntry = (data: unknown): RefundHistoryEntry | undefined => {
+  const history = (data as RefundResultData)?.braintreeRefunds;
+  return history?.[history.length - 1];
 };
 
 const buildService = (overrideOptions?: Partial<BraintreeOptions>) => {
@@ -70,20 +76,12 @@ const settledRefundInput = (amount: number, transactionId = 't-settled'): Refund
 });
 
 describe('BraintreeProviderService core behaviors', () => {
-  const originalTestForceSettled = process.env.TEST_FORCE_SETTLED;
-
   beforeEach(() => {
     jest.resetAllMocks();
-    delete process.env.TEST_FORCE_SETTLED;
   });
 
   afterEach(() => {
     jest.useRealTimers();
-    if (originalTestForceSettled === undefined) {
-      delete process.env.TEST_FORCE_SETTLED;
-    } else {
-      process.env.TEST_FORCE_SETTLED = originalTestForceSettled;
-    }
   });
 
   it('returns cached client token when available', async () => {
@@ -172,9 +170,10 @@ describe('BraintreeProviderService core behaviors', () => {
       transaction: {},
     });
 
-    await expect(service.authorizePayment(input)).rejects.toThrow(
-      'Failed to create Braintree transaction: BT: postalCode: Postal code is invalid. (81813)',
-    );
+    await expect(service.authorizePayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+      message: 'BT: postalCode: Postal code is invalid. (81813)',
+    });
   });
 
   it('capturePayment submits for settlement when status is authorized', async () => {
@@ -222,7 +221,156 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
-    expect((result.data as RefundResultData)?.braintreeRefund?.success).toBe(true);
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('voided');
+    expect(entry?.transaction?.id).toBe('t1');
+  });
+
+  it('refundPayment throws when disableVoidTransactions and status is authorized', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+
+    const input: RefundPaymentInput = {
+      amount: 5,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'authorized' });
+
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'Braintree transaction with ID t1 cannot be refunded right now',
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
+  it('refundPayment refunds settled transactions when disableVoidTransactions is enabled', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+
+    gateway.transaction.find
+      .mockResolvedValueOnce({ id: 't-settled', status: 'settled' })
+      .mockResolvedValueOnce({ id: 't-settled', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-settled', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(settledRefundInput(10));
+
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).toHaveBeenCalledWith('t-settled', '10.00');
+    expect(lastRefundEntry(result.data)?.type).toBe('refund');
+  });
+
+  it('refundPayment appends to existing braintreeRefunds history', async () => {
+    const { service, gateway } = buildService();
+    const priorEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-prior', status: 'submitted_for_settlement' },
+    };
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefunds: [priorEntry],
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-new', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
+
+    expect(history).toHaveLength(2);
+    expect(history?.[0]).toMatchObject(priorEntry);
+    expect(history?.[1]?.type).toBe('refund');
+    expect(history?.[1]?.transaction?.id).toBe('r-new');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
+  });
+
+  it('refundPayment migrates leftover braintreeRefund array onto braintreeRefunds', async () => {
+    const { service, gateway } = buildService();
+    const priorEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-prior', status: 'submitted_for_settlement' },
+    };
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefund: [priorEntry],
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-new', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
+
+    expect(history).toHaveLength(2);
+    expect(history?.[0]).toMatchObject(priorEntry);
+    expect(history?.[1]?.type).toBe('refund');
+    expect(history?.[1]?.transaction?.id).toBe('r-new');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
+  });
+
+  it('refundPayment prefers braintreeRefunds when both history keys are present', async () => {
+    const { service, gateway } = buildService();
+    const pluralEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-plural', status: 'submitted_for_settlement' },
+    };
+    const singularEntry = {
+      type: 'refund' as const,
+      transaction: { id: 'r-singular', status: 'submitted_for_settlement' },
+    };
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefunds: [pluralEntry],
+        braintreeRefund: [singularEntry],
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'settled' });
+    gateway.transaction.refund.mockResolvedValueOnce({
+      success: true,
+      transaction: { id: 'r-new', status: 'submitted_for_settlement' },
+    });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
+
+    expect(history).toHaveLength(2);
+    expect(history?.[0]).toMatchObject(pluralEntry);
+    expect(history?.[1]?.transaction?.id).toBe('r-new');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
   });
 
   it('refundPayment voids when transaction is submitted_for_settlement', async () => {
@@ -245,7 +393,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
-    expect((result.data as RefundResultData)?.braintreeRefund?.success).toBe(true);
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('voided');
+    expect(entry?.transaction?.id).toBe('t1');
   });
 
   it('refundPayment refunds with 2dp when transaction is settling', async () => {
@@ -269,7 +419,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '7.50');
-    expect((result.data as RefundResultData)?.braintreeRefund?.id).toBe('r2');
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('refund');
+    expect(entry?.transaction?.id).toBe('r2');
   });
 
   it('refundPayment throws for non-refundable statuses', async () => {
@@ -313,7 +465,9 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '5.00');
-    expect((result.data as RefundResultData)?.braintreeRefund?.id).toBe('r1');
+    const entry = lastRefundEntry(result.data);
+    expect(entry?.type).toBe('refund');
+    expect(entry?.transaction?.id).toBe('r1');
   });
 
   it('refundPayment throws PAYMENT_AUTHORIZATION_ERROR with processor code 2005 on decline', async () => {
@@ -450,9 +604,8 @@ describe('BraintreeProviderService core behaviors', () => {
     });
   });
 
-  it('refundPayment settles then refunds when TEST_FORCE_SETTLED is enabled in sandbox', async () => {
-    process.env.TEST_FORCE_SETTLED = 'true';
-    const { service, gateway } = buildService({ environment: 'sandbox' });
+  it('refundPayment settles then refunds when testForceSettled is enabled in sandbox', async () => {
+    const { service, gateway } = buildService({ environment: 'sandbox', testForceSettled: true });
 
     gateway.transaction.find
       .mockResolvedValueOnce({ id: 't-force', status: 'authorized' })
@@ -468,12 +621,13 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.testing.settle).toHaveBeenCalledWith('t-force');
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t-force', '10.00');
-    expect((result.data as RefundResultData).braintreeRefund?.id).toBe('r-force');
+    const forceEntry = lastRefundEntry(result.data);
+    expect(forceEntry?.type).toBe('refund');
+    expect(forceEntry?.transaction?.id).toBe('r-force');
   });
 
-  it('refundPayment ignores TEST_FORCE_SETTLED outside sandbox and voids authorized transactions', async () => {
-    process.env.TEST_FORCE_SETTLED = 'true';
-    const { service, gateway, logger } = buildService({ environment: 'production' });
+  it('refundPayment ignores testForceSettled outside sandbox and voids authorized transactions', async () => {
+    const { service, gateway, logger } = buildService({ environment: 'production', testForceSettled: true });
 
     gateway.transaction.find
       .mockResolvedValueOnce({ id: 't-prod', status: 'authorized' })
@@ -486,9 +640,38 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.transaction.void).toHaveBeenCalledWith('t-prod');
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
-      '[Braintree refund] TEST_FORCE_SETTLED ignored — only supported when environment is sandbox',
+      '[Braintree refund] testForceSettled ignored — only supported when environment is sandbox',
     );
-    expect((result.data as RefundResultData).braintreeRefund?.success).toBe(true);
+    const prodEntry = lastRefundEntry(result.data);
+    expect(prodEntry?.type).toBe('voided');
+    expect(prodEntry?.transaction?.id).toBe('t-prod');
+  });
+
+  it('refundPayment tolerates legacy non-array braintreeRefund session data', async () => {
+    const { service, gateway } = buildService();
+
+    const input: RefundPaymentInput = {
+      amount: 5,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+        braintreeRefund: { success: true, type: 'void' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'authorized' });
+    gateway.transaction.void.mockResolvedValueOnce({ success: true });
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't1', status: 'voided' });
+
+    const result = await service.refundPayment(input);
+    const history = (result.data as RefundResultData)?.braintreeRefunds;
+
+    expect(Array.isArray(history)).toBe(true);
+    expect(history).toHaveLength(1);
+    expect(history?.[0]?.type).toBe('voided');
+    expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
   });
 
   it('getPaymentStatus maps provider status correctly', async () => {
@@ -514,7 +697,120 @@ describe('BraintreeProviderService core behaviors', () => {
     });
 
     const result = await service.getWebhookActionAndData({ data: payloadStr } as any);
-    expect(result.action).toBe('captured');
+    expect(result.action).toBe(PaymentActions.SUCCESSFUL);
     expect((result as any).data.session_id).toBe('sess_123');
+  });
+
+  it('getWebhookActionAndData tolerates transactions without customFields', async () => {
+    const { service, gateway } = buildService();
+    gateway.webhookNotification.parse.mockResolvedValueOnce({
+      kind: 'transaction_settled',
+      transaction: { id: 't-foreign' },
+    });
+    gateway.transaction.find.mockResolvedValueOnce({
+      id: 't-foreign',
+      amount: '1.00',
+    });
+
+    const result = await service.getWebhookActionAndData({
+      data: 'bt_signature=s&bt_payload=p',
+    } as any);
+
+    expect(result.action).toBe(PaymentActions.SUCCESSFUL);
+    expect((result as any).data.session_id).toBe('');
+  });
+
+  it('authorizePayment fails clearly when sale Result omits transaction id', async () => {
+    const { service, gateway } = buildService();
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: undefined });
+
+    await expect(
+      service.authorizePayment({
+        data: {
+          clientToken: 'ct',
+          amount: 10,
+          currency_code: 'USD',
+          payment_method_nonce: 'fake-nonce',
+        },
+        context: { idempotency_key: 'idem_missing_tx' },
+      } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'Braintree sale succeeded without a transaction id',
+    });
+  });
+
+  it('authorizePayment preserves sync error when orphan void rejects', async () => {
+    const { service, gateway, logger } = buildService();
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: { id: 't-orphan' } });
+    gateway.transaction.find.mockRejectedValueOnce(new Error('sync failed'));
+    gateway.transaction.void.mockRejectedValueOnce(new Error('void network error'));
+
+    await expect(
+      service.authorizePayment({
+        data: {
+          clientToken: 'ct',
+          amount: 10,
+          currency_code: 'USD',
+          payment_method_nonce: 'fake-nonce',
+        },
+        context: { idempotency_key: 'idem_orphan_reject' },
+      } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: expect.stringContaining('sync payment session'),
+    });
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t-orphan');
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to void orphan Braintree transaction t-orphan'),
+      expect.any(Error),
+    );
+  });
+
+  it('authorizePayment preserves sync error when orphan void returns success false', async () => {
+    const { service, gateway, logger } = buildService();
+
+    gateway.transaction.sale.mockResolvedValueOnce({ success: true, transaction: { id: 't-orphan2' } });
+    gateway.transaction.find.mockRejectedValueOnce(new Error('sync failed'));
+    gateway.transaction.void.mockResolvedValueOnce({
+      success: false,
+      message: 'Cannot void',
+      transaction: { status: 'processor_declined', processorResponseText: 'Do Not Honor' },
+    });
+
+    await expect(
+      service.authorizePayment({
+        data: {
+          clientToken: 'ct',
+          amount: 10,
+          currency_code: 'USD',
+          payment_method_nonce: 'fake-nonce',
+        },
+        context: { idempotency_key: 'idem_orphan_false' },
+      } as any),
+    ).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: expect.stringContaining('sync payment session'),
+    });
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t-orphan2');
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to void orphan Braintree transaction t-orphan2 after sync failure'),
+    );
+  });
+
+  it('getWebhookActionAndData returns NOT_SUPPORTED for webhook parse failures', async () => {
+    const { service, gateway, logger } = buildService();
+    gateway.webhookNotification.parse.mockRejectedValueOnce(new Error('invalid signature'));
+
+    const result = await service.getWebhookActionAndData({
+      data: 'bt_signature=bad&bt_payload=x',
+    } as any);
+
+    expect(result.action).toBe(PaymentActions.NOT_SUPPORTED);
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('webhook validation failed'));
   });
 });

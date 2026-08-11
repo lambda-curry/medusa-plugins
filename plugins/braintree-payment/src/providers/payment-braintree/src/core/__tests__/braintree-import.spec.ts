@@ -3,7 +3,7 @@ import { MedusaError } from '@medusajs/framework/utils';
 import BraintreeImportService from '../../services/braintree-import';
 import { BraintreeConstructorArgs } from '../braintree-base';
 
-const buildService = () => {
+const buildService = (overrideOptions?: Record<string, unknown>) => {
   const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() } as any;
   const cache = { get: jest.fn(), set: jest.fn() } as any;
 
@@ -18,6 +18,7 @@ const buildService = () => {
     savePaymentMethod: false,
     webhookSecret: 'whsec',
     autoCapture: true,
+    ...overrideOptions,
   } as any;
 
   const service = new BraintreeImportService(container, options);
@@ -33,7 +34,7 @@ const buildService = () => {
 
   (service as any).gateway = gateway;
 
-  return { service, gateway };
+  return { service, gateway, logger };
 };
 
 describe('BraintreeImportService', () => {
@@ -79,6 +80,19 @@ describe('BraintreeImportService', () => {
     const res = await service.refundPayment({ amount: 10, data: session } as any);
     expect(gateway.transaction.void).toHaveBeenCalledWith('t2');
     expect((res.data as any).refundedTotal).toBe(10);
+  });
+
+  it('throws when disableVoidTransactions and status is authorized', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+    const session = { transactionId: 't2', importedAsRefunded: false, refundedTotal: 0, status: 'captured' } as any;
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't2', status: 'authorized' });
+
+    await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'Braintree transaction with ID t2 cannot be refunded right now',
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });
 
   it('performs real refund for settled/settling when not imported-refunded', async () => {

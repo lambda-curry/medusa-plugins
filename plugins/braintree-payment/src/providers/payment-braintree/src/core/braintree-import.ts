@@ -285,6 +285,16 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
     if (shouldVoid) {
+      if (this.options.disableVoidTransactions) {
+        this.logger.error(
+          `Braintree transaction with ID ${transaction.id} cannot be refunded right now because it's in status ${transaction.status}`,
+        );
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Braintree transaction with ID ${transaction.id} cannot be refunded right now`,
+        );
+      }
+
       const cancelResponse = await this.gateway.transaction.void(transaction.id);
 
       if (isBraintreeFailureResponse(cancelResponse)) {

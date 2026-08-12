@@ -1111,7 +1111,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   /**
    * Reads refund/void history from session data.
    * Prefers `braintreeRefunds` (0.1.8+). Falls back to an array on `braintreeRefund`
-   * (0.2.0-next regression). Non-array values on either key are discarded.
+   * (0.2.0-next / pre-0.2.2 regression). Non-array values on either key are discarded.
    * @param data - Payment session `data` bag
    */
   private readRefundHistory(data: Record<string, unknown> | undefined): BraintreeRefundHistoryEntry[] {

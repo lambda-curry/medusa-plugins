@@ -1,10 +1,14 @@
 # Changelog
 
-## 0.2.0-next
+## 0.2.2
 
 ### Fixes
 
-- Keep refund/void history on `braintreeRefunds[]` (same key as 0.1.8). Read leftover `braintreeRefund` arrays from the 0.2.0-next regression and migrate them onto `braintreeRefunds` on the next refund so both keys cannot drift.
+- Keep refund/void history on `braintreeRefunds[]` (same key as 0.1.8). Read leftover `braintreeRefund` arrays from the brief `0.2.0-next` regression and migrate them onto `braintreeRefunds` on the next refund so both keys cannot drift.
+
+### Notes
+
+- Stable release of the former `0.2.0-next` prerelease. Prefer `0.2.2` (or later) over any `next` dist-tag install.
 
 ### Improvements
 

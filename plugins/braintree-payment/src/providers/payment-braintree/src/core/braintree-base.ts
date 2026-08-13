@@ -1119,8 +1119,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Reads refund/void history from session data.
-   * Prefers `braintreeRefunds` (0.1.8+). Falls back to an array on `braintreeRefund`
-   * (0.2.0-next regression). Non-array values on either key are discarded.
+   * Prefers `braintreeRefunds`. Falls back to an array on `braintreeRefund`.
+   * Non-array values on either key are discarded.
    * @param data - Payment session `data` bag
    */
   private readRefundHistory(data: Record<string, unknown> | undefined): BraintreeRefundHistoryEntry[] {
@@ -1147,9 +1147,11 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
    * Builds refund output `data`, appending one entry to `braintreeRefunds` history.
    * Reads prior history from `braintreeRefunds` (preferred) or leftover `braintreeRefund`.
    * Writes only `braintreeRefunds` so the two keys cannot drift.
+   * Session `data.transaction` stays the original sale so later partial refunds
+   * still target that id. Credit/void results live only on `braintreeRefunds[]`.
    * @param input - Original refund input (prior history read from session `data`)
-   * @param transaction - Pre-refund Braintree transaction retained on session data
-   * @param entry - New void/refund history entry
+   * @param transaction - Original sale retained on session data (never the credit)
+   * @param entry - New void/refund history entry (credit or voided sale)
    */
   private buildRefundPaymentOutput(
     input: RefundPaymentInput,
@@ -1256,6 +1258,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Executes void or refund against Braintree for the resolved {@link RefundAction}.
+   * Always calls void/refund with the original sale id. The returned transaction is
+   * the gateway record (credit `r1` or voided sale) for `braintreeRefunds[]` only.
    * @param action - Void or refund with target transaction
    * @param refundAmount - Amount used for refund calls (ignored for void)
    * @throws {MedusaError} Via {@link requireGatewayTransaction} / {@link rethrowGatewayError}
@@ -1300,6 +1304,8 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
   /**
    * Medusa refund hook: voids or refunds based on transaction status and
    * appends history under `data.braintreeRefunds`.
+   * Keeps the original sale on `data.transaction` so later partial refunds
+   * still use that id. Gateway credits/voids are records on `braintreeRefunds[]`.
    * @param input - Amount + session transaction
    */
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {

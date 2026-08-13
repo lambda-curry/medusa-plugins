@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { MedusaError, PaymentActions } from '@medusajs/framework/utils';
 import type { RefundPaymentInput } from '@medusajs/types';
 import BraintreeProviderService from '../../services/braintree-provider';
-import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 import type { BraintreeOptions } from '../../types';
+import { BraintreeConstructorArgs, BraintreePaymentSessionData } from '../braintree-base';
 
 type RefundHistoryEntry = {
   type?: 'voided' | 'refund';

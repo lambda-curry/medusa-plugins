@@ -153,7 +153,7 @@ Earlier README examples used `logging: process.env.NODE_ENV !== 'production'` (a
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 > - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
 
-### Upgrading to 0.2.0-next
+### Upgrading to 0.2.2
 
 > **Note:**
 > - `disableVoidTransactions`: Late additional requirement so future partial order refunds and order edits can be supported. When `true`, only `settled`/`settling` may be refunded; `authorized`/`submitted_for_settlement` fail with `INVALID_DATA` (“cannot be refunded right now”); other statuses fail with `NOT_FOUND` (“cannot be refunded”). `cancelPayment` may still void.

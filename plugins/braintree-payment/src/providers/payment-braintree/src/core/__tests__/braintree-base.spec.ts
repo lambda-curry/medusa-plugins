@@ -245,7 +245,7 @@ describe('BraintreeProviderService core behaviors', () => {
 
     await expect(service.refundPayment(input)).rejects.toMatchObject({
       type: MedusaError.Types.INVALID_DATA,
-      message: 'Braintree transaction with ID t1 cannot be refunded right now',
+      message: "Braintree transaction with ID t1 cannot be refunded right now because it's in status authorized",
     });
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
@@ -481,7 +481,33 @@ describe('BraintreeProviderService core behaviors', () => {
 
     gateway.transaction.find.mockResolvedValueOnce({ id: 't3', status: 'failed' });
 
-    await expect(service.refundPayment(input)).rejects.toThrow();
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.NOT_FOUND,
+      message: "Braintree transaction with ID t3 cannot be refunded because it's in status failed",
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
+  it('refundPayment throws when transaction is already voided', async () => {
+    const { service, gateway } = buildService();
+
+    const input: RefundPaymentInput = {
+      amount: 10,
+      data: {
+        clientToken: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't-voided' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-voided', status: 'voided' });
+
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.NOT_FOUND,
+      message: "Braintree transaction with ID t-voided cannot be refunded because it's in status voided",
+    });
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });

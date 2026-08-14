@@ -1221,12 +1221,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (isVoidableRefundStatus(resolved.status)) {
       if (this.options_.disableVoidTransactions) {
-        this.logger.error(
-          `Braintree transaction with ID ${resolved.id} cannot be refunded right now because it's in status ${resolved.status}`,
-        );
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          `Braintree transaction with ID ${resolved.id} cannot be refunded right now`,
+          `Braintree transaction with ID ${resolved.id} cannot be refunded right now because it's in status ${resolved.status}`,
         );
       }
       return { kind: 'voided', transaction: resolved };
@@ -1236,12 +1233,9 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
       return { kind: 'refund', transaction: resolved };
     }
 
-    this.logger.error(
-      `Braintree transaction with ID ${resolved.id} cannot be refunded because it's in status ${resolved.status}`,
-    );
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      `Braintree transaction with ID ${resolved.id} cannot be refunded`,
+      `Braintree transaction with ID ${resolved.id} cannot be refunded because it's in status ${resolved.status}`,
     );
   }
 

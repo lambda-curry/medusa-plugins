@@ -286,12 +286,9 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
 
     if (shouldVoid) {
       if (this.options.disableVoidTransactions) {
-        this.logger.error(
-          `Braintree transaction with ID ${transaction.id} cannot be refunded right now because it's in status ${transaction.status}`,
-        );
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          `Braintree transaction with ID ${transaction.id} cannot be refunded right now`,
+          `Braintree transaction with ID ${transaction.id} cannot be refunded right now because it's in status ${transaction.status}`,
         );
       }
 
@@ -317,7 +314,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     if (!shouldRefund) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Braintree transaction with ID ${transaction.id} cannot be refunded`,
+        `Braintree transaction with ID ${transaction.id} cannot be refunded because it's in status ${transaction.status}`,
       );
     }
 

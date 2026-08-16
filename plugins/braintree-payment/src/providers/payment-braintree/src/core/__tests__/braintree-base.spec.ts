@@ -11,6 +11,7 @@ type RefundHistoryEntry = {
 };
 
 type RefundResultData = {
+  transaction?: { id?: string };
   braintreeRefund?: RefundHistoryEntry[] | Record<string, unknown>;
   braintreeRefunds?: RefundHistoryEntry[];
 };
@@ -221,6 +222,7 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
+    expect((result.data as RefundResultData)?.transaction?.id).toBe('t1');
     const entry = lastRefundEntry(result.data);
     expect(entry?.type).toBe('voided');
     expect(entry?.transaction?.id).toBe('t1');
@@ -243,7 +245,7 @@ describe('BraintreeProviderService core behaviors', () => {
 
     await expect(service.refundPayment(input)).rejects.toMatchObject({
       type: MedusaError.Types.INVALID_DATA,
-      message: 'Braintree transaction with ID t1 cannot be refunded right now',
+      message: "Braintree transaction with ID t1 cannot be refunded right now because it's in status authorized",
     });
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
@@ -264,7 +266,9 @@ describe('BraintreeProviderService core behaviors', () => {
 
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t-settled', '10.00');
+    expect((result.data as RefundResultData)?.transaction?.id).toBe('t-settled');
     expect(lastRefundEntry(result.data)?.type).toBe('refund');
+    expect(lastRefundEntry(result.data)?.transaction?.id).toBe('r-settled');
   });
 
   it('refundPayment appends to existing braintreeRefunds history', async () => {
@@ -294,11 +298,48 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
     const history = (result.data as RefundResultData)?.braintreeRefunds;
 
+    expect((result.data as RefundResultData)?.transaction?.id).toBe('t1');
     expect(history).toHaveLength(2);
     expect(history?.[0]).toMatchObject(priorEntry);
     expect(history?.[1]?.type).toBe('refund');
     expect(history?.[1]?.transaction?.id).toBe('r-new');
     expect((result.data as RefundResultData)?.braintreeRefund).toBeUndefined();
+  });
+
+  it('refundPayment keeps the original sale id across sequential partial refunds', async () => {
+    const { service, gateway } = buildService();
+
+    const input: RefundPaymentInput = {
+      amount: 3,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValue({ id: 't1', status: 'settled' });
+    gateway.transaction.refund
+      .mockResolvedValueOnce({ success: true, transaction: { id: 'r1' } })
+      .mockResolvedValueOnce({ success: true, transaction: { id: 'r2' } });
+
+    const first = await service.refundPayment(input);
+    const firstData = first.data as RefundResultData;
+
+    expect(gateway.transaction.refund).toHaveBeenCalledWith('t1', '3.00');
+    expect(firstData?.transaction?.id).toBe('t1');
+    expect(firstData?.braintreeRefunds).toHaveLength(1);
+    expect(firstData?.braintreeRefunds?.[0]?.transaction?.id).toBe('r1');
+
+    const second = await service.refundPayment({ amount: 2, data: first.data });
+    const secondData = second.data as RefundResultData;
+
+    expect(gateway.transaction.refund).toHaveBeenNthCalledWith(2, 't1', '2.00');
+    expect(secondData?.transaction?.id).toBe('t1');
+    expect(secondData?.braintreeRefunds).toHaveLength(2);
+    expect(secondData?.braintreeRefunds?.[0]?.transaction?.id).toBe('r1');
+    expect(secondData?.braintreeRefunds?.[1]?.transaction?.id).toBe('r2');
   });
 
   it('refundPayment migrates leftover braintreeRefund array onto braintreeRefunds', async () => {
@@ -419,6 +460,7 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '7.50');
+    expect((result.data as RefundResultData)?.transaction?.id).toBe('t2');
     const entry = lastRefundEntry(result.data);
     expect(entry?.type).toBe('refund');
     expect(entry?.transaction?.id).toBe('r2');
@@ -439,7 +481,33 @@ describe('BraintreeProviderService core behaviors', () => {
 
     gateway.transaction.find.mockResolvedValueOnce({ id: 't3', status: 'failed' });
 
-    await expect(service.refundPayment(input)).rejects.toThrow();
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.NOT_FOUND,
+      message: "Braintree transaction with ID t3 cannot be refunded because it's in status failed",
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
+  it('refundPayment throws when transaction is already voided', async () => {
+    const { service, gateway } = buildService();
+
+    const input: RefundPaymentInput = {
+      amount: 10,
+      data: {
+        clientToken: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't-voided' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({ id: 't-voided', status: 'voided' });
+
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.NOT_FOUND,
+      message: "Braintree transaction with ID t-voided cannot be refunded because it's in status voided",
+    });
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });
@@ -465,6 +533,7 @@ describe('BraintreeProviderService core behaviors', () => {
     const result = await service.refundPayment(input);
 
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t2', '5.00');
+    expect((result.data as RefundResultData)?.transaction?.id).toBe('t2');
     const entry = lastRefundEntry(result.data);
     expect(entry?.type).toBe('refund');
     expect(entry?.transaction?.id).toBe('r1');
@@ -621,6 +690,7 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.testing.settle).toHaveBeenCalledWith('t-force');
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).toHaveBeenCalledWith('t-force', '10.00');
+    expect((result.data as RefundResultData)?.transaction?.id).toBe('t-force');
     const forceEntry = lastRefundEntry(result.data);
     expect(forceEntry?.type).toBe('refund');
     expect(forceEntry?.transaction?.id).toBe('r-force');

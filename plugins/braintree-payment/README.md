@@ -153,6 +153,12 @@ Earlier README examples used `logging: process.env.NODE_ENV !== 'production'` (a
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 > - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
 
+### Upgrading to 0.2.5
+
+> **Note:**
+> - Sequential partial refunds keep the original sale on `data.transaction`. Credit/void results are recorded only on `braintreeRefunds[]`. If you were reading the latest credit from `data.transaction` after a refund, use `braintreeRefunds` instead.
+> - Refund rejection errors now include the Braintree transaction status in the message.
+
 ### Upgrading to 0.2.2
 
 > **Note:**

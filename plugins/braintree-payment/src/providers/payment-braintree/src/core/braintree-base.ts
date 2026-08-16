@@ -45,9 +45,11 @@ import type {
 } from '@medusajs/types';
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
+import http from 'http';
+import https from 'https';
 import { z } from 'zod';
 import { formatToTwoDecimalString } from '../../../../utils/format-amount';
-import type { BraintreeOptions, CustomFields } from '../types';
+import type { BraintreeOptions, CustomFields, HttpAgentConfig } from '../types';
 
 /** Medusa DI container fields required by {@link BraintreeBase}. */
 export type BraintreeConstructorArgs = Record<string, unknown> & {
@@ -462,6 +464,69 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     return result.data as BraintreePaymentSessionData;
   }
 
+  private createHttpAgent(): http.Agent | https.Agent | undefined {
+    // Backward compatibility: if customHttpAgent is directly provided, use it
+    if (this.options_.customHttpAgent) {
+      return this.options_.customHttpAgent;
+    }
+
+    // If proxy URL is provided, try to create a proxy agent
+    if (this.options_.proxyUrl) {
+      try {
+        // Try to use https-proxy-agent (most common for HTTPS proxies)
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { HttpsProxyAgent } = require('https-proxy-agent');
+
+        // Create proxy agent with URL string
+        // Proxy URL format: http://[username:password@]proxy.example.com:8080
+        return new HttpsProxyAgent(this.options_.proxyUrl);
+      } catch (error) {
+        const isRequireMissingProxyAgent =
+          error instanceof Error && /Cannot find module ['"]https-proxy-agent['"]/.test(error.message);
+        const isModuleNotFoundProxyAgent =
+          typeof error === 'object' &&
+          error !== null &&
+          ('code' in error ? (error as { code?: string }).code === 'MODULE_NOT_FOUND' : false) &&
+          error instanceof Error &&
+          error.message.includes('https-proxy-agent');
+
+        if (isRequireMissingProxyAgent || isModuleNotFoundProxyAgent) {
+          this.logger.warn(
+            'https-proxy-agent package not found. Install it with: npm install https-proxy-agent. Falling back to regular agent.',
+          );
+          // Fall through to create regular agent only when the module is missing
+        } else {
+          const message = error instanceof Error ? error.message : String(error);
+          this.logger.error(`Failed to initialize proxy agent from proxyUrl: ${message}`);
+          throw error;
+        }
+      }
+    }
+
+    // If httpAgent config is provided, create a regular HTTPS agent
+    if (this.options_.httpAgent) {
+      const agentOptions: https.AgentOptions = {
+        keepAlive: this.options_.httpAgent.keepAlive ?? true,
+        keepAliveMsecs: this.options_.httpAgent.keepAliveMsecs ?? 1000,
+        maxSockets: this.options_.httpAgent.maxSockets,
+        maxFreeSockets: this.options_.httpAgent.maxFreeSockets,
+        timeout: this.options_.httpAgent.timeout,
+        rejectUnauthorized: this.options_.httpAgent.rejectUnauthorized ?? true,
+      };
+
+      // Remove undefined values
+      Object.keys(agentOptions).forEach((key) => {
+        if (agentOptions[key as keyof https.AgentOptions] === undefined) {
+          delete agentOptions[key as keyof https.AgentOptions];
+        }
+      });
+
+      return new https.Agent(agentOptions);
+    }
+
+    return undefined;
+  }
+
   /**
    * Creates (or reuses) the Braintree SDK gateway from plugin options.
    * @returns Configured {@link Braintree.BraintreeGateway}
@@ -476,17 +541,24 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
     };
     const environment = envMap[envKey] ?? Braintree.Environment.Sandbox;
 
-    const gateway =
-      this.gateway ||
-      new Braintree.BraintreeGateway({
-        environment,
-        merchantId: this.options_.merchantId!,
-        publicKey: this.options_.publicKey!,
-        privateKey: this.options_.privateKey!,
-      });
+    const gatewayConfig: Braintree.GatewayConfig = {
+      environment,
+      merchantId: this.options_.merchantId!,
+      publicKey: this.options_.publicKey!,
+      privateKey: this.options_.privateKey!,
+    };
 
+    // Create and add HTTP agent if configured
+    // Using 'as any' because TypeScript definitions don't include customHttpAgent,
+    // but the runtime Braintree library supports it
+    const httpAgent = this.createHttpAgent();
+    if (httpAgent) {
+      (gatewayConfig as any).customHttpAgent = httpAgent;
+    }
+
+    this.gateway = this.gateway || new Braintree.BraintreeGateway(gatewayConfig);
     this.logDebug(`Gateway initialized (environment: ${envKey})`);
-    return gateway;
+    return this.gateway;
   }
 
   /**
@@ -543,6 +615,80 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
           `Option "${field}" must be a boolean in Braintree plugin`,
+        );
+      }
+    }
+
+    if (isDefined(options.proxyUrl)) {
+      if (typeof options.proxyUrl !== 'string' || !options.proxyUrl.trim()) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "proxyUrl" must be a non-empty string in Braintree plugin',
+        );
+      }
+
+      try {
+        new URL(options.proxyUrl);
+      } catch {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          `Option "proxyUrl" must be a valid URL in Braintree plugin: "${options.proxyUrl}"`,
+        );
+      }
+    }
+
+    if (isDefined(options.httpAgent)) {
+      if (typeof options.httpAgent !== 'object' || options.httpAgent === null || Array.isArray(options.httpAgent)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent" must be an object in Braintree plugin',
+        );
+      }
+
+      const { keepAlive, keepAliveMsecs, maxSockets, maxFreeSockets, timeout, rejectUnauthorized } = options.httpAgent;
+
+      const isNonNegativeNumber = (value: unknown): value is number =>
+        typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value) && value >= 0;
+
+      if (isDefined(keepAlive) && typeof keepAlive !== 'boolean') {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.keepAlive" must be a boolean in Braintree plugin',
+        );
+      }
+
+      if (isDefined(keepAliveMsecs) && !isNonNegativeNumber(keepAliveMsecs)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.keepAliveMsecs" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(maxSockets) && !isNonNegativeNumber(maxSockets)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.maxSockets" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(maxFreeSockets) && !isNonNegativeNumber(maxFreeSockets)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.maxFreeSockets" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(timeout) && !isNonNegativeNumber(timeout)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.timeout" must be a number greater than or equal to 0 in Braintree plugin',
+        );
+      }
+
+      if (isDefined(rejectUnauthorized) && typeof rejectUnauthorized !== 'boolean') {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          'Option "httpAgent.rejectUnauthorized" must be a boolean in Braintree plugin',
         );
       }
     }

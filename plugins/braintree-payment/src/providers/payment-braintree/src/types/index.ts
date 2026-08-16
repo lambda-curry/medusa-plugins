@@ -1,4 +1,15 @@
 import type Braintree from 'braintree';
+import type { Agent } from 'http';
+import type { Agent as HttpsAgent } from 'https';
+
+export interface HttpAgentConfig {
+  keepAlive?: boolean;
+  keepAliveMsecs?: number;
+  maxSockets?: number;
+  maxFreeSockets?: number;
+  timeout?: number;
+  rejectUnauthorized?: boolean;
+}
 
 export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   defaultCurrencyCode?: string;
@@ -11,6 +22,12 @@ export interface BraintreeOptions extends Braintree.ClientGatewayConfig {
   webhookSecret: string;
   autoCapture: boolean;
   allowRefundOnRefunded?: boolean;
+  /** Lowest precedence agent config, used to create a standard https.Agent. */
+  httpAgent?: HttpAgentConfig;
+  /** Optional proxy URL used to create an HTTPS proxy agent. */
+  proxyUrl?: string;
+  /** Highest precedence: pass a fully constructed Node HTTP(S) agent directly. */
+  customHttpAgent?: Agent | HttpsAgent;
   /**
    * When true, refundPayment never voids. Only settled/settling transactions may be refunded.
    * Late requirement so future partial order refunds and order edits can be supported

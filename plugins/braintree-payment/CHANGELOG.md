@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.5
+
+### Fixes
+
+- Keep the original Braintree sale on session `data.transaction` after each refund or void so sequential partial refunds still target that sale id. Gateway credits and voided records live only on `braintreeRefunds[]`.
+- Include the transaction status on refund rejection errors (`cannot be refunded right now because it's in status …` and `cannot be refunded because it's in status …`) instead of logging status separately.
+
+### Notes
+
+- `0.2.4` on npm already includes these runtime fixes (published from #48 without changelog notes). Prefer `0.2.5` for the documented release.
+
 ## 0.2.2
 
 ### Fixes

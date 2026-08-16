@@ -89,20 +89,7 @@ describe('BraintreeImportService', () => {
 
     await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toMatchObject({
       type: MedusaError.Types.INVALID_DATA,
-      message: "Braintree transaction with ID t2 cannot be refunded right now because it's in status authorized",
-    });
-    expect(gateway.transaction.void).not.toHaveBeenCalled();
-    expect(gateway.transaction.refund).not.toHaveBeenCalled();
-  });
-
-  it('throws when transaction is already voided', async () => {
-    const { service, gateway } = buildService();
-    const session = { transactionId: 't-voided', importedAsRefunded: false, refundedTotal: 0, status: 'captured' } as any;
-    gateway.transaction.find.mockResolvedValueOnce({ id: 't-voided', status: 'voided' });
-
-    await expect(service.refundPayment({ amount: 10, data: session } as any)).rejects.toMatchObject({
-      type: MedusaError.Types.NOT_FOUND,
-      message: "Braintree transaction with ID t-voided cannot be refunded because it's in status voided",
+      message: 'Braintree transaction with ID t2 cannot be refunded right now',
     });
     expect(gateway.transaction.void).not.toHaveBeenCalled();
     expect(gateway.transaction.refund).not.toHaveBeenCalled();

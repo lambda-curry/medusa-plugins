@@ -29,6 +29,7 @@ const plugins = [
     options: {
       // Add here the subcribers you will define
       subscriptions: ["product.created", "product.updated"],
+      secretKey:"Your-webhook-secret"
     },
   },
 ];

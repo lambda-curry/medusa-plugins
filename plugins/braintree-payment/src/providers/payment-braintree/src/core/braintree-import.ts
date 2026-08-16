@@ -37,7 +37,7 @@ import Braintree, { Transaction } from 'braintree';
 import { z } from 'zod';
 import { formatToTwoDecimalString } from '../../../../utils/format-amount';
 import { BraintreeOptions, PaymentProviderKeys } from '../types';
-import { buildBraintreeError } from './braintree-base';
+import { isBraintreeFailureResponse, throwOnBraintreeFailure } from './braintree-base';
 import type { BraintreeConstructorArgs } from './braintree-base';
 
 export interface BraintreeImportInitiatePaymentData {
@@ -285,15 +285,20 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
     if (shouldVoid) {
-      const cancelResponse = await this.gateway.transaction.void(transaction.id);
-      const isCancelSuccessful = cancelResponse.success ?? false;
+      if (this.options.disableVoidTransactions) {
+        this.logger.error(
+          `Braintree transaction with ID ${transaction.id} cannot be refunded right now because it's in status ${transaction.status}`,
+        );
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Braintree transaction with ID ${transaction.id} cannot be refunded right now`,
+        );
+      }
 
-      if (!isCancelSuccessful) {
-        this.logErrorDetail('refundPayment (void)', new Error(cancelResponse.message), {
-          transactionId: transaction.id,
-          message: cancelResponse.message,
-        });
-        throw buildBraintreeError(new Error(cancelResponse.message), 'void Braintree transaction', this.logger, {
+      const cancelResponse = await this.gateway.transaction.void(transaction.id);
+
+      if (isBraintreeFailureResponse(cancelResponse)) {
+        throwOnBraintreeFailure(cancelResponse, 'refundPayment (void)', this.logErrorDetail.bind(this), {
           transactionId: transaction.id,
         });
       }
@@ -319,15 +324,9 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const refundAmountDecimal = formatToTwoDecimalString(refundAmountRounded);
 
     const refundResponse = await this.gateway.transaction.refund(transaction.id, refundAmountDecimal);
-    const isRefundSuccessful = refundResponse.success ?? false;
 
-    if (!isRefundSuccessful) {
-      this.logErrorDetail('refundPayment (refund)', new Error(refundResponse.message), {
-        transactionId: transaction.id,
-        refundAmount: refundAmountDecimal,
-        message: refundResponse.message,
-      });
-      throw buildBraintreeError(new Error(refundResponse.message), 'create Braintree refund', this.logger, {
+    if (isBraintreeFailureResponse(refundResponse)) {
+      throwOnBraintreeFailure(refundResponse, 'refundPayment (refund)', this.logErrorDetail.bind(this), {
         transactionId: transaction.id,
         refundAmount: refundAmountDecimal,
       });

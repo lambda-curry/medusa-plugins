@@ -16,6 +16,7 @@ launch.json
 medusa-db.sql
 build
 .cache
+*.tgz
 
 .yarn/*
 !.yarn/patches
@@ -23,6 +24,7 @@ build
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+references/
 
 .medusa
 

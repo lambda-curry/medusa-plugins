@@ -21,3 +21,20 @@ export function formatToTwoDecimalString(amount: number | string): string {
 
   return num.toFixed(2);
 }
+
+/**
+ * True when a refund covers the whole Braintree sale. A missing or non-positive
+ * sale amount is not a full refund, so callers keep rejecting the void.
+ */
+export function isFullSaleRefund(refundAmount: number, saleAmount: string | number | null | undefined): boolean {
+  if (saleAmount == null || saleAmount === '') {
+    return false;
+  }
+
+  const sale = typeof saleAmount === 'number' ? saleAmount : Number.parseFloat(saleAmount);
+  if (!Number.isFinite(sale) || sale <= 0) {
+    return false;
+  }
+
+  return formatToTwoDecimalString(refundAmount) === formatToTwoDecimalString(sale);
+}

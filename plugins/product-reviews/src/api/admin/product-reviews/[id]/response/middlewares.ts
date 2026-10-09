@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@medusajs/framework/zod';
 import { MiddlewareRoute, validateAndTransformBody } from '@medusajs/framework';
 
 export const createProductReviewResponseDTO = z.object({

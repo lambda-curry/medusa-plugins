@@ -1,6 +1,6 @@
 import { type MiddlewareRoute, validateAndTransformBody, validateAndTransformQuery } from '@medusajs/framework';
 import { createFindParams, createOperatorMap } from '@medusajs/medusa/api/utils/validators';
-import { z } from 'zod';
+import { z } from '@medusajs/framework/zod';
 import { ProductReview } from '../../../modules/product-review/types/common';
 import { QueryConfig } from '@medusajs/types';
 

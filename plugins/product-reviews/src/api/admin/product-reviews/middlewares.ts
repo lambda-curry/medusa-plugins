@@ -1,6 +1,6 @@
 import { type MiddlewareRoute, validateAndTransformQuery } from '@medusajs/framework';
 import { createFindParams, createOperatorMap } from '@medusajs/medusa/api/utils/validators';
-import { z } from 'zod';
+import { z } from '@medusajs/framework/zod';
 
 const statuses = z.enum(['pending', 'approved', 'rejected'] as const);
 export const listAdminProductReviewsQuerySchema = createFindParams({

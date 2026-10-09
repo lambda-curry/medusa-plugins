@@ -8,7 +8,7 @@ import {
   ProductReviewStatsModel,
 } from './models';
 import { ProductReviewStats } from './types';
-import { z } from 'zod';
+import { z } from '@medusajs/framework/zod';
 
 interface CalculatedProductReviewStats {
   product_id: string;

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.6
+
+### Fixes
+
+- With `disableVoidTransactions` enabled, a refund that matches the full sale amount still voids `authorized` and `submitted_for_settlement` transactions. Partial refunds of those statuses still throw.
+
 ## 0.2.5
 
 ### Fixes

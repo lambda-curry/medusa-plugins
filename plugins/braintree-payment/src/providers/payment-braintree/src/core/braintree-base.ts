@@ -46,7 +46,7 @@ import type {
 import type { Transaction, TransactionNotification, TransactionStatus } from 'braintree';
 import Braintree from 'braintree';
 import { z } from 'zod';
-import { formatToTwoDecimalString } from '../../../../utils/format-amount';
+import { formatToTwoDecimalString, isFullSaleRefund } from '../../../../utils/format-amount';
 import type { BraintreeOptions, CustomFields } from '../types';
 
 /** Medusa DI container fields required by {@link BraintreeBase}. */
@@ -1212,15 +1212,18 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
 
   /**
    * Chooses void vs refund based on transaction status (after optional test settle).
+   * A full refund of an authorized or submitted-for-settlement sale still voids when
+   * `disableVoidTransactions` is set. A partial refund of those statuses throws.
    * @param transaction - Live Braintree transaction
-   * @throws {MedusaError} `INVALID_DATA` when void is disabled and status is voidable
+   * @param refundAmount - Requested refund in major currency units
+   * @throws {MedusaError} `INVALID_DATA` when void is disabled and the refund is not the full sale
    * @throws {MedusaError} `NOT_FOUND` when status is neither voidable nor refundable
    */
-  private async resolveRefundAction(transaction: Transaction): Promise<RefundAction> {
+  private async resolveRefundAction(transaction: Transaction, refundAmount: number): Promise<RefundAction> {
     const resolved = await this.applyTestForceSettled(transaction);
 
     if (isVoidableRefundStatus(resolved.status)) {
-      if (this.options_.disableVoidTransactions) {
+      if (this.options_.disableVoidTransactions && !isFullSaleRefund(refundAmount, resolved.amount)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
           `Braintree transaction with ID ${resolved.id} cannot be refunded right now because it's in status ${resolved.status}`,
@@ -1291,7 +1294,7 @@ class BraintreeBase extends AbstractPaymentProvider<BraintreeOptions> {
    */
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const { transaction, refundAmount } = await this.loadRefundContext(input);
-    const action = await this.resolveRefundAction(transaction);
+    const action = await this.resolveRefundAction(transaction, refundAmount);
     const resultTransaction = await this.executeRefundAction(action, refundAmount);
 
     return this.buildRefundPaymentOutput(input, action.transaction, {

@@ -35,7 +35,7 @@ import {
 } from '@medusajs/types';
 import Braintree, { Transaction } from 'braintree';
 import { z } from 'zod';
-import { formatToTwoDecimalString } from '../../../../utils/format-amount';
+import { formatToTwoDecimalString, isFullSaleRefund } from '../../../../utils/format-amount';
 import { BraintreeOptions, PaymentProviderKeys } from '../types';
 import { isBraintreeFailureResponse, throwOnBraintreeFailure } from './braintree-base';
 import type { BraintreeConstructorArgs } from './braintree-base';
@@ -285,7 +285,7 @@ class BraintreeImport extends AbstractPaymentProvider<BraintreeOptions> {
     const shouldVoid = ['submitted_for_settlement', 'authorized'].includes(transaction.status);
 
     if (shouldVoid) {
-      if (this.options.disableVoidTransactions) {
+      if (this.options.disableVoidTransactions && !isFullSaleRefund(refundAmountRounded, transaction.amount)) {
         this.logger.error(
           `Braintree transaction with ID ${transaction.id} cannot be refunded right now because it's in status ${transaction.status}`,
         );

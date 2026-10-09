@@ -251,6 +251,60 @@ describe('BraintreeProviderService core behaviors', () => {
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });
 
+  it('refundPayment voids a full unsettled sale when disableVoidTransactions is enabled', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+
+    const input: RefundPaymentInput = {
+      amount: 10,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+      },
+    };
+
+    gateway.transaction.find
+      .mockResolvedValueOnce({ id: 't1', status: 'submitted_for_settlement', amount: '10.00' })
+      .mockResolvedValueOnce({ id: 't1', status: 'voided', amount: '10.00' });
+    gateway.transaction.void.mockResolvedValueOnce({ success: true });
+
+    const result = await service.refundPayment(input);
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t1');
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+    expect(lastRefundEntry(result.data)?.type).toBe('voided');
+    expect(lastRefundEntry(result.data)?.transaction?.id).toBe('t1');
+  });
+
+  it('refundPayment throws for a partial unsettled sale when disableVoidTransactions is enabled', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+
+    const input: RefundPaymentInput = {
+      amount: 5,
+      data: {
+        client_token: 'ct',
+        amount: 1000,
+        currency_code: 'USD',
+        braintreeTransaction: { id: 't1' },
+      },
+    };
+
+    gateway.transaction.find.mockResolvedValueOnce({
+      id: 't1',
+      status: 'submitted_for_settlement',
+      amount: '10.00',
+    });
+
+    await expect(service.refundPayment(input)).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message:
+        "Braintree transaction with ID t1 cannot be refunded right now because it's in status submitted_for_settlement",
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
   it('refundPayment refunds settled transactions when disableVoidTransactions is enabled', async () => {
     const { service, gateway } = buildService({ disableVoidTransactions: true });
 

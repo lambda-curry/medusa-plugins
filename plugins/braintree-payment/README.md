@@ -116,6 +116,10 @@ dependencies:[Modules.CACHE]
 - **savePaymentMethod**: Save payment methods for future use (default: `true`).
 - **autoCapture**: Automatically capture payments (default: `true`).
 - **allowRefundOnRefunded**: Allow refund attempts on already-refunded imported transactions (default: `false`).
+- **customHttpAgent**: Optional pre-configured Node `http.Agent` or `https.Agent` used for all Braintree API requests. If set, this takes highest precedence.
+- **proxyUrl**: Optional proxy URL (for example `http://user:pass@proxy.example.com:8080`). When provided, the provider will try to create an HTTPS proxy agent using `https-proxy-agent`.
+- **httpAgent**: Optional HTTPS agent configuration object used to create a standard `https.Agent` when `customHttpAgent` and `proxyUrl` are not provided.
+- **logging**: When `true`, logs important operations (initiate, authorize, capture, refund, etc.) to the console for debugging (default: `false`).
 - **disableVoidTransactions**: When `true`, refunds never void; only `settled`/`settling` transactions may be refunded. Late requirement so future partial order refunds and order edits can be supported (void cancels the full authorization). Default: `false`. With this enabled, `authorized`/`submitted_for_settlement` refunds fail with `INVALID_DATA` (“cannot be refunded right now because it's in status …”); other non-refundable statuses fail with `NOT_FOUND` (“cannot be refunded because it's in status …”).
 - **logging**: Enable verbose plugin debug logging (`true` or `false`, default: `false`). When `true`, the provider logs operation details (initiate, authorize, capture, refund, etc.) and expanded Braintree error context via Medusa's logger with a `[Braintree]` prefix. Set via `BRAINTREE_LOGGING=true` in `.env` or pass `logging: true` directly in provider options. Disable in production unless actively debugging.
 - **testForceSettled**: **Sandbox only.** When `true` **and** `environment` is `sandbox`, the refund flow settles the Braintree transaction via the sandbox testing API before attempting a refund. Use this to exercise the **refund** path (settled/settling) instead of the **void** path (authorized/submitted_for_settlement). Defaults to `false`. Ignored (with a warning) outside sandbox. Set via `TEST_FORCE_SETTLED=true` in `.env` wired to this option, or pass `testForceSettled: true` directly. Do not enable in production.
@@ -152,6 +156,8 @@ Earlier README examples used `logging: process.env.NODE_ENV !== 'production'` (a
 > - `autoCapture`: If set to `true`, payments are captured automatically after authorization.
 > - `savePaymentMethod`: If set to `true`, customer payment methods are saved for future use.
 > - `allowRefundOnRefunded`: If set to `true`, the imported payment provider will gracefully handle refund attempts on transactions that have already been refunded in Braintree. Instead of throwing an error, it will log a warning and record the refund locally only. This is useful when orders are imported and later refunded directly in Braintree.
+> - HTTP agent precedence is: `customHttpAgent` -> `proxyUrl` -> `httpAgent`.
+> - If `proxyUrl` is set, install `https-proxy-agent` in your project so proxy agent creation succeeds.
 
 ### Upgrading to 0.2.5
 

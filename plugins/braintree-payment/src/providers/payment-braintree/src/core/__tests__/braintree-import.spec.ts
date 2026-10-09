@@ -95,6 +95,40 @@ describe('BraintreeImportService', () => {
     expect(gateway.transaction.refund).not.toHaveBeenCalled();
   });
 
+  it('voids a full unsettled sale when disableVoidTransactions is enabled', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+    const session = { transactionId: 't2', importedAsRefunded: false, refundedTotal: 0, status: 'captured' } as any;
+    gateway.transaction.find.mockResolvedValueOnce({
+      id: 't2',
+      status: 'submitted_for_settlement',
+      amount: '10.00',
+    });
+    gateway.transaction.void.mockResolvedValueOnce({ success: true, transaction: { id: 't2', status: 'voided' } });
+
+    const res = await service.refundPayment({ amount: 10, data: session } as any);
+
+    expect(gateway.transaction.void).toHaveBeenCalledWith('t2');
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+    expect((res.data as any).refundedTotal).toBe(10);
+  });
+
+  it('throws for a partial unsettled sale when disableVoidTransactions is enabled', async () => {
+    const { service, gateway } = buildService({ disableVoidTransactions: true });
+    const session = { transactionId: 't2', importedAsRefunded: false, refundedTotal: 0, status: 'captured' } as any;
+    gateway.transaction.find.mockResolvedValueOnce({
+      id: 't2',
+      status: 'submitted_for_settlement',
+      amount: '10.00',
+    });
+
+    await expect(service.refundPayment({ amount: 5, data: session } as any)).rejects.toMatchObject({
+      type: MedusaError.Types.INVALID_DATA,
+      message: 'Braintree transaction with ID t2 cannot be refunded right now',
+    });
+    expect(gateway.transaction.void).not.toHaveBeenCalled();
+    expect(gateway.transaction.refund).not.toHaveBeenCalled();
+  });
+
   it('performs real refund for settled/settling when not imported-refunded', async () => {
     const { service, gateway } = buildService();
     const session = { transactionId: 't3', importedAsRefunded: false, refundedTotal: 1.25, status: 'captured' } as any;
